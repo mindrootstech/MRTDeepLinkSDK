@@ -1,13 +1,16 @@
 import Foundation
 
 public typealias MRTDeepLinkHandler = (MRTDeepLinkPayload) -> Void
+public typealias MRTDeepLinkLicenseHandler = (MRTDeepLinkLicenseStatus) -> Void
 
 public final class MRTDeepLink: @unchecked Sendable {
     public static let shared = MRTDeepLink()
 
     private var configuration: MRTDeepLinkConfiguration?
     private var handler: MRTDeepLinkHandler?
+    private var licenseHandler: MRTDeepLinkLicenseHandler?
     private var pendingPayload: MRTDeepLinkPayload?
+    private var licenseStatus: MRTDeepLinkLicenseStatus = .idle
     private let lock = NSLock()
 
     private init() {}
@@ -18,6 +21,16 @@ public final class MRTDeepLink: @unchecked Sendable {
         return configuration != nil
     }
 
+    public var currentLicenseStatus: MRTDeepLinkLicenseStatus {
+        lock.lock()
+        defer { lock.unlock() }
+        return licenseStatus
+    }
+
+    public var isLicenseValid: Bool {
+        currentLicenseStatus == .valid
+    }
+
     @discardableResult
     public func configure(_ configuration: MRTDeepLinkConfiguration) -> MRTDeepLink {
         lock.lock()
@@ -25,7 +38,7 @@ public final class MRTDeepLink: @unchecked Sendable {
         lock.unlock()
 
         log("Configured for app: \(configuration.appIdentifier)")
-        deliverPendingPayloadIfNeeded()
+        validateLicense()
         return self
     }
 
@@ -37,8 +50,52 @@ public final class MRTDeepLink: @unchecked Sendable {
         deliverPendingPayloadIfNeeded()
     }
 
+    public func onLicenseStatusChange(_ handler: @escaping MRTDeepLinkLicenseHandler) {
+        lock.lock()
+        self.licenseHandler = handler
+        let status = licenseStatus
+        lock.unlock()
+
+        DispatchQueue.main.async {
+            handler(status)
+        }
+    }
+
+    public func validateLicense() {
+        guard let configuration else {
+            updateLicenseStatus(.invalid(message: "SDK not configured"))
+            return
+        }
+
+        updateLicenseStatus(.validating)
+
+        let apiKey = configuration.apiKey
+        let bundleId = configuration.appIdentifier
+        let serverURL = configuration.licenseServerURL
+        let validationPath = configuration.licenseValidationPath
+
+        Task {
+            let status = await MRTDeepLinkLicenseValidator.validate(
+                apiKey: apiKey,
+                bundleId: bundleId,
+                serverURL: serverURL,
+                validationPath: validationPath
+            )
+            updateLicenseStatus(status)
+
+            if status == .valid {
+                deliverPendingPayloadIfNeeded()
+            }
+        }
+    }
+
     @discardableResult
     public func handle(url: URL) -> Bool {
+        guard isLicenseValid else {
+            log("Ignored URL — license is not valid")
+            return false
+        }
+
         guard let configuration else {
             log("Received URL before configure(): \(url.absoluteString)")
             return false
@@ -62,6 +119,8 @@ public final class MRTDeepLink: @unchecked Sendable {
     }
 
     public func consumePendingDeepLink() -> MRTDeepLinkPayload? {
+        guard isLicenseValid else { return nil }
+
         lock.lock()
         defer { lock.unlock() }
         let payload = pendingPayload
@@ -91,6 +150,8 @@ public final class MRTDeepLink: @unchecked Sendable {
     }
 
     private func deliverPendingPayloadIfNeeded() {
+        guard isLicenseValid else { return }
+
         lock.lock()
         let payload = pendingPayload
         let handler = handler
@@ -104,6 +165,29 @@ public final class MRTDeepLink: @unchecked Sendable {
 
         DispatchQueue.main.async {
             handler(payload)
+        }
+    }
+
+    private func updateLicenseStatus(_ status: MRTDeepLinkLicenseStatus) {
+        lock.lock()
+        licenseStatus = status
+        let handler = licenseHandler
+        lock.unlock()
+
+        switch status {
+        case .valid:
+            log("License validated successfully")
+        case .invalid(let message):
+            log("License invalid: \(message)")
+        case .validating:
+            log("Validating license…")
+        case .idle:
+            break
+        }
+
+        guard let handler else { return }
+        DispatchQueue.main.async {
+            handler(status)
         }
     }
 

@@ -43,19 +43,39 @@ import MRTDeepLinkSDK
 MRTDeepLink.shared.configure(
     MRTDeepLinkConfiguration(
         appIdentifier: "com.yourcompany.app",
+        apiKey: "mrt_live_your_unique_key",
+        licenseServerURL: URL(string: "https://your-admin-server.com")!,
         universalLinkDomains: ["links.yourdomain.com"],
         customURLSchemes: ["yourapp"],
         debugLogging: true
     )
 )
+
+MRTDeepLink.shared.onLicenseStatusChange { status in
+    switch status {
+    case .valid:
+        print("License active — deep linking enabled")
+    case .invalid(let message):
+        print("License invalid:", message)
+    case .validating:
+        print("Checking license…")
+    case .idle:
+        break
+    }
+}
 ```
 
 | Property | Description |
 |----------|-------------|
 | `appIdentifier` | Your iOS bundle identifier |
+| `apiKey` | Unique key generated from the admin panel (paid service) |
+| `licenseServerURL` | Your admin/backend base URL |
+| `licenseValidationPath` | API path for key validation (default: `api/v1/license/validate`) |
 | `universalLinkDomains` | Domains configured for Universal Links |
 | `customURLSchemes` | Custom URL schemes registered in Info.plist |
 | `debugLogging` | Print debug logs to the console |
+
+Deep linking only works when the license is **valid**. Invalid or missing keys are rejected.
 
 ### 2. SwiftUI integration
 
@@ -135,13 +155,38 @@ yourapp://product/123?id=abc
 https://links.yourdomain.com/product/123?id=abc
 ```
 
+## License API (admin backend)
+
+The SDK validates the API key on launch by calling your admin server:
+
+```
+POST {licenseServerURL}/api/v1/license/validate
+Headers:
+  X-MRT-API-Key: {apiKey}
+  Content-Type: application/json
+Body:
+  { "bundleId": "com.yourcompany.app" }
+
+Response 200:
+  { "valid": true, "message": "OK" }
+
+Response 403/401:
+  { "valid": false, "message": "Invalid or expired key" }
+```
+
+If `valid` is not `true`, deep link handling is disabled.
+
 ## API Reference
 
 ### `MRTDeepLink`
 
 | Method | Description |
 |--------|-------------|
-| `configure(_:)` | Initialize the SDK with app configuration |
+| `configure(_:)` | Initialize the SDK and validate license |
+| `validateLicense()` | Re-check license with admin server |
+| `onLicenseStatusChange(_:)` | Observe license validation status |
+| `isLicenseValid` | Whether the current license is active |
+| `currentLicenseStatus` | Current license state |
 | `onDeepLink(_:)` | Register a deep link callback |
 | `handle(url:)` | Handle a URL manually (e.g. from AppDelegate) |
 | `handle(userActivity:)` | Handle a Universal Link from `NSUserActivity` |
