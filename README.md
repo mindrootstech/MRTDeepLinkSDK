@@ -35,20 +35,14 @@ pod install
 
 ## Quick Start
 
-### 1. Configure at app launch
+### 1. Configure at app launch (API key only)
 
 ```swift
 import MRTDeepLinkSDK
 
 MRTDeepLink.shared.configure(
-    MRTDeepLinkConfiguration(
-        appIdentifier: "com.yourcompany.app",
-        apiKey: "mrt_live_your_unique_key",
-        licenseServerURL: URL(string: "https://your-admin-server.com")!,
-        universalLinkDomains: ["links.yourdomain.com"],
-        customURLSchemes: ["yourapp"],
-        debugLogging: true
-    )
+    apiKey: "mrt_live_your_unique_key",
+    debugLogging: true
 )
 
 MRTDeepLink.shared.onLicenseStatusChange { status in
@@ -65,17 +59,18 @@ MRTDeepLink.shared.onLicenseStatusChange { status in
 }
 ```
 
+The SDK automatically:
+- Sends your app's **Bundle ID** to the admin server
+- Validates the **API key**
+- Downloads **domains**, **URL scheme**, and **app settings** from the server
+
+You do **not** need to manually set domains or schemes in the app.
+
 | Property | Description |
 |----------|-------------|
-| `appIdentifier` | Your iOS bundle identifier |
-| `apiKey` | Unique key generated from the admin panel (paid service) |
-| `licenseServerURL` | Your admin/backend base URL |
-| `licenseValidationPath` | API path for key validation (default: `api/v1/license/validate`) |
-| `universalLinkDomains` | Domains configured for Universal Links |
-| `customURLSchemes` | Custom URL schemes registered in Info.plist |
-| `debugLogging` | Print debug logs to the console |
-
-Deep linking only works when the license is **valid**. Invalid or missing keys are rejected.
+| `apiKey` | Unique key from the admin panel (required) |
+| `debugLogging` | Print debug logs (optional, default `false`) |
+| `licenseServerURL` | Admin server URL (optional, has SDK default) |
 
 ### 2. SwiftUI integration
 
@@ -168,7 +163,15 @@ Body:
   { "bundleId": "com.yourcompany.app" }
 
 Response 200:
-  { "valid": true, "message": "OK" }
+  {
+    "valid": true,
+    "message": "OK",
+    "config": {
+      "appIdentifier": "com.yourcompany.app",
+      "universalLinkDomains": ["links.yourdomain.com"],
+      "customURLSchemes": ["yourapp"]
+    }
+  }
 
 Response 403/401:
   { "valid": false, "message": "Invalid or expired key" }

@@ -31,13 +31,24 @@ public final class MRTDeepLink: @unchecked Sendable {
         currentLicenseStatus == .valid
     }
 
+    /// Configure with API key only — app settings are fetched from the admin server.
+    @discardableResult
+    public func configure(apiKey: String, debugLogging: Bool = false) -> MRTDeepLink {
+        configure(
+            MRTDeepLinkConfiguration(
+                apiKey: apiKey,
+                debugLogging: debugLogging
+            )
+        )
+    }
+
     @discardableResult
     public func configure(_ configuration: MRTDeepLinkConfiguration) -> MRTDeepLink {
         lock.lock()
         self.configuration = configuration
         lock.unlock()
 
-        log("Configured for app: \(configuration.appIdentifier)")
+        log("Configured with API key")
         validateLicense()
         return self
     }
@@ -75,16 +86,23 @@ public final class MRTDeepLink: @unchecked Sendable {
         let validationPath = configuration.licenseValidationPath
 
         Task {
-            let status = await MRTDeepLinkLicenseValidator.validate(
+            let result = await MRTDeepLinkLicenseValidator.validate(
                 apiKey: apiKey,
                 bundleId: bundleId,
                 serverURL: serverURL,
                 validationPath: validationPath
             )
-            updateLicenseStatus(status)
 
-            if status == .valid {
+            switch result {
+            case .success(let remoteConfig):
+                lock.lock()
+                self.configuration = configuration.applyingRemoteConfig(remoteConfig)
+                lock.unlock()
+                log("Remote config loaded for: \(remoteConfig.appIdentifier)")
+                updateLicenseStatus(.valid)
                 deliverPendingPayloadIfNeeded()
+            case .failure(let message):
+                updateLicenseStatus(.invalid(message: message))
             }
         }
     }
@@ -98,6 +116,11 @@ public final class MRTDeepLink: @unchecked Sendable {
 
         guard let configuration else {
             log("Received URL before configure(): \(url.absoluteString)")
+            return false
+        }
+
+        guard configuration.isRemoteConfigLoaded else {
+            log("Ignored URL — remote config not loaded yet")
             return false
         }
 

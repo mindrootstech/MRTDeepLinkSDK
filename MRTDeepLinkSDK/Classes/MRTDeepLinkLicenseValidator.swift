@@ -7,9 +7,41 @@ public enum MRTDeepLinkLicenseStatus: Sendable, Equatable {
     case invalid(message: String)
 }
 
-struct MRTDeepLinkLicenseResponse: Decodable, Sendable {
+private struct MRTDeepLinkLicenseResponse: Decodable, Sendable {
     let valid: Bool
     let message: String?
+    let appIdentifier: String?
+    let universalLinkDomains: [String]?
+    let customURLSchemes: [String]?
+    let config: NestedConfig?
+
+    struct NestedConfig: Decodable, Sendable {
+        let appIdentifier: String
+        let universalLinkDomains: [String]?
+        let customURLSchemes: [String]?
+    }
+
+    var remoteConfig: MRTDeepLinkRemoteConfig? {
+        if let config {
+            return MRTDeepLinkRemoteConfig(
+                appIdentifier: config.appIdentifier,
+                universalLinkDomains: config.universalLinkDomains ?? [],
+                customURLSchemes: config.customURLSchemes ?? []
+            )
+        }
+
+        guard let appIdentifier else { return nil }
+        return MRTDeepLinkRemoteConfig(
+            appIdentifier: appIdentifier,
+            universalLinkDomains: universalLinkDomains ?? [],
+            customURLSchemes: customURLSchemes ?? []
+        )
+    }
+}
+
+enum MRTDeepLinkLicenseValidationResult: Sendable {
+    case success(MRTDeepLinkRemoteConfig)
+    case failure(String)
 }
 
 enum MRTDeepLinkLicenseValidator {
@@ -18,9 +50,9 @@ enum MRTDeepLinkLicenseValidator {
         bundleId: String,
         serverURL: URL,
         validationPath: String
-    ) async -> MRTDeepLinkLicenseStatus {
+    ) async -> MRTDeepLinkLicenseValidationResult {
         guard let url = validationURL(serverURL: serverURL, validationPath: validationPath) else {
-            return .invalid(message: "Invalid license server URL")
+            return .failure("Invalid license server URL")
         }
 
         var request = URLRequest(url: url)
@@ -32,23 +64,24 @@ enum MRTDeepLinkLicenseValidator {
         do {
             let (data, response) = try await URLSession.shared.data(for: request)
             guard let httpResponse = response as? HTTPURLResponse else {
-                return .invalid(message: "Invalid server response")
+                return .failure("Invalid server response")
             }
+
+            let license = try? JSONDecoder().decode(MRTDeepLinkLicenseResponse.self, from: data)
 
             if (200...299).contains(httpResponse.statusCode),
-               let license = try? JSONDecoder().decode(MRTDeepLinkLicenseResponse.self, from: data),
-               license.valid {
-                return .valid
+               license?.valid == true,
+               let remoteConfig = license?.remoteConfig {
+                return .success(remoteConfig)
             }
 
-            if let license = try? JSONDecoder().decode(MRTDeepLinkLicenseResponse.self, from: data),
-               let message = license.message, !message.isEmpty {
-                return .invalid(message: message)
+            if let message = license?.message, !message.isEmpty {
+                return .failure(message)
             }
 
-            return .invalid(message: "License validation failed (\(httpResponse.statusCode))")
+            return .failure("License validation failed (\(httpResponse.statusCode))")
         } catch {
-            return .invalid(message: error.localizedDescription)
+            return .failure(error.localizedDescription)
         }
     }
 
