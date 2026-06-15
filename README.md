@@ -102,22 +102,20 @@ func application(_ application: UIApplication, continue userActivity: NSUserActi
 
 1. Xcode → **Signing & Capabilities** → **Associated Domains**
 2. Add: `applinks:links.yourdomain.com`
-3. Host an `apple-app-site-association` file on your server (see `SmartLinkWeb/` in this repo)
+3. Host an `apple-app-site-association` file on your server
 
-## Smart Links (open app or redirect to store)
+## Smart Links (open app or redirect to App Store)
 
 For shareable links that work across WhatsApp, SMS, email, and social platforms, use `MRTSmartLinkBuilder` to generate HTTPS URLs. When the user taps the link:
 
 - **App installed** → opens the app via Universal Link or custom scheme
-- **App not installed** → redirects to the App Store or Google Play Store
+- **App not installed** → redirects to the App Store
 
 ```swift
 let config = MRTSmartLinkConfiguration(
     webDomain: "links.yourdomain.com",
     customURLScheme: "yourapp",
-    iOSAppStoreURL: URL(string: "https://apps.apple.com/app/id123456789")!,
-    androidPlayStoreURL: URL(string: "https://play.google.com/store/apps/details?id=com.yourcompany.app")!,
-    androidPackageName: "com.yourcompany.app"
+    iOSAppStoreURL: URL(string: "https://apps.apple.com/app/id123456789")!
 )
 
 let shareURL = MRTSmartLinkBuilder.makeWebURL(
@@ -128,7 +126,7 @@ let shareURL = MRTSmartLinkBuilder.makeWebURL(
 // → https://links.yourdomain.com/product/42?id=abc
 ```
 
-Host the web redirect page from the `SmartLinkWeb/` folder on your domain. See `SmartLinkWeb/README.md` for deployment instructions.
+Host an `apple-app-site-association` file on your domain for Universal Links to work.
 
 ## Example links
 
