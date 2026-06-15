@@ -51,15 +51,17 @@ enum MRTDeepLinkLicenseValidator {
         serverURL: URL,
         validationPath: String
     ) async -> MRTDeepLinkLicenseValidationResult {
-        guard let url = validationURL(serverURL: serverURL, validationPath: validationPath) else {
+        guard let url = validationURL(
+            serverURL: serverURL,
+            validationPath: validationPath,
+            apiKey: apiKey,
+            bundleId: bundleId
+        ) else {
             return .failure("Invalid license server URL")
         }
 
         var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue(apiKey, forHTTPHeaderField: "X-MRT-API-Key")
-        request.httpBody = try? JSONEncoder().encode(["bundleId": bundleId])
+        request.httpMethod = "GET"
 
         do {
             let (data, response) = try await URLSession.shared.data(for: request)
@@ -85,7 +87,12 @@ enum MRTDeepLinkLicenseValidator {
         }
     }
 
-    private static func validationURL(serverURL: URL, validationPath: String) -> URL? {
+    private static func validationURL(
+        serverURL: URL,
+        validationPath: String,
+        apiKey: String,
+        bundleId: String
+    ) -> URL? {
         var components = URLComponents(url: serverURL, resolvingAgainstBaseURL: false)
         let normalizedPath = validationPath.hasPrefix("/") ? validationPath : "/\(validationPath)"
         let basePath = components?.path ?? ""
@@ -95,6 +102,11 @@ enum MRTDeepLinkLicenseValidator {
         } else {
             components?.path = basePath + normalizedPath
         }
+
+        components?.queryItems = [
+            URLQueryItem(name: "key", value: apiKey),
+            URLQueryItem(name: "bundleId", value: bundleId)
+        ]
 
         return components?.url
     }

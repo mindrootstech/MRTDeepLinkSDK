@@ -155,12 +155,8 @@ https://links.yourdomain.com/product/123?id=abc
 The SDK validates the API key on launch by calling your admin server:
 
 ```
-POST {licenseServerURL}/api/v1/license/validate
-Headers:
-  X-MRT-API-Key: {apiKey}
-  Content-Type: application/json
-Body:
-  { "bundleId": "com.yourcompany.app" }
+GET {licenseServerURL}/api/sdk/validate?key={apiKey}&bundleId={bundleId}
+```
 
 Response 200:
   {
