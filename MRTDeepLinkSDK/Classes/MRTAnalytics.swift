@@ -5,11 +5,9 @@ public final class MRTAnalytics: @unchecked Sendable {
 
     private static let anonymousIdDefaultsKey = "com.mrtdeeplink.analytics.anonymousId"
     private static let userIdDefaultsKey = "com.mrtdeeplink.analytics.userId"
+    private static let autoUserIdDefaultsKey = "com.mrtdeeplink.analytics.autoUserId"
 
     private var configuration: MRTAnalyticsConfiguration?
-    private var identifiedUserId: String?
-    private var anonymousId: String?
-    private var generatedUserId: String?
     private let lock = NSLock()
 
     private init() {}
@@ -23,13 +21,13 @@ public final class MRTAnalytics: @unchecked Sendable {
     public var currentUserId: String {
         lock.lock()
         defer { lock.unlock() }
-        return resolvedUserId(explicit: nil)
+        return ensureUserId()
     }
 
     public var currentAnonymousId: String {
         lock.lock()
         defer { lock.unlock() }
-        return resolvedAnonymousId()
+        return ensureAnonymousId()
     }
 
     /// Configure event logging with your platform API key.
@@ -47,44 +45,47 @@ public final class MRTAnalytics: @unchecked Sendable {
             serverURL: serverURL,
             eventsPath: eventsPath
         )
+        let userId = ensureUserId()
+        let anonymousId = ensureAnonymousId()
         lock.unlock()
 
-        log("Analytics configured — userId: \(currentUserId), anonymousId: \(currentAnonymousId)")
+        log("Analytics configured — userId: \(userId), anonymousId: \(anonymousId)")
         return self
     }
 
-    /// Assign a known anonymous ID (otherwise one is generated and persisted).
+    /// Assign a known anonymous ID (otherwise one is generated once and persisted).
     public func setAnonymousId(_ id: String) {
         let trimmed = id.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
 
         lock.lock()
-        anonymousId = trimmed
+        persistAnonymousId(trimmed)
         lock.unlock()
 
-        UserDefaults.standard.set(trimmed, forKey: Self.anonymousIdDefaultsKey)
         log("Anonymous ID set: \(trimmed)")
     }
 
-    /// Identify the logged-in user for subsequent events.
+    /// Identify the logged-in user for subsequent events (persisted until app uninstall).
     public func identify(userId: String) {
         let trimmed = userId.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
 
         lock.lock()
-        identifiedUserId = trimmed
+        persistUserId(trimmed)
         lock.unlock()
 
         log("User identified: \(trimmed)")
     }
 
-    /// Clear the identified user (auto-generated userId is kept).
+    /// Restore the auto-generated userId after `identify(userId:)`.
     public func resetUser() {
         lock.lock()
-        identifiedUserId = nil
+        if let autoUserId = storedValue(forKey: Self.autoUserIdDefaultsKey) {
+            persistUserId(autoUserId)
+        }
         lock.unlock()
 
-        log("User identity cleared — using auto userId: \(currentUserId)")
+        log("User identity reset — userId: \(currentUserId)")
     }
 
     /// Log an event to your platform.
@@ -101,8 +102,8 @@ public final class MRTAnalytics: @unchecked Sendable {
 
         lock.lock()
         let configuration = configuration
-        let resolvedUserId = resolvedUserId(explicit: userId)
-        let anonymousId = resolvedAnonymousId()
+        let resolvedUserId = userIdForEvent(explicit: userId)
+        let anonymousId = ensureAnonymousId()
         lock.unlock()
 
         guard let configuration else {
@@ -139,47 +140,49 @@ public final class MRTAnalytics: @unchecked Sendable {
         }
     }
 
-    private func resolvedUserId(explicit: String?) -> String {
+    private func userIdForEvent(explicit: String?) -> String {
         if let explicit {
             let trimmed = explicit.trimmingCharacters(in: .whitespacesAndNewlines)
             if !trimmed.isEmpty { return trimmed }
         }
+        return ensureUserId()
+    }
 
-        if let identifiedUserId, !identifiedUserId.isEmpty {
-            return identifiedUserId
-        }
-
-        if let generatedUserId, !generatedUserId.isEmpty {
-            return generatedUserId
-        }
-
-        if let stored = UserDefaults.standard.string(forKey: Self.userIdDefaultsKey),
-           !stored.isEmpty {
-            generatedUserId = stored
+    private func ensureUserId() -> String {
+        if let stored = storedValue(forKey: Self.userIdDefaultsKey) {
             return stored
         }
 
         let generated = "user_\(UUID().uuidString.lowercased())"
-        generatedUserId = generated
-        UserDefaults.standard.set(generated, forKey: Self.userIdDefaultsKey)
+        persistUserId(generated)
+        UserDefaults.standard.set(generated, forKey: Self.autoUserIdDefaultsKey)
         return generated
     }
 
-    private func resolvedAnonymousId() -> String {
-        if let anonymousId, !anonymousId.isEmpty {
-            return anonymousId
-        }
-
-        if let stored = UserDefaults.standard.string(forKey: Self.anonymousIdDefaultsKey),
-           !stored.isEmpty {
-            anonymousId = stored
+    private func ensureAnonymousId() -> String {
+        if let stored = storedValue(forKey: Self.anonymousIdDefaultsKey) {
             return stored
         }
 
         let generated = "anon_\(UUID().uuidString.lowercased())"
-        anonymousId = generated
-        UserDefaults.standard.set(generated, forKey: Self.anonymousIdDefaultsKey)
+        persistAnonymousId(generated)
         return generated
+    }
+
+    private func persistUserId(_ id: String) {
+        UserDefaults.standard.set(id, forKey: Self.userIdDefaultsKey)
+    }
+
+    private func persistAnonymousId(_ id: String) {
+        UserDefaults.standard.set(id, forKey: Self.anonymousIdDefaultsKey)
+    }
+
+    private func storedValue(forKey key: String) -> String? {
+        guard let value = UserDefaults.standard.string(forKey: key),
+              !value.isEmpty else {
+            return nil
+        }
+        return value
     }
 
     private func logEvent(_ message: String) {
