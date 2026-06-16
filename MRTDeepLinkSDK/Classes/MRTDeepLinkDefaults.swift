@@ -7,6 +7,8 @@ public enum MRTDeepLinkDefaults {
     public static let eventsPath = "api/sdk/events"
     public static let sdkKeyHeader = "X-SDK-Key"
     public static let authorizationHeader = "Authorization"
+    /// New session starts after this many seconds in background (default 30 minutes).
+    public static let sessionTimeout: TimeInterval = 30 * 60
 
     public static func authorizationValue(apiKey: String) -> String {
         "Bearer \(apiKey)"

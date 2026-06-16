@@ -10,6 +10,10 @@ public final class MRTAnalytics: @unchecked Sendable {
     private var configuration: MRTAnalyticsConfiguration?
     private let lock = NSLock()
 
+    #if canImport(UIKit)
+    private let sessionTracker = MRTSessionTracker()
+    #endif
+
     private init() {}
 
     public var isConfigured: Bool {
@@ -39,13 +43,23 @@ public final class MRTAnalytics: @unchecked Sendable {
         return storedValue(forKey: Self.loginUserIdDefaultsKey)
     }
 
+    /// Active analytics session ID, if any.
+    public var currentSessionId: String? {
+        #if canImport(UIKit)
+        return sessionTracker.currentSessionId()
+        #else
+        return nil
+        #endif
+    }
+
     /// Configure event logging with your platform API key.
     @discardableResult
     public func configure(
         apiKey: String,
         debugLogging: Bool = false,
         serverURL: URL = MRTDeepLinkDefaults.licenseServerURL,
-        eventsPath: String = MRTDeepLinkDefaults.eventsPath
+        eventsPath: String = MRTDeepLinkDefaults.eventsPath,
+        sessionTimeout: TimeInterval = MRTDeepLinkDefaults.sessionTimeout
     ) -> MRTAnalytics {
         lock.lock()
         configuration = MRTAnalyticsConfiguration(
@@ -57,6 +71,12 @@ public final class MRTAnalytics: @unchecked Sendable {
         let userId = ensureUserId()
         let anonymousId = ensureAnonymousId()
         lock.unlock()
+
+        #if canImport(UIKit)
+        sessionTracker.start(sessionTimeout: sessionTimeout) { [weak self] eventName, properties in
+            self?.trackAutomatic(eventName: eventName, properties: properties)
+        }
+        #endif
 
         log("Analytics configured — userId: \(userId), anonymousId: \(anonymousId)")
         return self
@@ -100,9 +120,17 @@ public final class MRTAnalytics: @unchecked Sendable {
         eventName: String,
         properties: [String: String] = [:]
     ) {
+        deliverEvent(eventName: eventName, properties: properties)
+    }
+
+    private func trackAutomatic(eventName: String, properties: [String: String]) {
+        deliverEvent(eventName: eventName, properties: properties)
+    }
+
+    private func deliverEvent(eventName: String, properties: [String: String]) {
         let trimmedName = eventName.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty else {
-            logEvent("Ignored event — eventName is required")
+            log("Ignored event — eventName is required")
             return
         }
 
@@ -114,15 +142,22 @@ public final class MRTAnalytics: @unchecked Sendable {
         lock.unlock()
 
         guard let configuration else {
-            logEvent("Ignored event — analytics not configured")
+            log("Ignored event — analytics not configured")
             return
         }
+
+        #if canImport(UIKit)
+        let sessionId = sessionTracker.currentSessionId()
+        #else
+        let sessionId: String? = nil
+        #endif
 
         let payload = MRTEventPayload(
             eventName: trimmedName,
             anonymousId: anonymousId,
             userId: userId,
             loginUserId: loginUserId,
+            sessionId: sessionId,
             properties: properties.isEmpty ? nil : properties
         )
 
@@ -130,21 +165,24 @@ public final class MRTAnalytics: @unchecked Sendable {
         if let loginUserId {
             logMessage += " | loginUserId: \(loginUserId)"
         }
-        logEvent(logMessage)
+        if let sessionId {
+            logMessage += " | sessionId: \(sessionId)"
+        }
+        log(logMessage)
 
         if let properties = payload.properties, !properties.isEmpty {
-            logEvent("Event properties: \(properties)")
+            log("Event properties: \(properties)")
         }
 
         Task {
             let result = await MRTEventClient.send(event: payload, configuration: configuration)
             switch result {
             case .success:
-                logEvent("Event logged: \(trimmedName)")
+                log("Event logged: \(trimmedName)")
             case .failure(let error):
                 switch error {
                 case .message(let text):
-                    logEvent("Event logging failed: \(text)")
+                    log("Event logging failed: \(text)")
                 }
             }
         }
@@ -182,15 +220,11 @@ public final class MRTAnalytics: @unchecked Sendable {
         return value
     }
 
-    private func logEvent(_ message: String) {
-        print("[MRTDeepLinkSDK] \(message)")
-    }
-
     private func log(_ message: String) {
         lock.lock()
         let shouldLog = configuration?.debugLogging == true
         lock.unlock()
         guard shouldLog else { return }
-        logEvent(message)
+        MRTSDKLogger.debug(message, enabled: true)
     }
 }

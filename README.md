@@ -250,6 +250,7 @@ Request body:
   "anonymousId": "anon_12345",
   "userId": "user_abc_device_id",
   "loginUserId": "user_98765",
+  "sessionId": "sess_abc123",
   "properties": {
     "buttonName": "Submit",
     "screen": "Home"
@@ -263,9 +264,21 @@ Request body:
 | `anonymousId` | Auto-generated | Stable device ID (`anon_...`) — same until app uninstall |
 | `userId` | Auto-generated | Stable SDK user ID (`user_...`) — same until app uninstall |
 | `loginUserId` | No | Logged-in user from `identify(userId:)` — does not replace `userId` |
+| `sessionId` | Auto | Attached to every event while a session is active |
 | `properties` | No | Custom string key-value attributes |
 
-Every `track()` call logs to the Xcode console automatically.
+### Auto session tracking
+
+The SDK automatically tracks app sessions:
+
+| Event | When |
+|-------|------|
+| `session_started` | App launch or return after 30+ min in background |
+| `session_ended` | App enters background (includes `durationSeconds`) |
+
+Every `track()` call includes the active `sessionId`. Resume within 30 minutes keeps the same session.
+
+Every `track()` call can log to the Xcode console when `debugLogging: true`.
 
 ### `MRTAnalytics`
 
@@ -279,6 +292,7 @@ Every `track()` call logs to the Xcode console automatically.
 | `currentUserId` | Stable device user ID |
 | `currentAnonymousId` | Stable anonymous ID |
 | `currentLoginUserId` | Linked login user, if any |
+| `currentSessionId` | Active session ID, if any |
 
 ## API Reference
 

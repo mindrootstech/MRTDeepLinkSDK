@@ -5,6 +5,7 @@ struct MRTEventPayload: Encodable, Sendable {
     let anonymousId: String?
     let userId: String?
     let loginUserId: String?
+    let sessionId: String?
     let properties: [String: String]?
 }
 
@@ -32,11 +33,11 @@ enum MRTEventClient {
             return .failure(.message("Failed to encode event: \(error.localizedDescription)"))
         }
 
-        print("[MRTDeepLinkSDK] Events API request: \(url.absoluteString)")
-        MRTSDKRequestAuth.logHeaders(for: request, label: "Events API")
-
-        if let body = request.httpBody, let json = String(data: body, encoding: .utf8) {
-            print("[MRTDeepLinkSDK] Events API body: \(json)")
+        if configuration.debugLogging {
+            MRTSDKRequestAuth.logHeaders(for: request, label: "Events API", debugLogging: true)
+            if let body = request.httpBody, let json = String(data: body, encoding: .utf8) {
+                MRTSDKLogger.debug("Events API body: \(json)", enabled: true)
+            }
         }
 
         do {
@@ -47,10 +48,11 @@ enum MRTEventClient {
 
             let rawBody = String(data: data, encoding: .utf8) ?? ""
 
-            print("[MRTDeepLinkSDK] Events API status: \(httpResponse.statusCode)")
-
-            if !rawBody.isEmpty {
-                print("[MRTDeepLinkSDK] Events API response: \(rawBody)")
+            if configuration.debugLogging {
+                MRTSDKLogger.debug("Events API status: \(httpResponse.statusCode)", enabled: true)
+                if !rawBody.isEmpty {
+                    MRTSDKLogger.debug("Events API response: \(rawBody)", enabled: true)
+                }
             }
 
             guard (200...299).contains(httpResponse.statusCode) else {

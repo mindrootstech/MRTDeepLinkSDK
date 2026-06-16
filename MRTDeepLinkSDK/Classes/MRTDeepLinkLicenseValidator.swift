@@ -75,7 +75,8 @@ enum MRTDeepLinkLicenseValidator {
         apiKey: String,
         bundleId: String,
         serverURL: URL,
-        validationPath: String
+        validationPath: String,
+        debugLogging: Bool = false
     ) async -> MRTDeepLinkLicenseValidationResult {
         guard let url = validationURL(
             serverURL: serverURL,
@@ -89,7 +90,7 @@ enum MRTDeepLinkLicenseValidator {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         MRTSDKRequestAuth.apply(apiKey: apiKey, to: &request)
-        MRTSDKRequestAuth.logHeaders(for: request, label: "License API")
+        MRTSDKRequestAuth.logHeaders(for: request, label: "License API", debugLogging: debugLogging)
 
         do {
             let (data, response) = try await URLSession.shared.data(for: request)
@@ -100,9 +101,9 @@ enum MRTDeepLinkLicenseValidator {
             let rawBody = String(data: data, encoding: .utf8) ?? ""
             let license = try? JSONDecoder().decode(MRTDeepLinkLicenseResponse.self, from: data)
 
-            print("[MRTDeepLinkSDK] License API status: \(httpResponse.statusCode)")
-            if !rawBody.isEmpty {
-                print("[MRTDeepLinkSDK] License API response: \(rawBody)")
+            MRTSDKLogger.debug("License API status: \(httpResponse.statusCode)", enabled: debugLogging)
+            if debugLogging, !rawBody.isEmpty {
+                MRTSDKLogger.debug("License API response: \(rawBody)", enabled: true)
             }
 
             if (200...299).contains(httpResponse.statusCode), license?.isValid == true {
@@ -110,7 +111,7 @@ enum MRTDeepLinkLicenseValidator {
                     return .success(remoteConfig)
                 }
 
-                print("[MRTDeepLinkSDK] License valid (boolean response) — using bundle config")
+                MRTSDKLogger.debug("License valid (boolean response) — using bundle config", enabled: debugLogging)
                 return .success(
                     MRTDeepLinkRemoteConfig(
                         appIdentifier: bundleId,
@@ -121,21 +122,21 @@ enum MRTDeepLinkLicenseValidator {
             }
 
             if let message = license?.errorMessage {
-                print("[MRTDeepLinkSDK] License API error: \(message)")
+                MRTSDKLogger.debug("License API error: \(message)", enabled: debugLogging)
                 return .failure(message)
             }
 
             if !rawBody.isEmpty {
                 let fallback = "License validation failed (\(httpResponse.statusCode)): \(rawBody)"
-                print("[MRTDeepLinkSDK] License API error: \(fallback)")
+                MRTSDKLogger.debug("License API error: \(fallback)", enabled: debugLogging)
                 return .failure(fallback)
             }
 
             let fallback = "License validation failed (\(httpResponse.statusCode))"
-            print("[MRTDeepLinkSDK] License API error: \(fallback)")
+            MRTSDKLogger.debug("License API error: \(fallback)", enabled: debugLogging)
             return .failure(fallback)
         } catch {
-            print("[MRTDeepLinkSDK] License API error: \(error.localizedDescription)")
+            MRTSDKLogger.debug("License API error: \(error.localizedDescription)", enabled: debugLogging)
             return .failure(error.localizedDescription)
         }
     }

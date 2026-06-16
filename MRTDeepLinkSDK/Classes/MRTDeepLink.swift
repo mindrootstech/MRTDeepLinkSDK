@@ -96,15 +96,18 @@ public final class MRTDeepLink: @unchecked Sendable {
             serverURL: serverURL,
             validationPath: validationPath
         ) {
-            print("[MRTDeepLinkSDK] License API URL: \(url.absoluteString)")
+            log("License API URL: \(url.absoluteString)")
         }
+
+        let debugLogging = configuration.debugLogging
 
         Task {
             let result = await MRTDeepLinkLicenseValidator.validate(
                 apiKey: apiKey,
                 bundleId: bundleId,
                 serverURL: serverURL,
-                validationPath: validationPath
+                validationPath: validationPath,
+                debugLogging: debugLogging
             )
 
             switch result {
@@ -117,7 +120,7 @@ public final class MRTDeepLink: @unchecked Sendable {
                 deliverPendingPayloadIfNeeded()
             case .failure(let message):
                 updateLicenseStatus(.invalid(message: message))
-                print("[MRTDeepLinkSDK] License validation failed: \(message)")
+                log("License validation failed: \(message)")
             }
         }
     }
@@ -234,6 +237,6 @@ public final class MRTDeepLink: @unchecked Sendable {
         let shouldLog = configuration?.debugLogging == true
         lock.unlock()
         guard shouldLog else { return }
-        print("[MRTDeepLinkSDK] \(message)")
+        MRTSDKLogger.debug(message, enabled: true)
     }
 }

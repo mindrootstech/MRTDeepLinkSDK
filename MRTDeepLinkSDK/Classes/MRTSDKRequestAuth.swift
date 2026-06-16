@@ -9,15 +9,29 @@ enum MRTSDKRequestAuth {
         )
     }
 
-    static func logHeaders(for request: URLRequest, label: String) {
-        print("[MRTDeepLinkSDK] \(label) headers:")
+    static func logHeaders(for request: URLRequest, label: String, debugLogging: Bool) {
+        guard debugLogging else { return }
+
+        MRTSDKLogger.debug("\(label) headers:", enabled: true)
         guard let headers = request.allHTTPHeaderFields, !headers.isEmpty else {
-            print("[MRTDeepLinkSDK]   (none)")
+            MRTSDKLogger.debug("  (none)", enabled: true)
             return
         }
 
         for key in headers.keys.sorted() {
-            print("[MRTDeepLinkSDK]   \(key): \(headers[key] ?? "")")
+            let value = headers[key] ?? ""
+            let sanitized = sensitiveHeaderKeys.contains(key) ? redacted(value) : value
+            MRTSDKLogger.debug("  \(key): \(sanitized)", enabled: true)
         }
+    }
+
+    private static let sensitiveHeaderKeys: Set<String> = [
+        MRTDeepLinkDefaults.sdkKeyHeader,
+        MRTDeepLinkDefaults.authorizationHeader
+    ]
+
+    private static func redacted(_ value: String) -> String {
+        guard value.count > 8 else { return "****" }
+        return String(value.prefix(4)) + "****" + String(value.suffix(4))
     }
 }
