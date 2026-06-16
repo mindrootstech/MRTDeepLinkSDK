@@ -20,8 +20,8 @@ target 'YourApp' do
   # Local development
   pod 'MRTDeepLinkSDK', :path => '../MRTDeepLinkSDK'
 
-  # From Git (after publishing)
-  # pod 'MRTDeepLinkSDK', :git => 'https://github.com/MindRoots/MRTDeepLinkSDK.git', :tag => '0.1.0'
+  # From Git
+  # pod 'MRTDeepLinkSDK', :git => 'https://github.com/mindrootstech/MRTDeepLinkSDK.git', :tag => '0.2.4'
 end
 ```
 
@@ -42,7 +42,8 @@ import MRTDeepLinkSDK
 
 MRTDeepLink.shared.configure(
     apiKey: "mrt_live_your_unique_key",
-    debugLogging: true
+    debugLogging: true,
+    testMode: false  // set true to skip license API during local testing
 )
 
 MRTDeepLink.shared.onLicenseStatusChange { status in
@@ -70,6 +71,7 @@ You do **not** need to manually set domains or schemes in the app.
 |----------|-------------|
 | `apiKey` | Unique key from the admin panel (required) |
 | `debugLogging` | Print debug logs (optional, default `false`) |
+| `testMode` | Skip license API validation (optional, default `false`) |
 | `licenseServerURL` | Admin server URL (optional, has SDK default) |
 
 ### 2. SwiftUI integration
@@ -87,7 +89,7 @@ The `handleMRTDeepLinks` modifier automatically wires up:
 - `.onContinueUserActivity` for Universal Links
 - Pending link delivery if the handler is registered after a cold start
 
-### 3. UIKit / AppDelegate (optional)
+### 3. UIKit / AppDelegate
 
 ```swift
 func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
@@ -99,7 +101,35 @@ func application(_ application: UIApplication, continue userActivity: NSUserActi
 }
 ```
 
-### 4. Custom URL scheme (Info.plist)
+### 4. UIKit / SceneDelegate (Storyboard apps)
+
+If your app uses `UIScene`, wire deep links in **SceneDelegate** (and keep AppDelegate handlers as a fallback):
+
+```swift
+import MRTDeepLinkSDK
+
+func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
+    MRTDeepLinkSceneSupport.handle(connectionOptions: connectionOptions)
+}
+
+func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+    MRTDeepLinkSceneSupport.handle(urlContexts: URLContexts)
+}
+
+func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
+    MRTDeepLinkSceneSupport.handle(userActivity: userActivity)
+}
+```
+
+Register your handler at launch:
+
+```swift
+MRTDeepLink.shared.onDeepLink { payload in
+    print("Deep link:", payload.url.absoluteString)
+}
+```
+
+### 5. Custom URL scheme (Info.plist, optional)
 
 ```xml
 <key>CFBundleURLTypes</key>
@@ -113,11 +143,20 @@ func application(_ application: UIApplication, continue userActivity: NSUserActi
 </array>
 ```
 
-### 5. Universal Links
+### 6. Universal Links
 
 1. Xcode → **Signing & Capabilities** → **Associated Domains**
-2. Add: `applinks:links.yourdomain.com`
-3. Host an `apple-app-site-association` file on your server
+2. Add:
+   ```
+   applinks:links.yourdomain.com
+   applinks:links.yourdomain.com?mode=developer
+   ```
+   (`?mode=developer` is required for debug builds during development.)
+3. Host `apple-app-site-association` at:
+   ```
+   https://links.yourdomain.com/.well-known/apple-app-site-association
+   ```
+4. Serve with `Content-Type: application/json` (no `.json` extension).
 
 ## Smart Links (open app or redirect to App Store)
 
@@ -207,15 +246,32 @@ If `valid` is not `true`, deep link handling is disabled.
 |----------|-------------|
 | `handleMRTDeepLinks(_:)` | View modifier that handles incoming deep links |
 
-## Multi-app setup
+## Multi-app setup (same domain)
 
-Each app that installs this pod must use **unique identifiers**:
+Multiple apps can share one domain. Give each app a **unique path prefix** in AASA:
 
-- Bundle ID (e.g. `com.shop.app`, `com.food.app`)
-- Custom URL scheme (e.g. `shopapp://`, `foodapp://`)
-- Universal Link domain or subdomain (e.g. `links.shop.com`, `links.food.com`)
+```json
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      { "appID": "TEAM_ID.com.shop.app", "paths": ["/shop", "/shop/*"] },
+      { "appID": "TEAM_ID.com.food.app", "paths": ["/food", "/food/*"] }
+    ]
+  }
+}
+```
 
-The pod code is shared; each app passes its own configuration in `configure()`. Your server uses the domain or an app key in the URL to determine which app to open.
+Share links with matching prefixes:
+
+```
+https://links.yourdomain.com/shop/product/42   → Shop app
+https://links.yourdomain.com/food/menu/5       → Food app
+```
+
+**Do not** use `"paths": ["*"]` or `"paths": ["/*"]` for multiple apps on the same domain — iOS cannot reliably pick the right app.
+
+Each app still needs a unique Bundle ID. Custom URL schemes are optional but useful for local testing.
 
 ## Publishing to CocoaPods
 
@@ -227,6 +283,19 @@ git push origin 0.1.0
 ```
 
 ## Troubleshooting
+
+### Link opens Safari instead of the app
+
+- Tap the link from **Notes**, **Messages**, or **WhatsApp** — typing in Safari's address bar does not trigger Universal Links.
+- Delete the app and reinstall after adding Associated Domains.
+- Confirm AASA is live at `/.well-known/apple-app-site-association`.
+- For UIKit Storyboard apps, ensure **SceneDelegate** handlers are wired (see above).
+
+### Wrong app opens for the same domain
+
+- Remove wildcard `"*"` / `"/*"` paths from AASA.
+- Use unique path prefixes per app (`/shop/*`, `/food/*`).
+- Delete all related apps, restart the device, reinstall.
 
 ### "Multiple commands produce Info.plist"
 
