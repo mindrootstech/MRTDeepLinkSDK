@@ -7,13 +7,17 @@ struct MRTEventPayload: Encodable, Sendable {
     let properties: [String: String]?
 }
 
+enum MRTEventError: Error, Sendable {
+    case message(String)
+}
+
 enum MRTEventClient {
     static func send(
         event: MRTEventPayload,
         configuration: MRTAnalyticsConfiguration
-    ) async -> Result<Void, String> {
+    ) async -> Result<Void, MRTEventError> {
         guard let url = eventsURL(for: configuration) else {
-            return .failure("Invalid events server URL")
+            return .failure(.message("Invalid events server URL"))
         }
 
         var request = URLRequest(url: url)
@@ -23,7 +27,7 @@ enum MRTEventClient {
         do {
             request.httpBody = try JSONEncoder().encode(event)
         } catch {
-            return .failure("Failed to encode event: \(error.localizedDescription)")
+            return .failure(.message("Failed to encode event: \(error.localizedDescription)"))
         }
 
         if let body = request.httpBody, let json = String(data: body, encoding: .utf8) {
@@ -34,7 +38,7 @@ enum MRTEventClient {
         do {
             let (data, response) = try await URLSession.shared.data(for: request)
             guard let httpResponse = response as? HTTPURLResponse else {
-                return .failure("Invalid server response")
+                return .failure(.message("Invalid server response"))
             }
 
             let rawBody = String(data: data, encoding: .utf8) ?? ""
@@ -47,14 +51,14 @@ enum MRTEventClient {
 
             guard (200...299).contains(httpResponse.statusCode) else {
                 if rawBody.isEmpty {
-                    return .failure("Event logging failed (\(httpResponse.statusCode))")
+                    return .failure(.message("Event logging failed (\(httpResponse.statusCode))"))
                 }
-                return .failure("Event logging failed (\(httpResponse.statusCode)): \(rawBody)")
+                return .failure(.message("Event logging failed (\(httpResponse.statusCode)): \(rawBody)"))
             }
 
             return .success(())
         } catch {
-            return .failure(error.localizedDescription)
+            return .failure(.message(error.localizedDescription))
         }
     }
 

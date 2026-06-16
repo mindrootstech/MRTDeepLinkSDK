@@ -130,8 +130,11 @@ public final class MRTAnalytics: @unchecked Sendable {
             switch result {
             case .success:
                 logEvent("Event logged: \(trimmedName)")
-            case .failure(let message):
-                logEvent("Event logging failed: \(message)")
+            case .failure(let error):
+                switch error {
+                case .message(let text):
+                    logEvent("Event logging failed: \(text)")
+                }
             }
         }
     }
