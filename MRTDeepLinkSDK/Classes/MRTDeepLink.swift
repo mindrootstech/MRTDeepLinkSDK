@@ -49,6 +49,11 @@ public final class MRTDeepLink: @unchecked Sendable {
         lock.unlock()
 
         log("Configured with API key")
+        MRTAnalytics.shared.configure(
+            apiKey: configuration.apiKey,
+            debugLogging: configuration.debugLogging,
+            serverURL: configuration.licenseServerURL
+        )
         validateLicense()
         return self
     }

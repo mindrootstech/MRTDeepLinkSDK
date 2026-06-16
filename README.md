@@ -21,7 +21,7 @@ target 'YourApp' do
   pod 'MRTDeepLinkSDK', :path => '../MRTDeepLinkSDK'
 
   # From Git
-  # pod 'MRTDeepLinkSDK', :git => 'https://github.com/mindrootstech/MRTDeepLinkSDK.git', :tag => '0.2.5'
+  # pod 'MRTDeepLinkSDK', :git => 'https://github.com/mindrootstech/MRTDeepLinkSDK.git', :tag => '0.3.0'
 end
 ```
 
@@ -211,6 +211,67 @@ Response 403/401:
 ```
 
 If `valid` is not `true`, deep link handling is disabled.
+
+## Event Analytics
+
+Log in-app events to your platform. Configured automatically when you call `MRTDeepLink.shared.configure(...)`, or standalone:
+
+```swift
+MRTAnalytics.shared.configure(
+    apiKey: "mrt_live_your_unique_key",
+    debugLogging: true
+)
+
+MRTAnalytics.shared.identify(userId: "user_98765")
+
+MRTAnalytics.shared.track(
+    eventName: "button_click",
+    properties: [
+        "buttonName": "Submit",
+        "screen": "Home"
+    ]
+)
+```
+
+### Events API
+
+```
+POST {licenseServerURL}/api/events?key={apiKey}&bundleId={bundleId}
+Content-Type: application/json
+```
+
+Request body:
+
+```json
+{
+  "eventName": "button_click",
+  "anonymousId": "anon_12345",
+  "userId": "user_98765",
+  "properties": {
+    "buttonName": "Submit",
+    "screen": "Home"
+  }
+}
+```
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `eventName` | Yes | Event name |
+| `anonymousId` | One of `anonymousId` / `userId` | Auto-generated and persisted if not set |
+| `userId` | One of `anonymousId` / `userId` | Set via `identify(userId:)` after login |
+| `properties` | No | Custom string key-value attributes |
+
+### `MRTAnalytics`
+
+| Method | Description |
+|--------|-------------|
+| `configure(...)` | Initialize analytics with API key |
+| `identify(userId:)` | Attach user ID to subsequent events |
+| `setAnonymousId(_:)` | Set a custom anonymous ID |
+| `resetUser()` | Clear identified user |
+| `track(eventName:properties:)` | Log an event |
+| `currentAnonymousId` | Current anonymous ID |
+| `currentUserId` | Current user ID if identified |
 
 ## API Reference
 

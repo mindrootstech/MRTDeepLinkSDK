@@ -1,10 +1,11 @@
 Pod::Spec.new do |s|
   s.name             = 'MRTDeepLinkSDK'
-  s.version          = '0.2.5'
-  s.summary          = 'Lightweight deep linking SDK for iOS — Universal Links & custom URL schemes.'
+  s.version          = '0.3.0'
+  s.summary          = 'Lightweight deep linking & event analytics SDK for iOS.'
   s.description      = <<-DESC
     MRTDeepLinkSDK helps iOS apps receive, parse, and route deep links from
-    Universal Links (https) and custom URL schemes. Includes SwiftUI helpers.
+    Universal Links (https) and custom URL schemes. Includes event tracking
+    and SwiftUI helpers.
   DESC
   s.homepage         = 'https://github.com/mindrootstech/MRTDeepLinkSDK'
   s.license          = { :type => 'MIT' }
