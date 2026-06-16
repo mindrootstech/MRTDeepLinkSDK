@@ -11,7 +11,6 @@ public struct MRTDeepLinkConfiguration: Sendable {
     public let licenseServerURL: URL
     public let licenseValidationPath: String
     public let debugLogging: Bool
-    public let testMode: Bool
 
     var appIdentifier: String
     var universalLinkDomains: [String]
@@ -21,7 +20,6 @@ public struct MRTDeepLinkConfiguration: Sendable {
     public init(
         apiKey: String,
         debugLogging: Bool = false,
-        testMode: Bool = false,
         licenseServerURL: URL = MRTDeepLinkDefaults.licenseServerURL,
         licenseValidationPath: String = MRTDeepLinkDefaults.licenseValidationPath
     ) {
@@ -29,14 +27,13 @@ public struct MRTDeepLinkConfiguration: Sendable {
         self.licenseServerURL = licenseServerURL
         self.licenseValidationPath = licenseValidationPath
         self.debugLogging = debugLogging
-        self.testMode = testMode
         self.appIdentifier = Bundle.main.bundleIdentifier ?? ""
         self.universalLinkDomains = []
         self.customURLSchemes = []
     }
 
     var isRemoteConfigLoaded: Bool {
-        testMode || !appIdentifier.isEmpty
+        !appIdentifier.isEmpty
     }
 
     func applyingRemoteConfig(_ remote: MRTDeepLinkRemoteConfig) -> MRTDeepLinkConfiguration {

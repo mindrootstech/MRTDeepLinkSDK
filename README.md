@@ -21,7 +21,7 @@ target 'YourApp' do
   pod 'MRTDeepLinkSDK', :path => '../MRTDeepLinkSDK'
 
   # From Git
-  # pod 'MRTDeepLinkSDK', :git => 'https://github.com/mindrootstech/MRTDeepLinkSDK.git', :tag => '0.2.4'
+  # pod 'MRTDeepLinkSDK', :git => 'https://github.com/mindrootstech/MRTDeepLinkSDK.git', :tag => '0.2.5'
 end
 ```
 
@@ -42,8 +42,7 @@ import MRTDeepLinkSDK
 
 MRTDeepLink.shared.configure(
     apiKey: "mrt_live_your_unique_key",
-    debugLogging: true,
-    testMode: false  // set true to skip license API during local testing
+    debugLogging: true
 )
 
 MRTDeepLink.shared.onLicenseStatusChange { status in
@@ -71,7 +70,6 @@ You do **not** need to manually set domains or schemes in the app.
 |----------|-------------|
 | `apiKey` | Unique key from the admin panel (required) |
 | `debugLogging` | Print debug logs (optional, default `false`) |
-| `testMode` | Skip license API validation (optional, default `false`) |
 | `licenseServerURL` | Admin server URL (optional, has SDK default) |
 
 ### 2. SwiftUI integration
@@ -271,7 +269,7 @@ https://links.yourdomain.com/food/menu/5       → Food app
 
 **Do not** use `"paths": ["*"]` or `"paths": ["/*"]` for multiple apps on the same domain — iOS cannot reliably pick the right app.
 
-Each app still needs a unique Bundle ID. Custom URL schemes are optional but useful for local testing.
+Each app still needs a unique Bundle ID. Custom URL schemes are optional.
 
 ## Publishing to CocoaPods
 

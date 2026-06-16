@@ -108,8 +108,7 @@ enum MRTDeepLinkLicenseValidator {
                     return .success(remoteConfig)
                 }
 
-                // API returned boolean-only response (testing)
-                print("[MRTDeepLinkSDK] License valid (boolean response) — using local bundle config")
+                print("[MRTDeepLinkSDK] License valid (boolean response) — using bundle config")
                 return .success(
                     MRTDeepLinkRemoteConfig(
                         appIdentifier: bundleId,

@@ -33,12 +33,11 @@ public final class MRTDeepLink: @unchecked Sendable {
 
     /// Configure with API key only — app settings are fetched from the admin server.
     @discardableResult
-    public func configure(apiKey: String, debugLogging: Bool = false, testMode: Bool = false) -> MRTDeepLink {
+    public func configure(apiKey: String, debugLogging: Bool = false) -> MRTDeepLink {
         configure(
             MRTDeepLinkConfiguration(
                 apiKey: apiKey,
-                debugLogging: debugLogging,
-                testMode: testMode
+                debugLogging: debugLogging
             )
         )
     }
@@ -76,13 +75,6 @@ public final class MRTDeepLink: @unchecked Sendable {
     public func validateLicense() {
         guard let configuration else {
             updateLicenseStatus(.invalid(message: "SDK not configured"))
-            return
-        }
-
-        if configuration.testMode {
-            print("[MRTDeepLinkSDK] Test mode enabled — skipping license API validation")
-            updateLicenseStatus(.valid)
-            deliverPendingPayloadIfNeeded()
             return
         }
 

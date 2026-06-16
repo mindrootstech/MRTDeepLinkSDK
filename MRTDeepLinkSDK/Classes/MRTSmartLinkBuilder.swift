@@ -21,7 +21,7 @@ public enum MRTSmartLinkBuilder {
         return components.url
     }
 
-    /// Custom scheme URL — use only when the app is already installed or for local testing.
+    /// Custom scheme URL — use when the app is already installed.
     public static func makeAppURL(
         path: String,
         queryItems: [URLQueryItem] = [],
