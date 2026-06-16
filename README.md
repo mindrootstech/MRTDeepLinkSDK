@@ -21,7 +21,7 @@ target 'YourApp' do
   pod 'MRTDeepLinkSDK', :path => '../MRTDeepLinkSDK'
 
   # From Git
-  # pod 'MRTDeepLinkSDK', :git => 'https://github.com/mindrootstech/MRTDeepLinkSDK.git', :tag => '0.3.0'
+  # pod 'MRTDeepLinkSDK', :git => 'https://github.com/mindrootstech/MRTDeepLinkSDK.git', :tag => '0.3.1'
 end
 ```
 
@@ -236,7 +236,7 @@ MRTAnalytics.shared.track(
 ### Events API
 
 ```
-POST {licenseServerURL}/api/events?key={apiKey}&bundleId={bundleId}
+POST {licenseServerURL}/api/sdk/events?key={apiKey}&bundleId={bundleId}
 Content-Type: application/json
 ```
 
