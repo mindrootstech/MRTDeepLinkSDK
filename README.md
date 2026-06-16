@@ -248,7 +248,8 @@ Request body:
 {
   "eventName": "button_click",
   "anonymousId": "anon_12345",
-  "userId": "user_98765",
+  "userId": "user_abc_device_id",
+  "loginUserId": "user_98765",
   "properties": {
     "buttonName": "Submit",
     "screen": "Home"
@@ -259,8 +260,9 @@ Request body:
 | Field | Required | Description |
 |-------|----------|-------------|
 | `eventName` | Yes | Event name |
-| `anonymousId` | Auto-generated | Persisted device ID (`anon_...`) |
-| `userId` | Auto-generated if not identified | Persisted (`user_...`); override with `identify(userId:)` |
+| `anonymousId` | Auto-generated | Stable device ID (`anon_...`) — same until app uninstall |
+| `userId` | Auto-generated | Stable SDK user ID (`user_...`) — same until app uninstall |
+| `loginUserId` | No | Logged-in user from `identify(userId:)` — does not replace `userId` |
 | `properties` | No | Custom string key-value attributes |
 
 Every `track()` call logs to the Xcode console automatically.
@@ -270,12 +272,13 @@ Every `track()` call logs to the Xcode console automatically.
 | Method | Description |
 |--------|-------------|
 | `configure(...)` | Initialize analytics with API key |
-| `identify(userId:)` | Replace auto userId with a known user |
+| `identify(userId:)` | Link logged-in user as `loginUserId` (device `userId` stays the same) |
 | `setAnonymousId(_:)` | Set a custom anonymous ID |
-| `resetUser()` | Clear identified user (falls back to auto userId) |
-| `track(eventName:userId:properties:)` | Log an event (`userId` param optional) |
-| `currentUserId` | Active user ID (auto or identified) |
-| `currentAnonymousId` | Current anonymous ID |
+| `resetUser()` | Clear linked login user |
+| `track(eventName:properties:)` | Log an event |
+| `currentUserId` | Stable device user ID |
+| `currentAnonymousId` | Stable anonymous ID |
+| `currentLoginUserId` | Linked login user, if any |
 
 ## API Reference
 

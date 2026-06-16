@@ -5,7 +5,7 @@ public final class MRTAnalytics: @unchecked Sendable {
 
     private static let anonymousIdDefaultsKey = "com.mrtdeeplink.analytics.anonymousId"
     private static let userIdDefaultsKey = "com.mrtdeeplink.analytics.userId"
-    private static let autoUserIdDefaultsKey = "com.mrtdeeplink.analytics.autoUserId"
+    private static let loginUserIdDefaultsKey = "com.mrtdeeplink.analytics.loginUserId"
 
     private var configuration: MRTAnalyticsConfiguration?
     private let lock = NSLock()
@@ -18,16 +18,25 @@ public final class MRTAnalytics: @unchecked Sendable {
         return configuration != nil
     }
 
+    /// Stable SDK user ID — generated once per app install, never changes.
     public var currentUserId: String {
         lock.lock()
         defer { lock.unlock() }
         return ensureUserId()
     }
 
+    /// Stable anonymous ID — generated once per app install, never changes.
     public var currentAnonymousId: String {
         lock.lock()
         defer { lock.unlock() }
         return ensureAnonymousId()
+    }
+
+    /// Logged-in user ID from `identify(userId:)` — separate from device `userId`.
+    public var currentLoginUserId: String? {
+        lock.lock()
+        defer { lock.unlock() }
+        return storedValue(forKey: Self.loginUserIdDefaultsKey)
     }
 
     /// Configure event logging with your platform API key.
@@ -59,39 +68,36 @@ public final class MRTAnalytics: @unchecked Sendable {
         guard !trimmed.isEmpty else { return }
 
         lock.lock()
-        persistAnonymousId(trimmed)
+        persist(trimmed, forKey: Self.anonymousIdDefaultsKey)
         lock.unlock()
 
         log("Anonymous ID set: \(trimmed)")
     }
 
-    /// Identify the logged-in user for subsequent events (persisted until app uninstall).
+    /// Link a logged-in user without changing the stable device `userId`.
     public func identify(userId: String) {
         let trimmed = userId.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
 
         lock.lock()
-        persistUserId(trimmed)
+        persist(trimmed, forKey: Self.loginUserIdDefaultsKey)
         lock.unlock()
 
-        log("User identified: \(trimmed)")
+        log("Login user linked: \(trimmed) (device userId unchanged: \(currentUserId))")
     }
 
-    /// Restore the auto-generated userId after `identify(userId:)`.
+    /// Clear the linked logged-in user.
     public func resetUser() {
         lock.lock()
-        if let autoUserId = storedValue(forKey: Self.autoUserIdDefaultsKey) {
-            persistUserId(autoUserId)
-        }
+        UserDefaults.standard.removeObject(forKey: Self.loginUserIdDefaultsKey)
         lock.unlock()
 
-        log("User identity reset — userId: \(currentUserId)")
+        log("Login user cleared — device userId: \(currentUserId)")
     }
 
     /// Log an event to your platform.
     public func track(
         eventName: String,
-        userId: String? = nil,
         properties: [String: String] = [:]
     ) {
         let trimmedName = eventName.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -102,8 +108,9 @@ public final class MRTAnalytics: @unchecked Sendable {
 
         lock.lock()
         let configuration = configuration
-        let resolvedUserId = userIdForEvent(explicit: userId)
+        let userId = ensureUserId()
         let anonymousId = ensureAnonymousId()
+        let loginUserId = storedValue(forKey: Self.loginUserIdDefaultsKey)
         lock.unlock()
 
         guard let configuration else {
@@ -114,13 +121,16 @@ public final class MRTAnalytics: @unchecked Sendable {
         let payload = MRTEventPayload(
             eventName: trimmedName,
             anonymousId: anonymousId,
-            userId: resolvedUserId,
+            userId: userId,
+            loginUserId: loginUserId,
             properties: properties.isEmpty ? nil : properties
         )
 
-        logEvent(
-            "Event triggered: \(trimmedName) | userId: \(resolvedUserId) | anonymousId: \(anonymousId)"
-        )
+        var logMessage = "Event triggered: \(trimmedName) | userId: \(userId) | anonymousId: \(anonymousId)"
+        if let loginUserId {
+            logMessage += " | loginUserId: \(loginUserId)"
+        }
+        logEvent(logMessage)
 
         if let properties = payload.properties, !properties.isEmpty {
             logEvent("Event properties: \(properties)")
@@ -140,22 +150,13 @@ public final class MRTAnalytics: @unchecked Sendable {
         }
     }
 
-    private func userIdForEvent(explicit: String?) -> String {
-        if let explicit {
-            let trimmed = explicit.trimmingCharacters(in: .whitespacesAndNewlines)
-            if !trimmed.isEmpty { return trimmed }
-        }
-        return ensureUserId()
-    }
-
     private func ensureUserId() -> String {
         if let stored = storedValue(forKey: Self.userIdDefaultsKey) {
             return stored
         }
 
         let generated = "user_\(UUID().uuidString.lowercased())"
-        persistUserId(generated)
-        UserDefaults.standard.set(generated, forKey: Self.autoUserIdDefaultsKey)
+        persist(generated, forKey: Self.userIdDefaultsKey)
         return generated
     }
 
@@ -165,16 +166,12 @@ public final class MRTAnalytics: @unchecked Sendable {
         }
 
         let generated = "anon_\(UUID().uuidString.lowercased())"
-        persistAnonymousId(generated)
+        persist(generated, forKey: Self.anonymousIdDefaultsKey)
         return generated
     }
 
-    private func persistUserId(_ id: String) {
-        UserDefaults.standard.set(id, forKey: Self.userIdDefaultsKey)
-    }
-
-    private func persistAnonymousId(_ id: String) {
-        UserDefaults.standard.set(id, forKey: Self.anonymousIdDefaultsKey)
+    private func persist(_ value: String, forKey key: String) {
+        UserDefaults.standard.set(value, forKey: key)
     }
 
     private func storedValue(forKey key: String) -> String? {

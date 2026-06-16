@@ -4,6 +4,7 @@ struct MRTEventPayload: Encodable, Sendable {
     let eventName: String
     let anonymousId: String?
     let userId: String?
+    let loginUserId: String?
     let properties: [String: String]?
 }
 
