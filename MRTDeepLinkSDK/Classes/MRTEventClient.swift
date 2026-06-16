@@ -23,6 +23,7 @@ enum MRTEventClient {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(configuration.apiKey, forHTTPHeaderField: MRTDeepLinkDefaults.sdkKeyHeader)
 
         do {
             request.httpBody = try JSONEncoder().encode(event)
@@ -76,7 +77,6 @@ enum MRTEventClient {
         }
 
         components?.queryItems = [
-            URLQueryItem(name: "key", value: configuration.apiKey),
             URLQueryItem(name: "bundleId", value: configuration.bundleId)
         ]
 
