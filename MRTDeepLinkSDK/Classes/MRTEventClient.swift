@@ -23,10 +23,7 @@ enum MRTEventClient {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue(
-            MRTDeepLinkDefaults.authorizationValue(apiKey: configuration.apiKey),
-            forHTTPHeaderField: MRTDeepLinkDefaults.authorizationHeader
-        )
+        MRTSDKRequestAuth.apply(apiKey: configuration.apiKey, to: &request)
 
         do {
             request.httpBody = try JSONEncoder().encode(event)
@@ -34,8 +31,10 @@ enum MRTEventClient {
             return .failure(.message("Failed to encode event: \(error.localizedDescription)"))
         }
 
+        print("[MRTDeepLinkSDK] Events API request: \(url.absoluteString)")
+        MRTSDKRequestAuth.logHeaders(for: request, label: "Events API")
+
         if let body = request.httpBody, let json = String(data: body, encoding: .utf8) {
-            print("[MRTDeepLinkSDK] Events API request: \(url.absoluteString)")
             print("[MRTDeepLinkSDK] Events API body: \(json)")
         }
 
@@ -49,7 +48,7 @@ enum MRTEventClient {
 
             print("[MRTDeepLinkSDK] Events API status: \(httpResponse.statusCode)")
 
-            if configuration.debugLogging, !rawBody.isEmpty {
+            if !rawBody.isEmpty {
                 print("[MRTDeepLinkSDK] Events API response: \(rawBody)")
             }
 
