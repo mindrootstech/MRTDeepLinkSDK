@@ -33,11 +33,12 @@ public final class MRTDeepLink: @unchecked Sendable {
 
     /// Configure with API key only — app settings are fetched from the admin server.
     @discardableResult
-    public func configure(apiKey: String, debugLogging: Bool = false) -> MRTDeepLink {
+    public func configure(apiKey: String, debugLogging: Bool = false, testMode: Bool = false) -> MRTDeepLink {
         configure(
             MRTDeepLinkConfiguration(
                 apiKey: apiKey,
-                debugLogging: debugLogging
+                debugLogging: debugLogging,
+                testMode: testMode
             )
         )
     }
@@ -78,12 +79,28 @@ public final class MRTDeepLink: @unchecked Sendable {
             return
         }
 
+        if configuration.testMode {
+            print("[MRTDeepLinkSDK] Test mode enabled — skipping license API validation")
+            updateLicenseStatus(.valid)
+            deliverPendingPayloadIfNeeded()
+            return
+        }
+
         updateLicenseStatus(.validating)
 
         let apiKey = configuration.apiKey
         let bundleId = configuration.appIdentifier
         let serverURL = configuration.licenseServerURL
         let validationPath = configuration.licenseValidationPath
+
+        if let url = MRTDeepLinkLicenseValidator.makeValidationURL(
+            apiKey: apiKey,
+            bundleId: bundleId,
+            serverURL: serverURL,
+            validationPath: validationPath
+        ) {
+            print("[MRTDeepLinkSDK] License API URL: \(url.absoluteString)")
+        }
 
         Task {
             let result = await MRTDeepLinkLicenseValidator.validate(
@@ -103,6 +120,7 @@ public final class MRTDeepLink: @unchecked Sendable {
                 deliverPendingPayloadIfNeeded()
             case .failure(let message):
                 updateLicenseStatus(.invalid(message: message))
+                print("[MRTDeepLinkSDK] License validation failed: \(message)")
             }
         }
     }

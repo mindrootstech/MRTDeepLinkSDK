@@ -8,8 +8,10 @@ public enum MRTDeepLinkLicenseStatus: Sendable, Equatable {
 }
 
 private struct MRTDeepLinkLicenseResponse: Decodable, Sendable {
-    let valid: Bool
+    let valid: Bool?
+    let success: Bool?
     let message: String?
+    let error: String?
     let appIdentifier: String?
     let universalLinkDomains: [String]?
     let customURLSchemes: [String]?
@@ -19,6 +21,16 @@ private struct MRTDeepLinkLicenseResponse: Decodable, Sendable {
         let appIdentifier: String
         let universalLinkDomains: [String]?
         let customURLSchemes: [String]?
+    }
+
+    var isValid: Bool {
+        valid == true || success == true
+    }
+
+    var errorMessage: String? {
+        if let message, !message.isEmpty { return message }
+        if let error, !error.isEmpty { return error }
+        return nil
     }
 
     var remoteConfig: MRTDeepLinkRemoteConfig? {
@@ -45,6 +57,20 @@ enum MRTDeepLinkLicenseValidationResult: Sendable {
 }
 
 enum MRTDeepLinkLicenseValidator {
+    static func makeValidationURL(
+        apiKey: String,
+        bundleId: String,
+        serverURL: URL,
+        validationPath: String
+    ) -> URL? {
+        validationURL(
+            serverURL: serverURL,
+            validationPath: validationPath,
+            apiKey: apiKey,
+            bundleId: bundleId
+        )
+    }
+
     static func validate(
         apiKey: String,
         bundleId: String,
@@ -69,20 +95,46 @@ enum MRTDeepLinkLicenseValidator {
                 return .failure("Invalid server response")
             }
 
+            let rawBody = String(data: data, encoding: .utf8) ?? ""
             let license = try? JSONDecoder().decode(MRTDeepLinkLicenseResponse.self, from: data)
 
-            if (200...299).contains(httpResponse.statusCode),
-               license?.valid == true,
-               let remoteConfig = license?.remoteConfig {
-                return .success(remoteConfig)
+            print("[MRTDeepLinkSDK] License API status: \(httpResponse.statusCode)")
+            if !rawBody.isEmpty {
+                print("[MRTDeepLinkSDK] License API response: \(rawBody)")
             }
 
-            if let message = license?.message, !message.isEmpty {
+            if (200...299).contains(httpResponse.statusCode), license?.isValid == true {
+                if let remoteConfig = license?.remoteConfig {
+                    return .success(remoteConfig)
+                }
+
+                // API returned boolean-only response (testing)
+                print("[MRTDeepLinkSDK] License valid (boolean response) — using local bundle config")
+                return .success(
+                    MRTDeepLinkRemoteConfig(
+                        appIdentifier: bundleId,
+                        universalLinkDomains: [],
+                        customURLSchemes: []
+                    )
+                )
+            }
+
+            if let message = license?.errorMessage {
+                print("[MRTDeepLinkSDK] License API error: \(message)")
                 return .failure(message)
             }
 
-            return .failure("License validation failed (\(httpResponse.statusCode))")
+            if !rawBody.isEmpty {
+                let fallback = "License validation failed (\(httpResponse.statusCode)): \(rawBody)"
+                print("[MRTDeepLinkSDK] License API error: \(fallback)")
+                return .failure(fallback)
+            }
+
+            let fallback = "License validation failed (\(httpResponse.statusCode))"
+            print("[MRTDeepLinkSDK] License API error: \(fallback)")
+            return .failure(fallback)
         } catch {
+            print("[MRTDeepLinkSDK] License API error: \(error.localizedDescription)")
             return .failure(error.localizedDescription)
         }
     }
