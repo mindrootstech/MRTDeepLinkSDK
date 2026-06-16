@@ -23,7 +23,10 @@ enum MRTEventClient {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue(configuration.apiKey, forHTTPHeaderField: MRTDeepLinkDefaults.sdkKeyHeader)
+        request.setValue(
+            MRTDeepLinkDefaults.authorizationValue(apiKey: configuration.apiKey),
+            forHTTPHeaderField: MRTDeepLinkDefaults.authorizationHeader
+        )
 
         do {
             request.httpBody = try JSONEncoder().encode(event)

@@ -88,7 +88,10 @@ enum MRTDeepLinkLicenseValidator {
 
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        request.setValue(apiKey, forHTTPHeaderField: MRTDeepLinkDefaults.sdkKeyHeader)
+        request.setValue(
+            MRTDeepLinkDefaults.authorizationValue(apiKey: apiKey),
+            forHTTPHeaderField: MRTDeepLinkDefaults.authorizationHeader
+        )
 
         do {
             let (data, response) = try await URLSession.shared.data(for: request)

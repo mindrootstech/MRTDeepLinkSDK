@@ -193,7 +193,7 @@ The SDK validates the API key on launch by calling your admin server:
 
 ```
 GET {licenseServerURL}/api/sdk/validate?key={apiKey}&bundleId={bundleId}
-X-SDK-Key: {apiKey}
+Authorization: Bearer {apiKey}
 ```
 
 Response 200:
@@ -239,7 +239,7 @@ MRTAnalytics.shared.track(
 ```
 POST {licenseServerURL}/api/sdk/events?bundleId={bundleId}
 Content-Type: application/json
-X-SDK-Key: {apiKey}
+Authorization: Bearer {apiKey}
 ```
 
 Request body:
