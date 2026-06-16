@@ -21,7 +21,7 @@ target 'YourApp' do
   pod 'MRTDeepLinkSDK', :path => '../MRTDeepLinkSDK'
 
   # From Git
-  # pod 'MRTDeepLinkSDK', :git => 'https://github.com/mindrootstech/MRTDeepLinkSDK.git', :tag => '0.3.1'
+  # pod 'MRTDeepLinkSDK', :git => 'https://github.com/mindrootstech/MRTDeepLinkSDK.git', :tag => '0.3.2'
 end
 ```
 
@@ -257,21 +257,23 @@ Request body:
 | Field | Required | Description |
 |-------|----------|-------------|
 | `eventName` | Yes | Event name |
-| `anonymousId` | One of `anonymousId` / `userId` | Auto-generated and persisted if not set |
-| `userId` | One of `anonymousId` / `userId` | Set via `identify(userId:)` after login |
+| `anonymousId` | Auto-generated | Persisted device ID (`anon_...`) |
+| `userId` | Auto-generated if not identified | Persisted (`user_...`); override with `identify(userId:)` |
 | `properties` | No | Custom string key-value attributes |
+
+Every `track()` call logs to the Xcode console automatically.
 
 ### `MRTAnalytics`
 
 | Method | Description |
 |--------|-------------|
 | `configure(...)` | Initialize analytics with API key |
-| `identify(userId:)` | Attach user ID to subsequent events |
+| `identify(userId:)` | Replace auto userId with a known user |
 | `setAnonymousId(_:)` | Set a custom anonymous ID |
-| `resetUser()` | Clear identified user |
-| `track(eventName:properties:)` | Log an event |
+| `resetUser()` | Clear identified user (falls back to auto userId) |
+| `track(eventName:userId:properties:)` | Log an event (`userId` param optional) |
+| `currentUserId` | Active user ID (auto or identified) |
 | `currentAnonymousId` | Current anonymous ID |
-| `currentUserId` | Current user ID if identified |
 
 ## API Reference
 

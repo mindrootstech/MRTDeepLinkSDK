@@ -26,6 +26,11 @@ enum MRTEventClient {
             return .failure("Failed to encode event: \(error.localizedDescription)")
         }
 
+        if let body = request.httpBody, let json = String(data: body, encoding: .utf8) {
+            print("[MRTDeepLinkSDK] Events API request: \(url.absoluteString)")
+            print("[MRTDeepLinkSDK] Events API body: \(json)")
+        }
+
         do {
             let (data, response) = try await URLSession.shared.data(for: request)
             guard let httpResponse = response as? HTTPURLResponse else {
@@ -34,11 +39,10 @@ enum MRTEventClient {
 
             let rawBody = String(data: data, encoding: .utf8) ?? ""
 
-            if configuration.debugLogging {
-                print("[MRTDeepLinkSDK] Events API status: \(httpResponse.statusCode)")
-                if !rawBody.isEmpty {
-                    print("[MRTDeepLinkSDK] Events API response: \(rawBody)")
-                }
+            print("[MRTDeepLinkSDK] Events API status: \(httpResponse.statusCode)")
+
+            if configuration.debugLogging, !rawBody.isEmpty {
+                print("[MRTDeepLinkSDK] Events API response: \(rawBody)")
             }
 
             guard (200...299).contains(httpResponse.statusCode) else {
