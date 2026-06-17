@@ -21,7 +21,7 @@ target 'YourApp' do
   pod 'MRTDeepLinkSDK', :path => '../MRTDeepLinkSDK'
 
   # From Git
-  # pod 'MRTDeepLinkSDK', :git => 'https://github.com/mindrootstech/MRTDeepLinkSDK.git', :tag => '0.3.2'
+  # pod 'MRTDeepLinkSDK', :git => 'https://github.com/mindrootstech/MRTDeepLinkSDK.git', :tag => '0.4.0'
 end
 ```
 
