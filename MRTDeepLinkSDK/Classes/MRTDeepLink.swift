@@ -11,7 +11,12 @@ public final class MRTDeepLink: @unchecked Sendable {
     private var licenseHandler: MRTDeepLinkLicenseHandler?
     private var pendingPayload: MRTDeepLinkPayload?
     private var licenseStatus: MRTDeepLinkLicenseStatus = .idle
+    private var receivedDirectDeepLinkThisSession = false
     private let lock = NSLock()
+
+    private static let installReportedKey = "com.mrtdeeplink.install.reported"
+    private static let uniqueInstallReportedKey = "com.mrtdeeplink.uniqueInstall.reported"
+    private static let deferredDeliveredKey = "com.mrtdeeplink.deferred.delivered"
 
     private init() {}
 
@@ -118,6 +123,8 @@ public final class MRTDeepLink: @unchecked Sendable {
                 log("Remote config loaded for: \(remoteConfig.appIdentifier)")
                 updateLicenseStatus(.valid)
                 deliverPendingPayloadIfNeeded()
+                reportUniqueInstallIfNeeded()
+                resolveDeferredLinkIfNeeded()
             case .failure(let message):
                 updateLicenseStatus(.invalid(message: message))
                 log("License validation failed: \(message)")
@@ -147,6 +154,7 @@ public final class MRTDeepLink: @unchecked Sendable {
             return false
         }
 
+        receivedDirectDeepLinkThisSession = true
         return deliver(payload)
     }
 
@@ -206,6 +214,105 @@ public final class MRTDeepLink: @unchecked Sendable {
 
         DispatchQueue.main.async {
             handler(payload)
+        }
+    }
+
+    private func reportUniqueInstallIfNeeded() {
+        guard isLicenseValid else { return }
+        guard !UserDefaults.standard.bool(forKey: Self.uniqueInstallReportedKey) else { return }
+
+        lock.lock()
+        let config = configuration
+        lock.unlock()
+
+        guard let config else { return }
+
+        let debugLogging = config.debugLogging
+        let uniqueInstallPath = config.uniqueInstallPath
+
+        Task {
+            let result = await MRTUniqueInstallClient.report(
+                configuration: config,
+                uniqueInstallPath: uniqueInstallPath,
+                debugLogging: debugLogging
+            )
+
+            switch result {
+            case .success(let installResult):
+                UserDefaults.standard.set(true, forKey: Self.uniqueInstallReportedKey)
+                log("Unique install reported — isNew: \(installResult.isNew), counted: \(installResult.uniqueCounted)")
+                if installResult.isNew {
+                    MRTAnalytics.shared.track(
+                        eventName: "unique_install_registered",
+                        properties: [
+                            "device_id": MRTInstallDeviceInfo.stableDeviceId()
+                        ]
+                    )
+                }
+            case .failure(let error):
+                switch error {
+                case .message(let text):
+                    log("Unique install reporting failed: \(text)")
+                }
+            }
+        }
+    }
+
+    private func resolveDeferredLinkIfNeeded() {
+        guard isLicenseValid else { return }
+        guard !UserDefaults.standard.bool(forKey: Self.installReportedKey) else { return }
+        guard !UserDefaults.standard.bool(forKey: Self.deferredDeliveredKey) else { return }
+
+        lock.lock()
+        let config = configuration
+        let hasPending = pendingPayload != nil
+        let receivedDirect = receivedDirectDeepLinkThisSession
+        lock.unlock()
+
+        guard let config else { return }
+        guard !hasPending, !receivedDirect else { return }
+
+        let debugLogging = config.debugLogging
+        let installPath = config.installPath
+
+        Task {
+            let result = await MRTInstallClient.reportInstall(
+                configuration: config,
+                installPath: installPath,
+                debugLogging: debugLogging
+            )
+
+            switch result {
+            case .success(let installResult):
+                UserDefaults.standard.set(true, forKey: Self.installReportedKey)
+                log("Install reported — attributed: \(installResult.isAttributed)")
+
+                if installResult.isAttributed,
+                   let attribution = installResult.attribution,
+                   let payload = MRTInstallClient.makeDeferredPayload(
+                       attribution: attribution,
+                       configuration: config
+                   ) {
+                    UserDefaults.standard.set(true, forKey: Self.deferredDeliveredKey)
+                    log("Deferred deep link matched: \(payload.url.absoluteString)")
+                    MRTAnalytics.shared.track(
+                        eventName: "deferred_link_matched",
+                        properties: [
+                            "path": payload.path,
+                            "confidence": installResult.confidenceLevel ?? "unknown"
+                        ]
+                    )
+                    deliver(payload)
+                } else {
+                    MRTAnalytics.shared.track(eventName: "deferred_link_no_match")
+                }
+
+            case .failure(let error):
+                switch error {
+                case .message(let text):
+                    log("Deferred link check failed: \(text)")
+                }
+            }
         }
     }
 

@@ -10,6 +10,8 @@ public struct MRTDeepLinkConfiguration: Sendable {
     public let apiKey: String
     public let licenseServerURL: URL
     public let licenseValidationPath: String
+    public let installPath: String
+    public let uniqueInstallPath: String
     public let debugLogging: Bool
 
     var appIdentifier: String
@@ -21,11 +23,15 @@ public struct MRTDeepLinkConfiguration: Sendable {
         apiKey: String,
         debugLogging: Bool = false,
         licenseServerURL: URL = MRTDeepLinkDefaults.licenseServerURL,
-        licenseValidationPath: String = MRTDeepLinkDefaults.licenseValidationPath
+        licenseValidationPath: String = MRTDeepLinkDefaults.licenseValidationPath,
+        installPath: String = MRTDeepLinkDefaults.installPath,
+        uniqueInstallPath: String = MRTDeepLinkDefaults.uniqueInstallPath
     ) {
         self.apiKey = apiKey
         self.licenseServerURL = licenseServerURL
         self.licenseValidationPath = licenseValidationPath
+        self.installPath = installPath
+        self.uniqueInstallPath = uniqueInstallPath
         self.debugLogging = debugLogging
         self.appIdentifier = Bundle.main.bundleIdentifier ?? ""
         self.universalLinkDomains = []

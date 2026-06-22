@@ -21,7 +21,7 @@ target 'YourApp' do
   pod 'MRTDeepLinkSDK', :path => '../MRTDeepLinkSDK'
 
   # From Git
-  # pod 'MRTDeepLinkSDK', :git => 'https://github.com/mindrootstech/MRTDeepLinkSDK.git', :tag => '0.4.0'
+  # pod 'MRTDeepLinkSDK', :git => 'https://github.com/mindrootstech/MRTDeepLinkSDK.git', :tag => '0.5.1'
 end
 ```
 
@@ -212,6 +212,85 @@ Response 403/401:
 ```
 
 If `valid` is not `true`, deep link handling is disabled.
+
+## Deferred Deep Links (Install Attribution)
+
+On first launch after install, the SDK reports the install to your server and checks for a matched pre-install link click (Branch-style deferred deep linking).
+
+```
+POST {licenseServerURL}/api/sdk/install?bundleId={bundleId}
+Content-Type: application/json
+Authorization: Bearer {apiKey}
+```
+
+Request body:
+
+```json
+{
+  "deviceId": "A5E3-BF88-1092",
+  "platform": "ios",
+  "os": "iOS",
+  "osVersion": "17.4",
+  "appVersion": "1.0.0",
+  "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X)...",
+  "language": "en-US"
+}
+```
+
+Response (no match):
+
+```json
+{
+  "success": true,
+  "data": {
+    "installId": "6a33bc63097a9d365c48c7e5",
+    "isAttributed": false,
+    "matchConfidence": 0,
+    "confidenceLevel": "none",
+    "attribution": null
+  }
+}
+```
+
+When `isAttributed` is `true`, the SDK parses `data.attribution` into an `MRTDeepLinkPayload` with `isDeferred: true` and delivers it through the same `onDeepLink` handler.
+
+The install API is called once per app install, after license validation succeeds. Direct deep links take priority over deferred delivery.
+
+### Unique Install Count
+
+On first launch, the SDK registers a unique install using a stable per-install `device_id`:
+
+```
+POST {licenseServerURL}/api/sdk/unique-install?bundleId={bundleId}
+Content-Type: application/json
+Authorization: Bearer {apiKey}
+```
+
+Request body:
+
+```json
+{
+  "device_id": "A5E3-BF88-1092",
+  "platform": "ios",
+  "os_version": "17.4"
+}
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "data": {
+    "installId": "6a38c404171682bbacd2ccd2",
+    "isNew": true,
+    "uniqueCounted": true,
+    "message": "Unique app install registered successfully."
+  }
+}
+```
+
+`device_id` is generated once per app install and cleared on uninstall. The server should dedupe on `(bundleId, device_id)` — duplicate requests return `isNew: false`.
 
 ## Event Analytics
 
