@@ -6,6 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		378693678CF2A4608D4FEEFB /* Pods_MRTDeepLinkTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F4FE237414AE557C13C4BB9B /* Pods_MRTDeepLinkTests.framework */; };
+		9A6BEE4534B24A94444FC6C5 /* Pods_MRTDeepLink.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7A9AB21E941352E2DA49FD59 /* Pods_MRTDeepLink.framework */; };
+		E818BFB7C08B9ADBA18BE86B /* Pods_MRTDeepLinkUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6580DFA7D99A5A7E914624E1 /* Pods_MRTDeepLinkUITests.framework */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		93ECDFDC2FDFC03A00B67C81 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,14 +30,58 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		1FA8B9AB593D3254D9CF0BEC /* Pods-MRTDeepLink.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MRTDeepLink.debug.xcconfig"; path = "Target Support Files/Pods-MRTDeepLink/Pods-MRTDeepLink.debug.xcconfig"; sourceTree = "<group>"; };
+		362A6C1AA0216FBD7F8FDB5B /* Pods-MRTDeepLinkTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MRTDeepLinkTests.release.xcconfig"; path = "Target Support Files/Pods-MRTDeepLinkTests/Pods-MRTDeepLinkTests.release.xcconfig"; sourceTree = "<group>"; };
+		3D4F4CFD7D6CADF70A1DFC60 /* Pods-MRTDeepLink.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MRTDeepLink.release.xcconfig"; path = "Target Support Files/Pods-MRTDeepLink/Pods-MRTDeepLink.release.xcconfig"; sourceTree = "<group>"; };
+		60EC8A094788C4AAA5BFC01B /* Pods-MRTDeepLinkUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MRTDeepLinkUITests.release.xcconfig"; path = "Target Support Files/Pods-MRTDeepLinkUITests/Pods-MRTDeepLinkUITests.release.xcconfig"; sourceTree = "<group>"; };
+		6580DFA7D99A5A7E914624E1 /* Pods_MRTDeepLinkUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MRTDeepLinkUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		7A9AB21E941352E2DA49FD59 /* Pods_MRTDeepLink.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MRTDeepLink.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		932D08A72FE9032F00B50EBC /* MRTInstallClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTInstallClient.swift; sourceTree = "<group>"; };
+		932D08A82FE9032F00B50EBC /* MRTInstallDeviceInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTInstallDeviceInfo.swift; sourceTree = "<group>"; };
+		932D08A92FE9032F00B50EBC /* MRTSDKLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTSDKLogger.swift; sourceTree = "<group>"; };
+		932D08AA2FE9032F00B50EBC /* MRTUniqueInstallClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTUniqueInstallClient.swift; sourceTree = "<group>"; };
+		93314AC52FE15E38005F6765 /* MRTAnalytics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTAnalytics.swift; sourceTree = "<group>"; };
+		93314AC62FE15E38005F6765 /* MRTAnalyticsConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTAnalyticsConfiguration.swift; sourceTree = "<group>"; };
+		93314AC72FE15E38005F6765 /* MRTDeepLinkSceneSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTDeepLinkSceneSupport.swift; sourceTree = "<group>"; };
+		93314AC82FE15E38005F6765 /* MRTEventClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTEventClient.swift; sourceTree = "<group>"; };
+		93314B512FE16460005F6765 /* MRTSDKRequestAuth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTSDKRequestAuth.swift; sourceTree = "<group>"; };
+		93314B522FE16460005F6765 /* MRTSessionTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTSessionTracker.swift; sourceTree = "<group>"; };
 		93ECDFCE2FDFC03900B67C81 /* MRTDeepLink.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MRTDeepLink.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		93ECDFDB2FDFC03A00B67C81 /* MRTDeepLinkTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MRTDeepLinkTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		93ECDFE52FDFC03A00B67C81 /* MRTDeepLinkUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MRTDeepLinkUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		93ECE0322FDFC44C00B67C81 /* MRTDeepLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTDeepLink.swift; sourceTree = "<group>"; };
+		93ECE0332FDFC44C00B67C81 /* MRTDeepLinkConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTDeepLinkConfiguration.swift; sourceTree = "<group>"; };
+		93ECE0342FDFC44C00B67C81 /* MRTDeepLinkParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTDeepLinkParser.swift; sourceTree = "<group>"; };
+		93ECE0352FDFC44C00B67C81 /* MRTDeepLinkPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTDeepLinkPayload.swift; sourceTree = "<group>"; };
+		93ECE0372FDFC44C00B67C81 /* MRTDeepLinkModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTDeepLinkModifier.swift; sourceTree = "<group>"; };
+		93ECE03A2FDFC44C00B67C81 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
+		93ECE03B2FDFC44C00B67C81 /* MRTDeepLinkSDK.podspec */ = {isa = PBXFileReference; lastKnownFileType = text; path = MRTDeepLinkSDK.podspec; sourceTree = "<group>"; };
+		93ECE03C2FDFC44C00B67C81 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		93ECE10D2FE0206500B67C81 /* MRTDeepLinkDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTDeepLinkDefaults.swift; sourceTree = "<group>"; };
+		93ECE10E2FE0206500B67C81 /* MRTDeepLinkLicenseValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTDeepLinkLicenseValidator.swift; sourceTree = "<group>"; };
+		93ECE10F2FE0206500B67C81 /* MRTSmartLinkBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTSmartLinkBuilder.swift; sourceTree = "<group>"; };
+		93ECE1102FE0206500B67C81 /* MRTSmartLinkConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTSmartLinkConfiguration.swift; sourceTree = "<group>"; };
+		A1032D5D9445FD69E7F2B19A /* Pods-MRTDeepLinkTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MRTDeepLinkTests.debug.xcconfig"; path = "Target Support Files/Pods-MRTDeepLinkTests/Pods-MRTDeepLinkTests.debug.xcconfig"; sourceTree = "<group>"; };
+		B9318208DEBC003EFD2C048A /* Pods-MRTDeepLinkUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MRTDeepLinkUITests.debug.xcconfig"; path = "Target Support Files/Pods-MRTDeepLinkUITests/Pods-MRTDeepLinkUITests.debug.xcconfig"; sourceTree = "<group>"; };
+		F4FE237414AE557C13C4BB9B /* Pods_MRTDeepLinkTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MRTDeepLinkTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		93ECDFD12FDFC03900B67C81 /* Exceptions for "MRTDeepLink" folder in "MRTDeepLink" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 93ECDFCD2FDFC03900B67C81 /* MRTDeepLink */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		93ECDFD02FDFC03900B67C81 /* MRTDeepLink */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				93ECDFD12FDFC03900B67C81 /* Exceptions for "MRTDeepLink" folder in "MRTDeepLink" target */,
+			);
 			path = MRTDeepLink;
 			sourceTree = "<group>";
 		};
@@ -52,6 +102,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9A6BEE4534B24A94444FC6C5 /* Pods_MRTDeepLink.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -59,6 +110,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				378693678CF2A4608D4FEEFB /* Pods_MRTDeepLinkTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -66,19 +118,36 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E818BFB7C08B9ADBA18BE86B /* Pods_MRTDeepLinkUITests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		174C3DC3A81FC15AAB327A19 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				1FA8B9AB593D3254D9CF0BEC /* Pods-MRTDeepLink.debug.xcconfig */,
+				3D4F4CFD7D6CADF70A1DFC60 /* Pods-MRTDeepLink.release.xcconfig */,
+				A1032D5D9445FD69E7F2B19A /* Pods-MRTDeepLinkTests.debug.xcconfig */,
+				362A6C1AA0216FBD7F8FDB5B /* Pods-MRTDeepLinkTests.release.xcconfig */,
+				B9318208DEBC003EFD2C048A /* Pods-MRTDeepLinkUITests.debug.xcconfig */,
+				60EC8A094788C4AAA5BFC01B /* Pods-MRTDeepLinkUITests.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
 		93ECDFC52FDFC03900B67C81 = {
 			isa = PBXGroup;
 			children = (
+				93ECE03D2FDFC44C00B67C81 /* MRTDeepLinkSDK */,
 				93ECDFD02FDFC03900B67C81 /* MRTDeepLink */,
 				93ECDFDE2FDFC03A00B67C81 /* MRTDeepLinkTests */,
 				93ECDFE82FDFC03A00B67C81 /* MRTDeepLinkUITests */,
 				93ECDFCF2FDFC03900B67C81 /* Products */,
+				174C3DC3A81FC15AAB327A19 /* Pods */,
+				C19F9ACA55EC43793C1BF048 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -92,6 +161,69 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		93ECE0362FDFC44C00B67C81 /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				932D08A72FE9032F00B50EBC /* MRTInstallClient.swift */,
+				932D08A82FE9032F00B50EBC /* MRTInstallDeviceInfo.swift */,
+				932D08A92FE9032F00B50EBC /* MRTSDKLogger.swift */,
+				932D08AA2FE9032F00B50EBC /* MRTUniqueInstallClient.swift */,
+				93314B512FE16460005F6765 /* MRTSDKRequestAuth.swift */,
+				93314B522FE16460005F6765 /* MRTSessionTracker.swift */,
+				93314AC52FE15E38005F6765 /* MRTAnalytics.swift */,
+				93314AC62FE15E38005F6765 /* MRTAnalyticsConfiguration.swift */,
+				93314AC72FE15E38005F6765 /* MRTDeepLinkSceneSupport.swift */,
+				93314AC82FE15E38005F6765 /* MRTEventClient.swift */,
+				93ECE10D2FE0206500B67C81 /* MRTDeepLinkDefaults.swift */,
+				93ECE10E2FE0206500B67C81 /* MRTDeepLinkLicenseValidator.swift */,
+				93ECE10F2FE0206500B67C81 /* MRTSmartLinkBuilder.swift */,
+				93ECE1102FE0206500B67C81 /* MRTSmartLinkConfiguration.swift */,
+				93ECE0322FDFC44C00B67C81 /* MRTDeepLink.swift */,
+				93ECE0332FDFC44C00B67C81 /* MRTDeepLinkConfiguration.swift */,
+				93ECE0342FDFC44C00B67C81 /* MRTDeepLinkParser.swift */,
+				93ECE0352FDFC44C00B67C81 /* MRTDeepLinkPayload.swift */,
+			);
+			path = Classes;
+			sourceTree = "<group>";
+		};
+		93ECE0382FDFC44C00B67C81 /* SwiftUI */ = {
+			isa = PBXGroup;
+			children = (
+				93ECE0372FDFC44C00B67C81 /* MRTDeepLinkModifier.swift */,
+			);
+			path = SwiftUI;
+			sourceTree = "<group>";
+		};
+		93ECE0392FDFC44C00B67C81 /* MRTDeepLinkSDK */ = {
+			isa = PBXGroup;
+			children = (
+				93ECE0362FDFC44C00B67C81 /* Classes */,
+				93ECE0382FDFC44C00B67C81 /* SwiftUI */,
+			);
+			path = MRTDeepLinkSDK;
+			sourceTree = "<group>";
+		};
+		93ECE03D2FDFC44C00B67C81 /* MRTDeepLinkSDK */ = {
+			isa = PBXGroup;
+			children = (
+				93ECE0392FDFC44C00B67C81 /* MRTDeepLinkSDK */,
+				93ECE03A2FDFC44C00B67C81 /* LICENSE */,
+				93ECE03B2FDFC44C00B67C81 /* MRTDeepLinkSDK.podspec */,
+				93ECE03C2FDFC44C00B67C81 /* README.md */,
+			);
+			path = MRTDeepLinkSDK;
+			sourceTree = "<group>";
+		};
+		C19F9ACA55EC43793C1BF048 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				7A9AB21E941352E2DA49FD59 /* Pods_MRTDeepLink.framework */,
+				F4FE237414AE557C13C4BB9B /* Pods_MRTDeepLinkTests.framework */,
+				6580DFA7D99A5A7E914624E1 /* Pods_MRTDeepLinkUITests.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -99,9 +231,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 93ECDFEF2FDFC03A00B67C81 /* Build configuration list for PBXNativeTarget "MRTDeepLink" */;
 			buildPhases = (
+				4BBB782CC0E1AC68E3132634 /* [CP] Check Pods Manifest.lock */,
 				93ECDFCA2FDFC03900B67C81 /* Sources */,
 				93ECDFCB2FDFC03900B67C81 /* Frameworks */,
 				93ECDFCC2FDFC03900B67C81 /* Resources */,
+				B19C2BFD7AFE39565425C726 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -111,8 +245,6 @@
 				93ECDFD02FDFC03900B67C81 /* MRTDeepLink */,
 			);
 			name = MRTDeepLink;
-			packageProductDependencies = (
-			);
 			productName = MRTDeepLink;
 			productReference = 93ECDFCE2FDFC03900B67C81 /* MRTDeepLink.app */;
 			productType = "com.apple.product-type.application";
@@ -121,6 +253,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 93ECDFF22FDFC03A00B67C81 /* Build configuration list for PBXNativeTarget "MRTDeepLinkTests" */;
 			buildPhases = (
+				C1B41154CE651913E5456323 /* [CP] Check Pods Manifest.lock */,
 				93ECDFD72FDFC03A00B67C81 /* Sources */,
 				93ECDFD82FDFC03A00B67C81 /* Frameworks */,
 				93ECDFD92FDFC03A00B67C81 /* Resources */,
@@ -134,8 +267,6 @@
 				93ECDFDE2FDFC03A00B67C81 /* MRTDeepLinkTests */,
 			);
 			name = MRTDeepLinkTests;
-			packageProductDependencies = (
-			);
 			productName = MRTDeepLinkTests;
 			productReference = 93ECDFDB2FDFC03A00B67C81 /* MRTDeepLinkTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -144,6 +275,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 93ECDFF52FDFC03A00B67C81 /* Build configuration list for PBXNativeTarget "MRTDeepLinkUITests" */;
 			buildPhases = (
+				CE4C101973D467ACFF6E09F3 /* [CP] Check Pods Manifest.lock */,
 				93ECDFE12FDFC03A00B67C81 /* Sources */,
 				93ECDFE22FDFC03A00B67C81 /* Frameworks */,
 				93ECDFE32FDFC03A00B67C81 /* Resources */,
@@ -157,8 +289,6 @@
 				93ECDFE82FDFC03A00B67C81 /* MRTDeepLinkUITests */,
 			);
 			name = MRTDeepLinkUITests;
-			packageProductDependencies = (
-			);
 			productName = MRTDeepLinkUITests;
 			productReference = 93ECDFE52FDFC03A00B67C81 /* MRTDeepLinkUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
@@ -230,6 +360,96 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		4BBB782CC0E1AC68E3132634 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-MRTDeepLink-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		B19C2BFD7AFE39565425C726 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-MRTDeepLink/Pods-MRTDeepLink-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			inputPaths = (
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-MRTDeepLink/Pods-MRTDeepLink-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-MRTDeepLink/Pods-MRTDeepLink-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		C1B41154CE651913E5456323 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-MRTDeepLinkTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		CE4C101973D467ACFF6E09F3 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-MRTDeepLinkUITests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		93ECDFCA2FDFC03900B67C81 /* Sources */ = {
@@ -306,7 +526,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -369,7 +589,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -390,24 +610,30 @@
 		};
 		93ECDFF02FDFC03A00B67C81 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 1FA8B9AB593D3254D9CF0BEC /* Pods-MRTDeepLink.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = MRTDeepLink/MRTDeepLink.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = FZ4A29LK38;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MRTDeepLink/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = MindRoots.MRTDeepLink;
+				PRODUCT_BUNDLE_IDENTIFIER = com.app.NotifyTest;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -421,24 +647,30 @@
 		};
 		93ECDFF12FDFC03A00B67C81 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3D4F4CFD7D6CADF70A1DFC60 /* Pods-MRTDeepLink.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = MRTDeepLink/MRTDeepLink.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = FZ4A29LK38;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MRTDeepLink/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = MindRoots.MRTDeepLink;
+				PRODUCT_BUNDLE_IDENTIFIER = com.app.NotifyTest;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -452,10 +684,12 @@
 		};
 		93ECDFF32FDFC03A00B67C81 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = A1032D5D9445FD69E7F2B19A /* Pods-MRTDeepLinkTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
 				MARKETING_VERSION = 1.0;
@@ -473,10 +707,12 @@
 		};
 		93ECDFF42FDFC03A00B67C81 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 362A6C1AA0216FBD7F8FDB5B /* Pods-MRTDeepLinkTests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
 				MARKETING_VERSION = 1.0;
@@ -494,9 +730,11 @@
 		};
 		93ECDFF62FDFC03A00B67C81 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = B9318208DEBC003EFD2C048A /* Pods-MRTDeepLinkUITests.debug.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = MindRoots.MRTDeepLinkUITests;
@@ -513,9 +751,11 @@
 		};
 		93ECDFF72FDFC03A00B67C81 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 60EC8A094788C4AAA5BFC01B /* Pods-MRTDeepLinkUITests.release.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = MindRoots.MRTDeepLinkUITests;

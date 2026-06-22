@@ -1,0 +1,21 @@
+PODS:
+  - MRTDeepLinkSDK (0.5.1):
+    - MRTDeepLinkSDK/Core (= 0.5.1)
+    - MRTDeepLinkSDK/SwiftUI (= 0.5.1)
+  - MRTDeepLinkSDK/Core (0.5.1)
+  - MRTDeepLinkSDK/SwiftUI (0.5.1):
+    - MRTDeepLinkSDK/Core
+
+DEPENDENCIES:
+  - MRTDeepLinkSDK (from `./MRTDeepLinkSDK`)
+
+EXTERNAL SOURCES:
+  MRTDeepLinkSDK:
+    :path: "./MRTDeepLinkSDK"
+
+SPEC CHECKSUMS:
+  MRTDeepLinkSDK: e5b63dbb9229d9d4b8a0a22ef1755212001f30cd
+
+PODFILE CHECKSUM: b2dd01c4dbef1676344ea39158fdb0c2827f8304
+
+COCOAPODS: 1.16.2
