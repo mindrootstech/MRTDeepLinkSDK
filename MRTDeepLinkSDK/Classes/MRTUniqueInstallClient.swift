@@ -61,45 +61,41 @@ enum MRTUniqueInstallClient {
             }
         }
 
-        do {
-            let (data, response) = try await URLSession.shared.data(for: request)
-            guard let httpResponse = response as? HTTPURLResponse else {
-                return .failure(.message("Invalid server response"))
-            }
-
-            let rawBody = String(data: data, encoding: .utf8) ?? ""
+        let result = await MRTURLSessionRetry.data(for: request)
+        switch result {
+        case .success(let httpResult):
+            let rawBody = String(data: httpResult.data, encoding: .utf8) ?? ""
 
             if debugLogging {
-                MRTSDKLogger.debug("Unique Install API status: \(httpResponse.statusCode)", enabled: true)
+                MRTSDKLogger.debug("Unique Install API status: \(httpResult.statusCode)", enabled: true)
                 if !rawBody.isEmpty {
                     MRTSDKLogger.debug("Unique Install API response: \(rawBody)", enabled: true)
                 }
             }
 
-            guard (200...299).contains(httpResponse.statusCode) else {
-                if rawBody.isEmpty {
-                    return .failure(.message("Unique install reporting failed (\(httpResponse.statusCode))"))
+            do {
+                let decoded = try JSONDecoder().decode(MRTUniqueInstallAPIResponse.self, from: httpResult.data)
+                guard let payload = decoded.data else {
+                    return .failure(.message("Unique install response missing data"))
                 }
-                return .failure(.message("Unique install reporting failed (\(httpResponse.statusCode)): \(rawBody)"))
-            }
 
-            let decoded = try JSONDecoder().decode(MRTUniqueInstallAPIResponse.self, from: data)
-            guard let payload = decoded.data else {
-                return .failure(.message("Unique install response missing data"))
-            }
-
-            return .success(
-                MRTUniqueInstallResult(
-                    installId: payload.installId,
-                    isNew: payload.isNew == true,
-                    uniqueCounted: payload.uniqueCounted == true,
-                    message: payload.message
+                return .success(
+                    MRTUniqueInstallResult(
+                        installId: payload.installId,
+                        isNew: payload.isNew == true,
+                        uniqueCounted: payload.uniqueCounted == true,
+                        message: payload.message
+                    )
                 )
-            )
-        } catch let error as DecodingError {
-            return .failure(.message("Failed to decode unique install response: \(error.localizedDescription)"))
-        } catch {
-            return .failure(.message(error.localizedDescription))
+            } catch {
+                return .failure(.message("Failed to decode unique install response: \(error.localizedDescription)"))
+            }
+
+        case .failure(let error):
+            switch error {
+            case .requestFailed(let message):
+                return .failure(.message(message))
+            }
         }
     }
 

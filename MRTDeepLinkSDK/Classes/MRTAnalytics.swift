@@ -79,6 +79,12 @@ public final class MRTAnalytics: @unchecked Sendable {
         #endif
 
         log("Analytics configured — userId: \(userId), anonymousId: \(anonymousId)")
+
+        MRTEventOfflineQueue.startMonitoring { [weak self] in
+            self?.flushPendingEvents()
+        }
+        flushPendingEvents()
+
         return self
     }
 
@@ -179,13 +185,49 @@ public final class MRTAnalytics: @unchecked Sendable {
             switch result {
             case .success:
                 log("Event logged: \(trimmedName)")
+                await flushPendingEventsAsync()
             case .failure(let error):
                 switch error {
                 case .message(let text):
                     log("Event logging failed: \(text)")
                 }
+                if shouldQueueOffline(error: error) {
+                    MRTEventOfflineQueue.enqueue(payload)
+                    log("Event queued offline: \(trimmedName)")
+                }
             }
         }
+    }
+
+    private func shouldQueueOffline(error: MRTEventError) -> Bool {
+        switch error {
+        case .message(let text):
+            let nonRetryableMarkers = ["(400)", "(401)", "(403)", "(404)", "(422)"]
+            return !nonRetryableMarkers.contains(where: { text.contains($0) })
+        }
+    }
+
+    private func flushPendingEvents() {
+        Task {
+            await flushPendingEventsAsync()
+        }
+    }
+
+    private func flushPendingEventsAsync() async {
+        lock.lock()
+        let configuration = configuration
+        lock.unlock()
+
+        guard let configuration else { return }
+        guard MRTEventOfflineQueue.pendingCount() > 0 else { return }
+
+        await MRTEventOfflineQueue.flush(
+            configuration: configuration,
+            debugLogging: configuration.debugLogging,
+            log: { [weak self] message in
+                self?.log(message)
+            }
+        )
     }
 
     private func ensureUserId() -> String {

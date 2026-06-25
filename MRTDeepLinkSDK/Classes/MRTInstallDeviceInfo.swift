@@ -15,7 +15,9 @@ struct MRTInstallRequestBody: Encodable, Sendable {
 }
 
 enum MRTInstallDeviceInfo {
-    private static let deviceIdKey = "com.mrtdeeplink.install.deviceId"
+    private static let keychainService = "com.mrtdeeplink.keychain"
+    private static let keychainAccount = "deviceId"
+    private static let legacyDeviceIdKey = "com.mrtdeeplink.install.deviceId"
 
     static var platform: String { "ios" }
 
@@ -27,14 +29,22 @@ enum MRTInstallDeviceInfo {
         #endif
     }
 
+    /// Stable device ID stored in Keychain (migrates legacy UserDefaults value on first read).
     static func stableDeviceId() -> String {
-        if let existing = UserDefaults.standard.string(forKey: deviceIdKey),
-           !existing.isEmpty {
-            return existing
+        if let keychainId = MRTKeychainStore.read(service: keychainService, account: keychainAccount),
+           !keychainId.isEmpty {
+            return keychainId
+        }
+
+        if let legacyId = UserDefaults.standard.string(forKey: legacyDeviceIdKey),
+           !legacyId.isEmpty {
+            _ = MRTKeychainStore.save(service: keychainService, account: keychainAccount, value: legacyId)
+            UserDefaults.standard.removeObject(forKey: legacyDeviceIdKey)
+            return legacyId
         }
 
         let generated = UUID().uuidString.uppercased()
-        UserDefaults.standard.set(generated, forKey: deviceIdKey)
+        _ = MRTKeychainStore.save(service: keychainService, account: keychainAccount, value: generated)
         return generated
     }
 

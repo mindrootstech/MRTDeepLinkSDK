@@ -11,6 +11,12 @@ public enum MRTDeepLinkDefaults {
     public static let authorizationHeader = "Authorization"
     /// New session starts after this many seconds in background (default 30 minutes).
     public static let sessionTimeout: TimeInterval = 30 * 60
+    /// Maximum attempts for retryable SDK network requests.
+    public static let apiMaxRetryAttempts = 3
+    /// Initial delay before the second retry attempt.
+    public static let apiRetryInitialDelay: TimeInterval = 0.5
+    /// Maximum number of analytics events stored offline.
+    public static let offlineEventQueueLimit = 100
 
     public static func authorizationValue(apiKey: String) -> String {
         "Bearer \(apiKey)"

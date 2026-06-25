@@ -92,21 +92,18 @@ enum MRTDeepLinkLicenseValidator {
         MRTSDKRequestAuth.apply(apiKey: apiKey, to: &request)
         MRTSDKRequestAuth.logHeaders(for: request, label: "License API", debugLogging: debugLogging)
 
-        do {
-            let (data, response) = try await URLSession.shared.data(for: request)
-            guard let httpResponse = response as? HTTPURLResponse else {
-                return .failure("Invalid server response")
-            }
+        let result = await MRTURLSessionRetry.data(for: request)
+        switch result {
+        case .success(let httpResult):
+            let rawBody = String(data: httpResult.data, encoding: .utf8) ?? ""
+            let license = try? JSONDecoder().decode(MRTDeepLinkLicenseResponse.self, from: httpResult.data)
 
-            let rawBody = String(data: data, encoding: .utf8) ?? ""
-            let license = try? JSONDecoder().decode(MRTDeepLinkLicenseResponse.self, from: data)
-
-            MRTSDKLogger.debug("License API status: \(httpResponse.statusCode)", enabled: debugLogging)
+            MRTSDKLogger.debug("License API status: \(httpResult.statusCode)", enabled: debugLogging)
             if debugLogging, !rawBody.isEmpty {
                 MRTSDKLogger.debug("License API response: \(rawBody)", enabled: true)
             }
 
-            if (200...299).contains(httpResponse.statusCode), license?.isValid == true {
+            if license?.isValid == true {
                 if let remoteConfig = license?.remoteConfig {
                     return .success(remoteConfig)
                 }
@@ -127,17 +124,21 @@ enum MRTDeepLinkLicenseValidator {
             }
 
             if !rawBody.isEmpty {
-                let fallback = "License validation failed (\(httpResponse.statusCode)): \(rawBody)"
+                let fallback = "License validation failed (\(httpResult.statusCode)): \(rawBody)"
                 MRTSDKLogger.debug("License API error: \(fallback)", enabled: debugLogging)
                 return .failure(fallback)
             }
 
-            let fallback = "License validation failed (\(httpResponse.statusCode))"
+            let fallback = "License validation failed (\(httpResult.statusCode))"
             MRTSDKLogger.debug("License API error: \(fallback)", enabled: debugLogging)
             return .failure(fallback)
-        } catch {
-            MRTSDKLogger.debug("License API error: \(error.localizedDescription)", enabled: debugLogging)
-            return .failure(error.localizedDescription)
+
+        case .failure(let error):
+            switch error {
+            case .requestFailed(let message):
+                MRTSDKLogger.debug("License API error: \(message)", enabled: debugLogging)
+                return .failure(message)
+            }
         }
     }
 
