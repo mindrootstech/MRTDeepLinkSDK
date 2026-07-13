@@ -1,469 +1,273 @@
 # MRTDeepLinkSDK
 
-A lightweight iOS CocoaPod for deep linking — handles Universal Links and custom URL schemes, with SwiftUI helpers and Smart Link URL generation.
+iOS SDK for **deferred deep linking** — attributes a SmartLink web click to the first app open, then routes the user to the matched in-app path.
 
-## Requirements
+**Version:** `0.6.0` · **iOS 15+** · **Swift 5**
 
-- iOS 15.0+
-- Swift 5.0+
-- CocoaPods
+---
+
+## Features
+
+| Feature | Description |
+|---------|-------------|
+| Deferred match | `POST /api/deferred/app/match` with native signals + `/fp-probe` fingerprint |
+| Universal Links | Handles `https://<domain>/…` when the app is installed |
+| Custom URL scheme | Optional `yourapp://…` links |
+| SwiftUI helper | `.handleMRTDeepLinks { … }` |
+| Smart link builder | Build shareable web / custom-scheme URLs |
+
+This SDK is **deferred-only**. Analytics, license validation, and install APIs are not included.
+
+---
 
 ## Installation
 
-Add to your app's `Podfile`:
+### CocoaPods (local / source)
 
 ```ruby
 platform :ios, '15.0'
 use_frameworks!
 
 target 'YourApp' do
-  # Local development
   pod 'MRTDeepLinkSDK', :path => '../MRTDeepLinkSDK'
-
-  # From Git
-  # pod 'MRTDeepLinkSDK', :git => 'https://github.com/mindrootstech/MRTDeepLinkSDK.git', :tag => '0.5.1'
 end
 ```
 
-Then run:
-
 ```bash
-pod install
+# Prefer source when developing against this repo
+MRT_SDK_SOURCE=1 pod install
 ```
 
-> **Important:** Open `YourApp.xcworkspace`, not `.xcodeproj`.
+Open `YourApp.xcworkspace`, not `.xcodeproj`.
 
-## Quick Start
+### CocoaPods (git)
 
-### 1. Configure at app launch (API key only)
+```ruby
+pod 'MRTDeepLinkSDK', :git => 'https://github.com/mindrootstech/MRTDeepLinkSDK.git', :tag => '0.6.0'
+```
+
+### Swift Package Manager
 
 ```swift
-import MRTDeepLinkSDK
-
-MRTDeepLink.shared.configure(
-    apiKey: "mrt_live_your_unique_key",
-    debugLogging: true
-)
-
-MRTDeepLink.shared.onLicenseStatusChange { status in
-    switch status {
-    case .valid:
-        print("License active — deep linking enabled")
-    case .invalid(let message):
-        print("License invalid:", message)
-    case .validating:
-        print("Checking license…")
-    case .idle:
-        break
-    }
-}
+.package(path: "../MRTDeepLinkSDK")
 ```
 
-The SDK automatically:
-- Sends your app's **Bundle ID** to the admin server
-- Validates the **API key**
-- Downloads **domains**, **URL scheme**, and **app settings** from the server
+---
 
-You do **not** need to manually set domains or schemes in the app.
+## Domains
 
-| Property | Description |
-|----------|-------------|
-| `apiKey` | Unique key from the admin panel (required) |
-| `debugLogging` | Print debug logs (optional, default `false`) |
-| `licenseServerURL` | Admin server URL (optional, has SDK default) |
+| Role | Host |
+|------|------|
+| API / match server | `apismartlink.digitalplayground.quest` |
+| Universal Links / SmartLinks | `appsmartlink.digitalplayground.quest` |
 
-### 2. SwiftUI integration
+These must stay distinct: entitlements claim the **app** host; match calls go to the **API** host.
 
-```swift
-ContentView()
-    .handleMRTDeepLinks { payload in
-        print("Path:", payload.path)
-        print("Params:", payload.queryParameters)
-    }
+---
+
+## App setup
+
+### 1. Associated Domains
+
+In Xcode → Signing & Capabilities → Associated Domains:
+
+```
+applinks:appsmartlink.digitalplayground.quest
 ```
 
-The `handleMRTDeepLinks` modifier automatically wires up:
-- `.onOpenURL` for custom URL schemes
-- `.onContinueUserActivity` for Universal Links
-- Pending link delivery if the handler is registered after a cold start
-
-### 3. UIKit / AppDelegate
-
-```swift
-func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
-    MRTDeepLink.shared.handle(url: url)
-}
-
-func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
-    MRTDeepLink.shared.handle(userActivity: userActivity)
-}
-```
-
-### 4. UIKit / SceneDelegate (Storyboard apps)
-
-If your app uses `UIScene`, wire deep links in **SceneDelegate** (and keep AppDelegate handlers as a fallback):
-
-```swift
-import MRTDeepLinkSDK
-
-func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
-    MRTDeepLinkSceneSupport.handle(connectionOptions: connectionOptions)
-}
-
-func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
-    MRTDeepLinkSceneSupport.handle(urlContexts: URLContexts)
-}
-
-func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
-    MRTDeepLinkSceneSupport.handle(userActivity: userActivity)
-}
-```
-
-Register your handler at launch:
-
-```swift
-MRTDeepLink.shared.onDeepLink { payload in
-    print("Deep link:", payload.url.absoluteString)
-}
-```
-
-### 5. Custom URL scheme (Info.plist, optional)
+Or in entitlements:
 
 ```xml
-<key>CFBundleURLTypes</key>
+<key>com.apple.developer.associated-domains</key>
 <array>
-  <dict>
-    <key>CFBundleURLSchemes</key>
-    <array>
-      <string>yourapp</string>
-    </array>
-  </dict>
+  <string>applinks:appsmartlink.digitalplayground.quest</string>
 </array>
 ```
 
-### 6. Universal Links
+### 2. Custom URL scheme (optional)
 
-1. Xcode → **Signing & Capabilities** → **Associated Domains**
-2. Add:
-   ```
-   applinks:links.yourdomain.com
-   applinks:links.yourdomain.com?mode=developer
-   ```
-   (`?mode=developer` is required for debug builds during development.)
-3. Host `apple-app-site-association` at:
-   ```
-   https://links.yourdomain.com/.well-known/apple-app-site-association
-   ```
-4. Serve with `Content-Type: application/json` (no `.json` extension).
+`Info.plist` → URL Types, e.g. `mrtdeeplink`.
 
-## Smart Links (open app or redirect to App Store)
+### 3. AASA on the link domain
 
-For shareable links that work across WhatsApp, SMS, email, and social platforms, use `MRTSmartLinkBuilder` to generate HTTPS URLs. When the user taps the link:
+Hosted at:
 
-- **App installed** → opens the app via Universal Link or custom scheme
-- **App not installed** → redirects to the App Store
+`https://appsmartlink.digitalplayground.quest/.well-known/apple-app-site-association`
 
-```swift
-let config = MRTSmartLinkConfiguration(
-    webDomain: "links.yourdomain.com",
-    customURLScheme: "yourapp",
-    iOSAppStoreURL: URL(string: "https://apps.apple.com/app/id123456789")!
-)
-
-let shareURL = MRTSmartLinkBuilder.makeWebURL(
-    path: "/product/42",
-    queryItems: [URLQueryItem(name: "id", value: "abc")],
-    configuration: config
-)
-// → https://links.yourdomain.com/product/42?id=abc
-```
-
-Host an `apple-app-site-association` file on your domain for Universal Links to work.
-
-## Example links
-
-```
-yourapp://product/123?id=abc
-https://links.yourdomain.com/product/123?id=abc
-```
-
-## License API (admin backend)
-
-The SDK validates the API key on launch by calling your admin server:
-
-```
-GET {licenseServerURL}/api/sdk/validate?key={apiKey}&bundleId={bundleId}
-Authorization: Bearer {apiKey}
-```
-
-Response 200:
-  {
-    "valid": true,
-    "message": "OK",
-    "config": {
-      "appIdentifier": "com.yourcompany.app",
-      "universalLinkDomains": ["links.yourdomain.com"],
-      "customURLSchemes": ["yourapp"]
-    }
-  }
-
-Response 403/401:
-  { "valid": false, "message": "Invalid or expired key" }
-```
-
-If `valid` is not `true`, deep link handling is disabled.
-
-## Deferred Deep Links (Install Attribution)
-
-On first launch after install, the SDK reports the install to your server and checks for a matched pre-install link click (Branch-style deferred deep linking).
-
-```
-POST {licenseServerURL}/api/sdk/install?bundleId={bundleId}
-Content-Type: application/json
-Authorization: Bearer {apiKey}
-```
-
-Request body:
-
-```json
-{
-  "deviceId": "A5E3-BF88-1092",
-  "platform": "ios",
-  "os": "iOS",
-  "osVersion": "17.4",
-  "appVersion": "1.0.0",
-  "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X)...",
-  "language": "en-US"
-}
-```
-
-Response (no match):
-
-```json
-{
-  "success": true,
-  "data": {
-    "installId": "6a33bc63097a9d365c48c7e5",
-    "isAttributed": false,
-    "matchConfidence": 0,
-    "confidenceLevel": "none",
-    "attribution": null
-  }
-}
-```
-
-When `isAttributed` is `true`, the SDK parses `data.attribution` into an `MRTDeepLinkPayload` with `isDeferred: true` and delivers it through the same `onDeepLink` handler.
-
-The install API is called once per app install, after license validation succeeds. Direct deep links take priority over deferred delivery.
-
-### Unique Install Count
-
-On first launch, the SDK registers a unique install using a stable per-install `device_id`:
-
-```
-POST {licenseServerURL}/api/sdk/unique-install?bundleId={bundleId}
-Content-Type: application/json
-Authorization: Bearer {apiKey}
-```
-
-Request body:
-
-```json
-{
-  "device_id": "A5E3-BF88-1092",
-  "platform": "ios",
-  "os_version": "17.4"
-}
-```
-
-Response:
-
-```json
-{
-  "success": true,
-  "data": {
-    "installId": "6a38c404171682bbacd2ccd2",
-    "isNew": true,
-    "uniqueCounted": true,
-    "message": "Unique app install registered successfully."
-  }
-}
-```
-
-`device_id` is generated once per app install and cleared on uninstall. The server should dedupe on `(bundleId, device_id)` — duplicate requests return `isNew: false`.
-
-## Event Analytics
-
-Log in-app events to your platform. Configured automatically when you call `MRTDeepLink.shared.configure(...)`, or standalone:
-
-```swift
-MRTAnalytics.shared.configure(
-    apiKey: "mrt_live_your_unique_key",
-    debugLogging: true
-)
-
-MRTAnalytics.shared.identify(userId: "user_98765")
-
-MRTAnalytics.shared.track(
-    eventName: "button_click",
-    properties: [
-        "buttonName": "Submit",
-        "screen": "Home"
-    ]
-)
-```
-
-### Events API
-
-```
-POST {licenseServerURL}/api/sdk/events?bundleId={bundleId}
-Content-Type: application/json
-Authorization: Bearer {apiKey}
-```
-
-Request body:
-
-```json
-{
-  "eventName": "button_click",
-  "anonymousId": "anon_12345",
-  "userId": "user_abc_device_id",
-  "loginUserId": "user_98765",
-  "sessionId": "sess_abc123",
-  "properties": {
-    "buttonName": "Submit",
-    "screen": "Home"
-  }
-}
-```
-
-| Field | Required | Description |
-|-------|----------|-------------|
-| `eventName` | Yes | Event name |
-| `anonymousId` | Auto-generated | Stable device ID (`anon_...`) — same until app uninstall |
-| `userId` | Auto-generated | Stable SDK user ID (`user_...`) — same until app uninstall |
-| `loginUserId` | No | Logged-in user from `identify(userId:)` — does not replace `userId` |
-| `sessionId` | Auto | Attached to every event while a session is active |
-| `properties` | No | Custom string key-value attributes |
-
-### Auto session tracking
-
-The SDK automatically tracks app sessions:
-
-| Event | When |
-|-------|------|
-| `session_started` | App launch or return after 30+ min in background |
-| `session_ended` | App enters background (includes `durationSeconds`) |
-
-Every `track()` call includes the active `sessionId`. Resume within 30 minutes keeps the same session.
-
-Every `track()` call can log to the Xcode console when `debugLogging: true`.
-
-### `MRTAnalytics`
-
-| Method | Description |
-|--------|-------------|
-| `configure(...)` | Initialize analytics with API key |
-| `identify(userId:)` | Link logged-in user as `loginUserId` (device `userId` stays the same) |
-| `setAnonymousId(_:)` | Set a custom anonymous ID |
-| `resetUser()` | Clear linked login user |
-| `track(eventName:properties:)` | Log an event |
-| `currentUserId` | Stable device user ID |
-| `currentAnonymousId` | Stable anonymous ID |
-| `currentLoginUserId` | Linked login user, if any |
-| `currentSessionId` | Active session ID, if any |
-
-## API Reference
-
-### `MRTDeepLink`
-
-| Method | Description |
-|--------|-------------|
-| `configure(_:)` | Initialize the SDK and validate license |
-| `validateLicense()` | Re-check license with admin server |
-| `onLicenseStatusChange(_:)` | Observe license validation status |
-| `isLicenseValid` | Whether the current license is active |
-| `currentLicenseStatus` | Current license state |
-| `onDeepLink(_:)` | Register a deep link callback |
-| `handle(url:)` | Handle a URL manually (e.g. from AppDelegate) |
-| `handle(userActivity:)` | Handle a Universal Link from `NSUserActivity` |
-| `consumePendingDeepLink()` | Retrieve a link received before the handler was set |
-
-### `MRTDeepLinkPayload`
-
-| Property | Description |
-|----------|-------------|
-| `url` | Original URL |
-| `path` | Normalized path (e.g. `/product/42`) |
-| `pathComponents` | Path split into segments |
-| `queryParameters` | Query string as a dictionary |
-| `source` | `.universalLink`, `.customScheme`, or `.unknown` |
-
-### SwiftUI
-
-| Modifier | Description |
-|----------|-------------|
-| `handleMRTDeepLinks(_:)` | View modifier that handles incoming deep links |
-
-## Multi-app setup (same domain)
-
-Multiple apps can share one domain. Give each app a **unique path prefix** in AASA:
+Example:
 
 ```json
 {
   "applinks": {
     "apps": [],
     "details": [
-      { "appID": "TEAM_ID.com.shop.app", "paths": ["/shop", "/shop/*"] },
-      { "appID": "TEAM_ID.com.food.app", "paths": ["/food", "/food/*"] }
+      {
+        "appID": "TEAMID.com.testapp.mindroots",
+        "paths": ["/r/*", "/l/*"]
+      }
     ]
   }
 }
 ```
 
-Share links with matching prefixes:
+`appID` = `{Apple Team ID}.{bundle id}`.
+
+---
+
+## Quick start
+
+```swift
+import MRTDeepLinkSDK
+import SwiftUI
+
+@main
+struct MyApp: App {
+    init() {
+        MRTDeepLink.shared.configure(
+            apiKey: "dlh_sdk_…",
+            debugLogging: true,
+            serverURL: URL(string: "https://apismartlink.digitalplayground.quest")!,
+            universalLinkDomain: "appsmartlink.digitalplayground.quest",
+            customURLScheme: "mrtdeeplink"
+        )
+    }
+
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+                .handleMRTDeepLinks { payload in
+                    // Navigate using payload.path / pathComponents
+                    print(payload.url, payload.isDeferred)
+                }
+        }
+    }
+}
+```
+
+### UIKit
+
+```swift
+// SceneDelegate / AppDelegate
+_ = MRTDeepLink.shared.handle(url: url)
+_ = MRTDeepLink.shared.handle(userActivity: userActivity)
+
+// Or helpers:
+MRTDeepLinkSceneSupport.handle(connecting: connectionOptions, in: scene)
+MRTDeepLinkSceneSupport.handle(userActivity: userActivity)
+```
+
+---
+
+## Lifecycle
 
 ```
-https://links.yourdomain.com/shop/product/42   → Shop app
-https://links.yourdomain.com/food/menu/5       → Food app
+App launch
+    └─ configure(…)
+         └─ first launch only → POST /api/deferred/app/match
+              ├─ matched + destinationPath → onDeepLink(isDeferred: true)
+              └─ no match → organic launch
+
+Universal Link / custom scheme open
+    └─ handle(url:) / .handleMRTDeepLinks
+         └─ onDeepLink(payload)
 ```
 
-**Do not** use `"paths": ["*"]` or `"paths": ["/*"]` for multiple apps on the same domain — iOS cannot reliably pick the right app.
+Deferred match runs **once per install** (guarded by `UserDefaults`).
 
-Each app still needs a unique Bundle ID. Custom URL schemes are optional.
+---
 
-## Publishing to CocoaPods
+## Deferred match API
 
-```bash
-cd MRTDeepLinkSDK
-pod lib lint MRTDeepLinkSDK.podspec --allow-warnings
-git tag 0.1.0
-git push origin 0.1.0
+### Request
+
+`POST {serverURL}/api/deferred/app/match`
+
+Auth headers: `X-SDK-Key`, `Authorization: Bearer {apiKey}`
+
+Body includes native signals (`osVersionMajor`, `locale`, `timezone`, `screenBucket`, …) and optional `/fp-probe` fields (`canvasHash`, `gpuRenderer`, `audioFingerprint`, …). If a Universal Link carried `?session=` / `clickSessionId`, that UUID is sent as `clickSessionId`.
+
+### Response
+
+```json
+{
+  "matched": true,
+  "tier": "probabilistic",
+  "confidence": "high",
+  "score": 96.27,
+  "destinationPath": "/product/1",
+  "slug": "summer-sale"
+}
 ```
 
-## Troubleshooting
+| `tier` | Meaning |
+|--------|---------|
+| `deterministic_session` | Session id from Universal Link |
+| `probabilistic` | Fingerprint match |
+| `button` / `manual` | Ambiguous / no match (`matched: false`) |
 
-### Link opens Safari instead of the app
+### Inspect from the app
 
-- Tap the link from **Notes**, **Messages**, or **WhatsApp** — typing in Safari's address bar does not trigger Universal Links.
-- Delete the app and reinstall after adding Associated Domains.
-- Confirm AASA is live at `/.well-known/apple-app-site-association`.
-- For UIKit Storyboard apps, ensure **SceneDelegate** handlers are wired (see above).
+```swift
+MRTDeepLink.shared.onDeferredMatchDebug { result in
+    switch result {
+    case .success(let match):
+        print(match.matched, match.tier ?? "-", match.destinationPath ?? "-")
+    case .failure(let error):
+        print(error.localizedDescription)
+    }
+}
 
-### Wrong app opens for the same domain
+// Manual re-run (e.g. debug UI)
+MRTDeepLink.shared.runDeferredMatchDebug(clickSessionId: "optional-uuid")
+```
 
-- Remove wildcard `"*"` / `"/*"` paths from AASA.
-- Use unique path prefixes per app (`/shop/*`, `/food/*`).
-- Delete all related apps, restart the device, reinstall.
+---
 
-### "Multiple commands produce Info.plist"
+## Payload
 
-If using a custom `Info.plist` inside a synchronized folder, exclude it from Copy Bundle Resources in Xcode.
+```swift
+public struct MRTDeepLinkPayload {
+    public let url: URL
+    public let path: String
+    public let pathComponents: [String]
+    public let queryParameters: [String: String]
+    public let source: MRTDeepLinkSource   // .universalLink | .customScheme | .deferred
+    public let isDeferred: Bool
+}
+```
 
-### CocoaPods sandbox / rsync errors
+---
 
-Set `ENABLE_USER_SCRIPT_SANDBOXING = NO` in your project and Podfile `post_install` hook.
+## Smart link builder
 
-## License
+```swift
+let config = MRTSmartLinkConfiguration(
+    webDomain: "appsmartlink.digitalplayground.quest",
+    customURLScheme: "mrtdeeplink",
+    iOSAppStoreURL: URL(string: "https://apps.apple.com/app/id…")!
+)
 
-MIT
+// https://appsmartlink…/product/42
+MRTSmartLinkBuilder.makeWebURL(path: "/product/42", configuration: config)
+
+// mrtdeeplink://product/42
+MRTSmartLinkBuilder.makeAppURL(path: "/product/42", scheme: "mrtdeeplink")
+```
+
+---
+
+## Testing Universal Links
+
+1. Install a build signed with the correct Team ID + bundle id.
+2. Do **not** paste the URL into Safari’s address bar (often stays in Safari).
+3. Open the link from Notes / Messages, or long-press → **Open in …**.
+4. Confirm AASA is reachable and Apple’s CDN has cached it.
+
+---
+
+## Requirements
+
+- iOS 15.0+
+- Xcode 15+
+- Associated Domains capability
+- Valid SDK API key from your SmartLink admin

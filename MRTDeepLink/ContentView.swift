@@ -1,28 +1,13 @@
 import SwiftUI
 import MRTDeepLinkSDK
 
-enum SmartLinkConfig {
-    static let configuration = MRTSmartLinkConfiguration(
-        webDomain: "glennis-pseudosyphilitic-maude.ngrok-free.dev",
-        customURLScheme: "mrtdeeplink",
-        iOSAppStoreURL: URL(string: "https://apps.apple.com/app/id0000000000")!
-    )
-
-    static let sampleProductLink = MRTSmartLinkBuilder.makeWebURL(
-        path: "/notifytest/product/42",
-        queryItems: [URLQueryItem(name: "id", value: "abc")],
-        configuration: configuration
-    )!
-
-    static let sampleProfileLink = MRTSmartLinkBuilder.makeWebURL(
-        path: "/notifytest/profile/99",
-        configuration: configuration
-    )!
-}
-
 struct ContentView: View {
     @EnvironmentObject private var router: AppDeepLinkRouter
-    @State private var lastTrackedEvent: String?
+    @State private var clickSessionId = AppConfig.defaultClickSessionId
+    @State private var matchResponse: MRTDeferredMatchResponse?
+    @State private var matchRequestJSON: String?
+    @State private var matchError: String?
+    @State private var isMatchLoading = false
 
     var body: some View {
         NavigationStack {
@@ -32,125 +17,99 @@ struct ContentView: View {
                         .font(.system(size: 56))
                         .foregroundStyle(.tint)
 
-                    Text("MRTDeepLinkSDK Demo")
+                    Text("Deferred Deep Link")
                         .font(.title2.bold())
 
-                    licenseStatusView
-
-                    destinationView
-
-                    analyticsSection
+                    deferredMatchView
 
                     if let payload = router.lastPayload {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Last Deep Link")
-                                .font(.headline)
-                            Text("URL: \(payload.url.absoluteString)")
-                                .font(.caption)
-                            Text("Path: \(payload.path)")
-                                .font(.caption)
-                            Text("Source: \(payload.source.rawValue)")
-                                .font(.caption)
-                            if payload.isDeferred {
-                                Text("Deferred: yes")
-                                    .font(.caption)
-                                    .foregroundStyle(.orange)
-                            }
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding()
-                        .background(.quaternary.opacity(0.4))
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        deepLinkDebugView(payload)
                     }
 
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Smart Links (WhatsApp / SMS / Email)")
-                            .font(.headline)
-
-                        shareLinkRow(title: "Product", url: SmartLinkConfig.sampleProductLink)
-                        shareLinkRow(title: "Profile", url: SmartLinkConfig.sampleProfileLink)
-
-                        Text("App installed → app opens\nApp not installed → App Store")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Direct scheme (sirf testing)")
-                            .font(.headline)
-                        Text("mrtdeeplink://product/42?id=abc")
-                        Text("mrtdeeplink://profile/99")
-                    }
-                    .font(.caption)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    testLinksView
+                    configView
                 }
                 .padding()
             }
             .navigationTitle("Deep Link")
             .onAppear {
-                trackEvent(
-                    name: "screen_view",
-                    properties: ["screen": "Home"]
-                )
+                MRTDeepLink.shared.onDeferredMatchDebugRequest { json in
+                    matchRequestJSON = json
+                }
+                MRTDeepLink.shared.onDeferredMatchDebug { result in
+                    isMatchLoading = false
+                    switch result {
+                    case .success(let response):
+                        matchResponse = response
+                        matchError = nil
+                    case .failure(let error):
+                        matchError = error.localizedDescription
+                    }
+                }
+                if let cached = MRTDeepLink.shared.currentDeferredMatchDebugResponse {
+                    matchResponse = cached
+                }
+                if let json = MRTDeepLink.shared.currentMatchDebugRequestJSON {
+                    matchRequestJSON = json
+                }
             }
         }
     }
 
-    private var analyticsSection: some View {
+    private var deferredMatchView: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Event Analytics")
+            Text("Deferred Match")
                 .font(.headline)
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text("userId: \(MRTAnalytics.shared.currentUserId)")
-                Text("anonymousId: \(MRTAnalytics.shared.currentAnonymousId)")
-                if let loginUserId = MRTAnalytics.shared.currentLoginUserId {
-                    Text("loginUserId: \(loginUserId)")
-                }
-                if let sessionId = MRTAnalytics.shared.currentSessionId {
-                    Text("sessionId: \(sessionId)")
-                }
-            }
-            .font(.caption2)
-            .foregroundStyle(.secondary)
-            .textSelection(.enabled)
+            Text("POST /api/deferred/app/match")
+                .font(.caption2.monospaced())
+                .foregroundStyle(.secondary)
 
-            if let lastTrackedEvent {
-                Text("Last event: \(lastTrackedEvent)")
-                    .font(.caption)
-                    .foregroundStyle(.green)
-            }
+            TextField("clickSessionId", text: $clickSessionId)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .font(.caption.monospaced())
 
-            Button {
-                trackEvent(
-                    name: "button_click",
-                    properties: [
-                        "buttonName": "Submit",
-                        "screen": "Home"
-                    ]
-                )
-            } label: {
-                Label("Trigger button_click", systemImage: "hand.tap.fill")
-                    .frame(maxWidth: .infinity)
+            Button(isMatchLoading ? "Running…" : "Run deferred match") {
+                runMatch()
             }
             .buttonStyle(.borderedProminent)
+            .disabled(isMatchLoading)
 
-            Button {
-                MRTAnalytics.shared.identify(userId: "user_98765")
-                trackEvent(
-                    name: "user_identified",
-                    properties: ["source": "demo_button"]
-                )
-            } label: {
-                Label("Identify user + track event", systemImage: "person.crop.circle.badge.checkmark")
-                    .frame(maxWidth: .infinity)
+            if isMatchLoading {
+                ProgressView("Calling /api/deferred/app/match…")
+                    .font(.caption)
             }
-            .buttonStyle(.bordered)
 
-            Text("Check Xcode console for API logs on every trigger.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            if let matchError {
+                Text(matchError)
+                    .font(.caption)
+                    .foregroundStyle(.red)
+                    .textSelection(.enabled)
+            }
+
+            if let matchRequestJSON {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Request body")
+                        .font(.subheadline.bold())
+                    Text(prettyJSONString(matchRequestJSON) ?? matchRequestJSON)
+                        .font(.caption2.monospaced())
+                        .textSelection(.enabled)
+                }
+            }
+
+            if let matchResponse {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Response")
+                        .font(.subheadline.bold())
+                    debugRow("matched", matchResponse.matched ? "true" : "false")
+                    debugRow("tier", matchResponse.tier ?? "—")
+                    debugRow("confidence", matchResponse.confidence ?? "—")
+                    debugRow("score", matchResponse.score.map { String(format: "%.2f", $0) } ?? "—")
+                    debugRow("destinationPath", matchResponse.destinationPath ?? "—")
+                    debugRow("slug", matchResponse.slug ?? "—")
+                }
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
@@ -158,52 +117,89 @@ struct ContentView: View {
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
-    private func trackEvent(
-        name: String,
-        properties: [String: String] = [:]
-    ) {
-        MRTAnalytics.shared.track(
-            eventName: name,
-            properties: properties
+    private func runMatch() {
+        isMatchLoading = true
+        matchError = nil
+        matchRequestJSON = nil
+        let sessionId = clickSessionId.trimmingCharacters(in: .whitespacesAndNewlines)
+        MRTDeepLink.shared.runDeferredMatchDebug(
+            clickSessionId: sessionId.isEmpty ? nil : sessionId
         )
-        lastTrackedEvent = name
     }
 
-    @ViewBuilder
-    private var licenseStatusView: some View {
-        switch router.licenseStatus {
-        case .idle, .validating:
-            Label("Checking license…", systemImage: "hourglass")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-        case .valid:
-            Label("License active", systemImage: "checkmark.seal.fill")
-                .font(.subheadline)
-                .foregroundStyle(.green)
-        case .invalid(let message):
-            VStack(spacing: 4) {
-                Label("License invalid", systemImage: "xmark.seal.fill")
-                    .font(.subheadline)
-                    .foregroundStyle(.red)
-                Text(message)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+    private func prettyJSONString(_ raw: String) -> String? {
+        guard let data = raw.data(using: .utf8),
+              let object = try? JSONSerialization.jsonObject(with: data),
+              let pretty = try? JSONSerialization.data(withJSONObject: object, options: [.prettyPrinted, .sortedKeys]),
+              let string = String(data: pretty, encoding: .utf8) else {
+            return nil
+        }
+        return string
+    }
+
+    private var testLinksView: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Test link")
+                .font(.headline)
+
+            if let url = URL(string: AppConfig.sampleSmartLinkURL) {
+                shareLinkRow(title: "Short link", url: url)
+            }
+
+            if let url = AppConfig.customSchemeTestURL {
+                shareLinkRow(title: "Custom scheme", url: url)
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    @ViewBuilder
-    private var destinationView: some View {
-        switch router.destination {
-        case .none, .home:
-            Text("Home Screen")
+    private var configView: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Config")
+                .font(.headline)
+            Text("Universal link: \(AppConfig.universalLinkDomain)")
+            Text("API: \(AppConfig.serverURL)")
+            Text("Scheme: \(AppConfig.customURLScheme)://")
+        }
+        .font(.caption)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func deepLinkDebugView(_ payload: MRTDeepLinkPayload) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("Last Deep Link")
+                    .font(.headline)
+                if payload.isDeferred {
+                    Text("DEFERRED")
+                        .font(.caption2.bold())
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(.orange.opacity(0.2))
+                        .foregroundStyle(.orange)
+                        .clipShape(Capsule())
+                }
+            }
+
+            debugRow("URL", payload.url.absoluteString)
+            debugRow("Path", payload.path)
+            debugRow("Source", payload.source.rawValue)
+        }
+        .font(.caption)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding()
+        .background(.quaternary.opacity(0.4))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    private func debugRow(_ label: String, _ value: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(label)
+                .font(.caption2)
                 .foregroundStyle(.secondary)
-        case .product(let id):
-            Label("Product #\(id)", systemImage: "bag.fill")
-                .font(.title3)
-        case .profile(let userId):
-            Label("Profile \(userId)", systemImage: "person.fill")
-                .font(.title3)
+            Text(value)
+                .font(.caption)
+                .textSelection(.enabled)
         }
     }
 
@@ -215,7 +211,7 @@ struct ContentView: View {
                 .font(.caption2)
                 .textSelection(.enabled)
             ShareLink(item: url) {
-                Label("Share \(title) Link", systemImage: "square.and.arrow.up")
+                Label("Share", systemImage: "square.and.arrow.up")
             }
             .font(.caption)
         }

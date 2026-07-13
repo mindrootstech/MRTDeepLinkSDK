@@ -1,6 +1,9 @@
 # Uncomment the next line to define a global platform for your project
 platform :ios, '15.0'
 
+# Local path pod — always compile SDK from source (not the vendored XCFramework).
+ENV['MRT_SDK_SOURCE'] = '1'
+
 target 'MRTDeepLink' do
   use_frameworks!
 

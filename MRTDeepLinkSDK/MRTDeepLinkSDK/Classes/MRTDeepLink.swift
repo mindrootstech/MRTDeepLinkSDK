@@ -1,21 +1,23 @@
 import Foundation
 
 public typealias MRTDeepLinkHandler = (MRTDeepLinkPayload) -> Void
-public typealias MRTDeepLinkLicenseHandler = (MRTDeepLinkLicenseStatus) -> Void
 
 public final class MRTDeepLink: @unchecked Sendable {
     public static let shared = MRTDeepLink()
 
     private var configuration: MRTDeepLinkConfiguration?
     private var handler: MRTDeepLinkHandler?
-    private var licenseHandler: MRTDeepLinkLicenseHandler?
+    private var deferredMatchHandler: MRTDeferredMatchDebugHandler?
+    private var deferredMatchRequestHandler: MRTDeferredMatchDebugRequestHandler?
     private var pendingPayload: MRTDeepLinkPayload?
-    private var licenseStatus: MRTDeepLinkLicenseStatus = .idle
     private var receivedDirectDeepLinkThisSession = false
+    private var deferredMatchInFlight = false
+    private var lastDeferredMatchResponse: MRTDeferredMatchResponse?
+    private var lastMatchRequestJSON: String?
+    private var launchClickSessionId: String?
     private let lock = NSLock()
 
-    private static let installReportedKey = "com.mrtdeeplink.install.reported"
-    private static let uniqueInstallReportedKey = "com.mrtdeeplink.uniqueInstall.reported"
+    private static let deferredMatchReportedKey = "com.mrtdeeplink.deferred.match.reported"
     private static let deferredDeliveredKey = "com.mrtdeeplink.deferred.delivered"
 
     private init() {}
@@ -26,23 +28,33 @@ public final class MRTDeepLink: @unchecked Sendable {
         return configuration != nil
     }
 
-    public var currentLicenseStatus: MRTDeepLinkLicenseStatus {
+    public var currentDeferredMatchDebugResponse: MRTDeferredMatchResponse? {
         lock.lock()
         defer { lock.unlock() }
-        return licenseStatus
+        return lastDeferredMatchResponse
     }
 
-    public var isLicenseValid: Bool {
-        currentLicenseStatus == .valid
+    public var currentMatchDebugRequestJSON: String? {
+        lock.lock()
+        defer { lock.unlock() }
+        return lastMatchRequestJSON
     }
 
-    /// Configure with API key only — app settings are fetched from the admin server.
     @discardableResult
-    public func configure(apiKey: String, debugLogging: Bool = false) -> MRTDeepLink {
-        configure(
+    public func configure(
+        apiKey: String,
+        debugLogging: Bool = false,
+        serverURL: URL = MRTDeepLinkDefaults.licenseServerURL,
+        universalLinkDomain: String? = nil,
+        customURLScheme: String? = nil
+    ) -> MRTDeepLink {
+        return configure(
             MRTDeepLinkConfiguration(
                 apiKey: apiKey,
-                debugLogging: debugLogging
+                debugLogging: debugLogging,
+                serverURL: serverURL,
+                universalLinkDomain: universalLinkDomain,
+                customURLScheme: customURLScheme
             )
         )
     }
@@ -53,99 +65,53 @@ public final class MRTDeepLink: @unchecked Sendable {
         self.configuration = configuration
         lock.unlock()
 
-        log("Configured with API key")
-        MRTAnalytics.shared.configure(
-            apiKey: configuration.apiKey,
-            debugLogging: configuration.debugLogging,
-            serverURL: configuration.licenseServerURL
-        )
-        validateLicense()
+        log("SDK configured (deferred match)")
+        beginDeferredMatchIfNeeded()
         return self
+    }
+
+    public func onDeferredMatchDebug(_ handler: @escaping MRTDeferredMatchDebugHandler) {
+        lock.lock()
+        deferredMatchHandler = handler
+        let response = lastDeferredMatchResponse
+        lock.unlock()
+
+        if let response {
+            DispatchQueue.main.async { handler(.success(response)) }
+        }
+    }
+
+    public func onDeferredMatchDebugRequest(_ handler: @escaping MRTDeferredMatchDebugRequestHandler) {
+        lock.lock()
+        deferredMatchRequestHandler = handler
+        let json = lastMatchRequestJSON
+        lock.unlock()
+
+        if let json {
+            DispatchQueue.main.async { handler(json) }
+        }
+    }
+
+    public func runDeferredMatchDebug(clickSessionId: String? = nil) {
+        performDeferredMatch(
+            options: MRTDeferredMatchOptions(clickSessionId: clickSessionId),
+            markReported: false
+        )
     }
 
     public func onDeepLink(_ handler: @escaping MRTDeepLinkHandler) {
         lock.lock()
         self.handler = handler
         lock.unlock()
-
         deliverPendingPayloadIfNeeded()
-    }
-
-    public func onLicenseStatusChange(_ handler: @escaping MRTDeepLinkLicenseHandler) {
-        lock.lock()
-        self.licenseHandler = handler
-        let status = licenseStatus
-        lock.unlock()
-
-        DispatchQueue.main.async {
-            handler(status)
-        }
-    }
-
-    public func validateLicense() {
-        guard let configuration else {
-            updateLicenseStatus(.invalid(message: "SDK not configured"))
-            return
-        }
-
-        updateLicenseStatus(.validating)
-
-        let apiKey = configuration.apiKey
-        let bundleId = configuration.appIdentifier
-        let serverURL = configuration.licenseServerURL
-        let validationPath = configuration.licenseValidationPath
-
-        if let url = MRTDeepLinkLicenseValidator.makeValidationURL(
-            apiKey: apiKey,
-            bundleId: bundleId,
-            serverURL: serverURL,
-            validationPath: validationPath
-        ) {
-            log("License API URL: \(url.absoluteString)")
-        }
-
-        let debugLogging = configuration.debugLogging
-
-        Task {
-            let result = await MRTDeepLinkLicenseValidator.validate(
-                apiKey: apiKey,
-                bundleId: bundleId,
-                serverURL: serverURL,
-                validationPath: validationPath,
-                debugLogging: debugLogging
-            )
-
-            switch result {
-            case .success(let remoteConfig):
-                lock.lock()
-                self.configuration = configuration.applyingRemoteConfig(remoteConfig)
-                lock.unlock()
-                log("Remote config loaded for: \(remoteConfig.appIdentifier)")
-                updateLicenseStatus(.valid)
-                deliverPendingPayloadIfNeeded()
-                reportUniqueInstallIfNeeded()
-                resolveDeferredLinkIfNeeded()
-            case .failure(let message):
-                updateLicenseStatus(.invalid(message: message))
-                log("License validation failed: \(message)")
-            }
-        }
     }
 
     @discardableResult
     public func handle(url: URL) -> Bool {
-        guard isLicenseValid else {
-            log("Ignored URL — license is not valid")
-            return false
-        }
+        captureLaunchClickSessionId(from: url)
 
         guard let configuration else {
             log("Received URL before configure(): \(url.absoluteString)")
-            return false
-        }
-
-        guard configuration.isRemoteConfigLoaded else {
-            log("Ignored URL — remote config not loaded yet")
             return false
         }
 
@@ -168,8 +134,6 @@ public final class MRTDeepLink: @unchecked Sendable {
     }
 
     public func consumePendingDeepLink() -> MRTDeepLinkPayload? {
-        guard isLicenseValid else { return nil }
-
         lock.lock()
         defer { lock.unlock() }
         let payload = pendingPayload
@@ -183,12 +147,10 @@ public final class MRTDeepLink: @unchecked Sendable {
         let handler = handler
         lock.unlock()
 
-        log("Deep link received: \(payload.url.absoluteString)")
+        logDeepLinkPayload(payload)
 
         if let handler {
-            DispatchQueue.main.async {
-                handler(payload)
-            }
+            DispatchQueue.main.async { handler(payload) }
             return true
         }
 
@@ -199,8 +161,6 @@ public final class MRTDeepLink: @unchecked Sendable {
     }
 
     private func deliverPendingPayloadIfNeeded() {
-        guard isLicenseValid else { return }
-
         lock.lock()
         let payload = pendingPayload
         let handler = handler
@@ -212,130 +172,117 @@ public final class MRTDeepLink: @unchecked Sendable {
         pendingPayload = nil
         lock.unlock()
 
-        DispatchQueue.main.async {
-            handler(payload)
-        }
+        DispatchQueue.main.async { handler(payload) }
     }
 
-    private func reportUniqueInstallIfNeeded() {
-        guard isLicenseValid else { return }
-        guard !UserDefaults.standard.bool(forKey: Self.uniqueInstallReportedKey) else { return }
+    private func beginDeferredMatchIfNeeded() {
+        guard !UserDefaults.standard.bool(forKey: Self.deferredMatchReportedKey) else { return }
 
         lock.lock()
-        let config = configuration
+        let sessionId = launchClickSessionId
         lock.unlock()
 
-        guard let config else { return }
+        performDeferredMatch(
+            options: MRTDeferredMatchOptions(clickSessionId: sessionId),
+            markReported: true
+        )
+    }
 
+    private func captureLaunchClickSessionId(from url: URL) {
+        guard let sessionId = MRTDeepLinkParser.parseClickSessionId(from: url) else { return }
+        lock.lock()
+        if launchClickSessionId == nil {
+            launchClickSessionId = sessionId
+        }
+        lock.unlock()
+    }
+
+    private func performDeferredMatch(options: MRTDeferredMatchOptions, markReported: Bool) {
+        lock.lock()
+        if deferredMatchInFlight {
+            lock.unlock()
+            return
+        }
+        guard let config = configuration else {
+            lock.unlock()
+            return
+        }
+        let storedSessionId = launchClickSessionId
+        deferredMatchInFlight = true
+        lock.unlock()
+
+        let resolved = MRTDeferredMatchOptions(
+            clickSessionId: options.clickSessionId ?? storedSessionId
+        )
         let debugLogging = config.debugLogging
-        let uniqueInstallPath = config.uniqueInstallPath
 
         Task {
-            let result = await MRTUniqueInstallClient.report(
+            defer {
+                lock.lock()
+                deferredMatchInFlight = false
+                lock.unlock()
+            }
+
+            let output = await MRTDeferredMatchClient.run(
                 configuration: config,
-                uniqueInstallPath: uniqueInstallPath,
+                options: resolved,
                 debugLogging: debugLogging
             )
 
-            switch result {
-            case .success(let installResult):
-                UserDefaults.standard.set(true, forKey: Self.uniqueInstallReportedKey)
-                log("Unique install reported — isNew: \(installResult.isNew), counted: \(installResult.uniqueCounted)")
-                if installResult.isNew {
-                    MRTAnalytics.shared.track(
-                        eventName: "unique_install_registered",
-                        properties: [
-                            "device_id": MRTInstallDeviceInfo.stableDeviceId()
-                        ]
-                    )
-                }
-            case .failure(let error):
-                switch error {
-                case .message(let text):
-                    log("Unique install reporting failed: \(text)")
+            if let requestJSON = output.requestJSON {
+                lock.lock()
+                lastMatchRequestJSON = requestJSON
+                let requestHandler = deferredMatchRequestHandler
+                lock.unlock()
+                if let requestHandler {
+                    DispatchQueue.main.async { requestHandler(requestJSON) }
                 }
             }
-        }
-    }
 
-    private func resolveDeferredLinkIfNeeded() {
-        guard isLicenseValid else { return }
-        guard !UserDefaults.standard.bool(forKey: Self.installReportedKey) else { return }
-        guard !UserDefaults.standard.bool(forKey: Self.deferredDeliveredKey) else { return }
+            switch output.result {
+            case .success(let response):
+                if markReported {
+                    UserDefaults.standard.set(true, forKey: Self.deferredMatchReportedKey)
+                }
 
-        lock.lock()
-        let config = configuration
-        let hasPending = pendingPayload != nil
-        let receivedDirect = receivedDirectDeepLinkThisSession
-        lock.unlock()
+                lock.lock()
+                lastDeferredMatchResponse = response
+                let matchHandler = deferredMatchHandler
+                lock.unlock()
 
-        guard let config else { return }
-        guard !hasPending, !receivedDirect else { return }
+                log("Deferred match matched=\(response.matched) tier=\(response.tier ?? "-") confidence=\(response.confidence ?? "-")")
 
-        let debugLogging = config.debugLogging
-        let installPath = config.installPath
+                if let matchHandler {
+                    DispatchQueue.main.async { matchHandler(.success(response)) }
+                }
 
-        Task {
-            let result = await MRTInstallClient.reportInstall(
-                configuration: config,
-                installPath: installPath,
-                debugLogging: debugLogging
-            )
+                guard response.matched else { return }
+                guard !UserDefaults.standard.bool(forKey: Self.deferredDeliveredKey) else { return }
 
-            switch result {
-            case .success(let installResult):
-                UserDefaults.standard.set(true, forKey: Self.installReportedKey)
-                log("Install reported — attributed: \(installResult.isAttributed)")
+                lock.lock()
+                let receivedDirect = receivedDirectDeepLinkThisSession
+                let hasPending = pendingPayload != nil
+                lock.unlock()
+                guard !receivedDirect, !hasPending else { return }
 
-                if installResult.isAttributed,
-                   let attribution = installResult.attribution,
-                   let payload = MRTInstallClient.makeDeferredPayload(
-                       attribution: attribution,
-                       configuration: config
-                   ) {
+                if let payload = MRTDeferredMatchClient.makeDeferredPayload(
+                    response: response,
+                    configuration: config
+                ) {
                     UserDefaults.standard.set(true, forKey: Self.deferredDeliveredKey)
-                    log("Deferred deep link matched: \(payload.url.absoluteString)")
-                    MRTAnalytics.shared.track(
-                        eventName: "deferred_link_matched",
-                        properties: [
-                            "path": payload.path,
-                            "confidence": installResult.confidenceLevel ?? "unknown"
-                        ]
-                    )
+                    log("Deferred link: \(payload.url.absoluteString)")
                     deliver(payload)
-                } else {
-                    MRTAnalytics.shared.track(eventName: "deferred_link_no_match")
                 }
 
             case .failure(let error):
-                switch error {
-                case .message(let text):
-                    log("Deferred link check failed: \(text)")
+                log("Deferred match failed: \(error.localizedDescription ?? "unknown")")
+                lock.lock()
+                let matchHandler = deferredMatchHandler
+                lock.unlock()
+                if let matchHandler {
+                    DispatchQueue.main.async { matchHandler(.failure(error)) }
                 }
             }
-        }
-    }
-
-    private func updateLicenseStatus(_ status: MRTDeepLinkLicenseStatus) {
-        lock.lock()
-        licenseStatus = status
-        let handler = licenseHandler
-        lock.unlock()
-
-        switch status {
-        case .valid:
-            log("License validated successfully")
-        case .invalid(let message):
-            log("License invalid: \(message)")
-        case .validating:
-            log("Validating license…")
-        case .idle:
-            break
-        }
-
-        guard let handler else { return }
-        DispatchQueue.main.async {
-            handler(status)
         }
     }
 
@@ -345,5 +292,20 @@ public final class MRTDeepLink: @unchecked Sendable {
         lock.unlock()
         guard shouldLog else { return }
         MRTSDKLogger.debug(message, enabled: true)
+    }
+
+    private func logDeepLinkPayload(_ payload: MRTDeepLinkPayload) {
+        lock.lock()
+        let shouldLog = configuration?.debugLogging == true
+        lock.unlock()
+        guard shouldLog else { return }
+
+        print("══════════════════════════════════════")
+        print("🔗 [MRTDeepLinkSDK] DEEP LINK")
+        print("URL:      \(payload.url.absoluteString)")
+        print("Path:     \(payload.path)")
+        print("Source:   \(payload.source.rawValue)")
+        print("Deferred: \(payload.isDeferred ? "YES" : "no")")
+        print("══════════════════════════════════════")
     }
 }

@@ -77,4 +77,22 @@ enum MRTDeepLinkParser {
         }
         return parameters
     }
+
+    /// Parses click session id from a launch / universal link URL query.
+    /// Accepts `session`, `clickSessionId`, and `click_session_id`.
+    static func parseClickSessionId(from url: URL) -> String? {
+        guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+              let items = components.queryItems else {
+            return nil
+        }
+
+        for key in ["session", "clickSessionId", "click_session_id"] {
+            if let value = items.first(where: { $0.name == key })?.value?
+                .trimmingCharacters(in: .whitespacesAndNewlines),
+               !value.isEmpty {
+                return value
+            }
+        }
+        return nil
+    }
 }

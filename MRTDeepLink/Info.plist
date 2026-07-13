@@ -8,7 +8,7 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>com.app.NotifyTest</string>
+			<string>com.testapp.mindroots</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>mrtdeeplink</string>

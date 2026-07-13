@@ -4,21 +4,7 @@ import Foundation
 import UIKit
 #endif
 
-struct MRTInstallRequestBody: Encodable, Sendable {
-    let deviceId: String
-    let platform: String
-    let os: String
-    let osVersion: String
-    let appVersion: String
-    let userAgent: String
-    let language: String
-}
-
 enum MRTInstallDeviceInfo {
-    private static let deviceIdKey = "com.mrtdeeplink.install.deviceId"
-
-    static var platform: String { "ios" }
-
     static var osVersion: String {
         #if canImport(UIKit)
         return UIDevice.current.systemVersion
@@ -27,56 +13,103 @@ enum MRTInstallDeviceInfo {
         #endif
     }
 
-    static func stableDeviceId() -> String {
-        if let existing = UserDefaults.standard.string(forKey: deviceIdKey),
-           !existing.isEmpty {
-            return existing
-        }
-
-        let generated = UUID().uuidString.uppercased()
-        UserDefaults.standard.set(generated, forKey: deviceIdKey)
-        return generated
-    }
-
-    static func makeRequestBody() -> MRTInstallRequestBody {
+    static func osVersionMajor() -> String {
         #if canImport(UIKit)
-        return MRTInstallRequestBody(
-            deviceId: stableDeviceId(),
-            platform: "ios",
-            os: "iOS",
-            osVersion: osVersion,
-            appVersion: appVersion(),
-            userAgent: userAgent(),
-            language: languageCode()
-        )
+        return ProcessInfo.processInfo.operatingSystemVersion.majorVersion.description
         #else
-        return MRTInstallRequestBody(
-            deviceId: stableDeviceId(),
-            platform: "ios",
-            os: "iOS",
-            osVersion: osVersion,
-            appVersion: "0.0.0",
-            userAgent: "MRTDeepLinkSDK",
-            language: Locale.current.identifier
-        )
+        return osVersion.split(separator: ".").first.map(String.init) ?? osVersion
         #endif
     }
 
-    #if canImport(UIKit)
-    private static func appVersion() -> String {
-        let info = Bundle.main.infoDictionary
-        let short = info?["CFBundleShortVersionString"] as? String ?? "0.0.0"
-        let build = info?["CFBundleVersion"] as? String ?? "0"
-        return "\(short) (\(build))"
+    static func matchLocale() -> String {
+        if let preferred = Locale.preferredLanguages.first {
+            return preferred.replacingOccurrences(of: "_", with: "-")
+        }
+        return Locale.current.identifier.replacingOccurrences(of: "_", with: "-")
     }
 
-    private static func userAgent() -> String {
-        let systemVersion = UIDevice.current.systemVersion.replacingOccurrences(of: ".", with: "_")
-        return "Mozilla/5.0 (iPhone; CPU iPhone OS \(systemVersion) like Mac OS X) MRTDeepLinkSDK"
+    /// Must match JS `bucketScreen(width, height)` on fp-probe.
+    static func screenBucket() -> String {
+        #if canImport(UIKit)
+        let size: CGSize
+        if Thread.isMainThread {
+            size = UIScreen.main.bounds.size
+        } else {
+            size = DispatchQueue.main.sync { UIScreen.main.bounds.size }
+        }
+        let minSide = min(size.width, size.height)
+        let maxSide = max(size.width, size.height)
+        if minSide >= 600 { return "tablet" }
+        if maxSide >= 800 { return "large" }
+        if maxSide >= 700 { return "medium" }
+        return "small"
+        #else
+        return "medium"
+        #endif
     }
 
-    private static func languageCode() -> String {
-        Locale.preferredLanguages.first ?? Locale.current.identifier
+    static func mapContentSizeCategory() -> String? {
+        #if canImport(UIKit)
+        let category: UIContentSizeCategory
+        if Thread.isMainThread {
+            category = UIApplication.shared.preferredContentSizeCategory
+        } else {
+            category = DispatchQueue.main.sync { UIApplication.shared.preferredContentSizeCategory }
+        }
+        let map: [UIContentSizeCategory: String] = [
+            .extraSmall: "XS", .small: "S", .medium: "M", .large: "L",
+            .extraLarge: "XL", .extraExtraLarge: "XXL",
+            .extraExtraExtraLarge: "XXXL",
+            .accessibilityMedium: "AX-M", .accessibilityLarge: "AX-L",
+            .accessibilityExtraLarge: "AX-XL",
+            .accessibilityExtraExtraLarge: "AX-XXL",
+            .accessibilityExtraExtraExtraLarge: "AX-XXXL"
+        ]
+        return map[category]
+        #else
+        return nil
+        #endif
     }
-    #endif
+
+    static func colorScheme() -> String {
+        #if canImport(UIKit)
+        let style: UIUserInterfaceStyle
+        if Thread.isMainThread {
+            style = UITraitCollection.current.userInterfaceStyle
+        } else {
+            style = DispatchQueue.main.sync { UITraitCollection.current.userInterfaceStyle }
+        }
+        return style == .dark ? "dark" : "light"
+        #else
+        return "light"
+        #endif
+    }
+
+    static func batteryState() -> (level: Double?, charging: Bool?) {
+        #if canImport(UIKit)
+        let readState: () -> (Float, UIDevice.BatteryState) = {
+            UIDevice.current.isBatteryMonitoringEnabled = true
+            return (UIDevice.current.batteryLevel, UIDevice.current.batteryState)
+        }
+        let level: Float
+        let state: UIDevice.BatteryState
+        if Thread.isMainThread {
+            (level, state) = readState()
+        } else {
+            (level, state) = DispatchQueue.main.sync { readState() }
+        }
+
+        let normalizedLevel = level >= 0 ? Double(level) : nil
+        let charging: Bool?
+        switch state {
+        case .charging, .full: charging = true
+        case .unplugged: charging = false
+        case .unknown: charging = nil
+        @unknown default: charging = nil
+        }
+        return (normalizedLevel, charging)
+        #else
+        return (nil, nil)
+        #endif
+    }
 }

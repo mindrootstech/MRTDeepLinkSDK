@@ -1,0 +1,310 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A10000000000000000000001 /* MRTDeepLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000001 /* MRTDeepLink.swift */; };
+		A10000000000000000000002 /* MRTDeepLinkConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000002 /* MRTDeepLinkConfiguration.swift */; };
+		A10000000000000000000003 /* MRTDeepLinkDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000003 /* MRTDeepLinkDefaults.swift */; };
+		A10000000000000000000004 /* MRTDeepLinkParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000004 /* MRTDeepLinkParser.swift */; };
+		A10000000000000000000005 /* MRTDeepLinkPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000005 /* MRTDeepLinkPayload.swift */; };
+		A10000000000000000000006 /* MRTDeepLinkSceneSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000006 /* MRTDeepLinkSceneSupport.swift */; };
+		A10000000000000000000007 /* MRTDeferredMatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000007 /* MRTDeferredMatch.swift */; };
+		A10000000000000000000008 /* MRTInstallDeviceInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000008 /* MRTInstallDeviceInfo.swift */; };
+		A10000000000000000000009 /* MRTNetworkInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000009 /* MRTNetworkInfo.swift */; };
+		A1000000000000000000000A /* MRTSDKLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000A /* MRTSDKLogger.swift */; };
+		A1000000000000000000000B /* MRTSDKRequestAuth.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000B /* MRTSDKRequestAuth.swift */; };
+		A1000000000000000000000C /* MRTSmartLinkBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000C /* MRTSmartLinkBuilder.swift */; };
+		A1000000000000000000000D /* MRTSmartLinkConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000D /* MRTSmartLinkConfiguration.swift */; };
+		A1000000000000000000000E /* MRTURLSessionRetry.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000E /* MRTURLSessionRetry.swift */; };
+		A1000000000000000000000F /* MRTWebFingerprintCollector.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000F /* MRTWebFingerprintCollector.swift */; };
+		A10000000000000000000010 /* MRTDeepLinkModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000010 /* MRTDeepLinkModifier.swift */; };
+		A10000000000000000000011 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B10000000000000000000011 /* WebKit.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		B10000000000000000000001 /* MRTDeepLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTDeepLink.swift; sourceTree = "<group>"; };
+		B10000000000000000000002 /* MRTDeepLinkConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTDeepLinkConfiguration.swift; sourceTree = "<group>"; };
+		B10000000000000000000003 /* MRTDeepLinkDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTDeepLinkDefaults.swift; sourceTree = "<group>"; };
+		B10000000000000000000004 /* MRTDeepLinkParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTDeepLinkParser.swift; sourceTree = "<group>"; };
+		B10000000000000000000005 /* MRTDeepLinkPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTDeepLinkPayload.swift; sourceTree = "<group>"; };
+		B10000000000000000000006 /* MRTDeepLinkSceneSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTDeepLinkSceneSupport.swift; sourceTree = "<group>"; };
+		B10000000000000000000007 /* MRTDeferredMatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTDeferredMatch.swift; sourceTree = "<group>"; };
+		B10000000000000000000008 /* MRTInstallDeviceInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTInstallDeviceInfo.swift; sourceTree = "<group>"; };
+		B10000000000000000000009 /* MRTNetworkInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTNetworkInfo.swift; sourceTree = "<group>"; };
+		B1000000000000000000000A /* MRTSDKLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTSDKLogger.swift; sourceTree = "<group>"; };
+		B1000000000000000000000B /* MRTSDKRequestAuth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTSDKRequestAuth.swift; sourceTree = "<group>"; };
+		B1000000000000000000000C /* MRTSmartLinkBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTSmartLinkBuilder.swift; sourceTree = "<group>"; };
+		B1000000000000000000000D /* MRTSmartLinkConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTSmartLinkConfiguration.swift; sourceTree = "<group>"; };
+		B1000000000000000000000E /* MRTURLSessionRetry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTURLSessionRetry.swift; sourceTree = "<group>"; };
+		B1000000000000000000000F /* MRTWebFingerprintCollector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTWebFingerprintCollector.swift; sourceTree = "<group>"; };
+		B10000000000000000000010 /* MRTDeepLinkModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTDeepLinkModifier.swift; sourceTree = "<group>"; };
+		B10000000000000000000011 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
+		B10000000000000000000012 /* MRTDeepLinkSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = MRTDeepLinkSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		C10000000000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000000000000000000011 /* WebKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		D10000000000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				D10000000000000000000002 /* MRTDeepLinkSDK */,
+				D10000000000000000000005 /* Products */,
+				B10000000000000000000011 /* WebKit.framework */,
+			);
+			sourceTree = "<group>";
+		};
+		D10000000000000000000002 /* MRTDeepLinkSDK */ = {
+			isa = PBXGroup;
+			children = (
+				D10000000000000000000003 /* Classes */,
+				D10000000000000000000004 /* SwiftUI */,
+			);
+			path = MRTDeepLinkSDK;
+			sourceTree = "<group>";
+		};
+		D10000000000000000000003 /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				B10000000000000000000001 /* MRTDeepLink.swift */,
+				B10000000000000000000002 /* MRTDeepLinkConfiguration.swift */,
+				B10000000000000000000003 /* MRTDeepLinkDefaults.swift */,
+				B10000000000000000000004 /* MRTDeepLinkParser.swift */,
+				B10000000000000000000005 /* MRTDeepLinkPayload.swift */,
+				B10000000000000000000006 /* MRTDeepLinkSceneSupport.swift */,
+				B10000000000000000000007 /* MRTDeferredMatch.swift */,
+				B10000000000000000000008 /* MRTInstallDeviceInfo.swift */,
+				B10000000000000000000009 /* MRTNetworkInfo.swift */,
+				B1000000000000000000000A /* MRTSDKLogger.swift */,
+				B1000000000000000000000B /* MRTSDKRequestAuth.swift */,
+				B1000000000000000000000C /* MRTSmartLinkBuilder.swift */,
+				B1000000000000000000000D /* MRTSmartLinkConfiguration.swift */,
+				B1000000000000000000000E /* MRTURLSessionRetry.swift */,
+				B1000000000000000000000F /* MRTWebFingerprintCollector.swift */,
+			);
+			path = Classes;
+			sourceTree = "<group>";
+		};
+		D10000000000000000000004 /* SwiftUI */ = {
+			isa = PBXGroup;
+			children = (
+				B10000000000000000000010 /* MRTDeepLinkModifier.swift */,
+			);
+			path = SwiftUI;
+			sourceTree = "<group>";
+		};
+		D10000000000000000000005 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				B10000000000000000000012 /* MRTDeepLinkSDK.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		E10000000000000000000001 /* MRTDeepLinkSDK */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F10000000000000000000003 /* Build configuration list for PBXNativeTarget "MRTDeepLinkSDK" */;
+			buildPhases = (
+				E10000000000000000000002 /* Sources */,
+				C10000000000000000000001 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MRTDeepLinkSDK;
+			productName = MRTDeepLinkSDK;
+			productReference = B10000000000000000000012 /* MRTDeepLinkSDK.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		E10000000000000000000000 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					E10000000000000000000001 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+				};
+			};
+			buildConfigurationList = F10000000000000000000001 /* Build configuration list for PBXProject "MRTDeepLinkSDK" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = D10000000000000000000001;
+			productRefGroup = D10000000000000000000005 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				E10000000000000000000001 /* MRTDeepLinkSDK */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		E10000000000000000000002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000000000000000000001 /* MRTDeepLink.swift in Sources */,
+				A10000000000000000000002 /* MRTDeepLinkConfiguration.swift in Sources */,
+				A10000000000000000000003 /* MRTDeepLinkDefaults.swift in Sources */,
+				A10000000000000000000004 /* MRTDeepLinkParser.swift in Sources */,
+				A10000000000000000000005 /* MRTDeepLinkPayload.swift in Sources */,
+				A10000000000000000000006 /* MRTDeepLinkSceneSupport.swift in Sources */,
+				A10000000000000000000007 /* MRTDeferredMatch.swift in Sources */,
+				A10000000000000000000008 /* MRTInstallDeviceInfo.swift in Sources */,
+				A10000000000000000000009 /* MRTNetworkInfo.swift in Sources */,
+				A1000000000000000000000A /* MRTSDKLogger.swift in Sources */,
+				A1000000000000000000000B /* MRTSDKRequestAuth.swift in Sources */,
+				A1000000000000000000000C /* MRTSmartLinkBuilder.swift in Sources */,
+				A1000000000000000000000D /* MRTSmartLinkConfiguration.swift in Sources */,
+				A1000000000000000000000E /* MRTURLSessionRetry.swift in Sources */,
+				A1000000000000000000000F /* MRTWebFingerprintCollector.swift in Sources */,
+				A10000000000000000000010 /* MRTDeepLinkModifier.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		F10000000000000000000011 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_TESTABILITY = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		F10000000000000000000012 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		F10000000000000000000021 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGN_IDENTITY = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.6.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mindroots.MRTDeepLinkSDK;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = NO;
+				SWIFT_EMIT_MODULE_INTERFACE = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		F10000000000000000000022 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUILD_LIBRARY_FOR_DISTRIBUTION = YES;
+				CODE_SIGNING_ALLOWED = NO;
+				CODE_SIGN_IDENTITY = "";
+				COPY_PHASE_STRIP = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.6.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mindroots.MRTDeepLinkSDK;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = NO;
+				STRIP_INSTALLED_PRODUCT = YES;
+				SWIFT_EMIT_MODULE_INTERFACE = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		F10000000000000000000001 /* Build configuration list for PBXProject "MRTDeepLinkSDK" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F10000000000000000000011 /* Debug */,
+				F10000000000000000000012 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F10000000000000000000003 /* Build configuration list for PBXNativeTarget "MRTDeepLinkSDK" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F10000000000000000000021 /* Debug */,
+				F10000000000000000000022 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = E10000000000000000000000 /* Project object */;
+}

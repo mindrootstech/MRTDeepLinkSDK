@@ -3,8 +3,8 @@
     "apps": [],
     "details": [
       {
-        "appID": "TEAM_ID.MindRoots.MRTDeepLink",
-        "paths": ["*"]
+        "appID": "FZ4A29LK38.com.testapp.mindroots",
+        "paths": ["/r/*", "/l/*", "/product/*"]
       }
     ]
   }

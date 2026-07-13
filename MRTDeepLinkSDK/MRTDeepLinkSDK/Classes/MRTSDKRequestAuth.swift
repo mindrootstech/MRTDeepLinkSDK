@@ -7,31 +7,22 @@ enum MRTSDKRequestAuth {
             MRTDeepLinkDefaults.authorizationValue(apiKey: apiKey),
             forHTTPHeaderField: MRTDeepLinkDefaults.authorizationHeader
         )
+        request.setValue("true", forHTTPHeaderField: "Ngrok-Skip-Browser-Warning")
     }
 
-    static func logHeaders(for request: URLRequest, label: String, debugLogging: Bool) {
+    static func logRequest(name: String, request: URLRequest, debugLogging: Bool) {
         guard debugLogging else { return }
-
-        MRTSDKLogger.debug("\(label) headers:", enabled: true)
-        guard let headers = request.allHTTPHeaderFields, !headers.isEmpty else {
-            MRTSDKLogger.debug("  (none)", enabled: true)
-            return
-        }
-
-        for key in headers.keys.sorted() {
-            let value = headers[key] ?? ""
-            let sanitized = sensitiveHeaderKeys.contains(key) ? redacted(value) : value
-            MRTSDKLogger.debug("  \(key): \(sanitized)", enabled: true)
+        let method = request.httpMethod ?? "GET"
+        let url = request.url?.absoluteString ?? "(invalid)"
+        MRTSDKLogger.debug("[\(name)] \(method) \(url)", enabled: true)
+        if let body = request.httpBody, let json = String(data: body, encoding: .utf8), !json.isEmpty {
+            MRTSDKLogger.debug("[\(name)] body: \(json)", enabled: true)
         }
     }
 
-    private static let sensitiveHeaderKeys: Set<String> = [
-        MRTDeepLinkDefaults.sdkKeyHeader,
-        MRTDeepLinkDefaults.authorizationHeader
-    ]
-
-    private static func redacted(_ value: String) -> String {
-        guard value.count > 8 else { return "****" }
-        return String(value.prefix(4)) + "****" + String(value.suffix(4))
+    static func logResponse(name: String, statusCode: Int, body: String, debugLogging: Bool) {
+        guard debugLogging else { return }
+        let preview = body.isEmpty ? "(empty)" : body
+        MRTSDKLogger.debug("[\(name)] \(statusCode) \(preview)", enabled: true)
     }
 }

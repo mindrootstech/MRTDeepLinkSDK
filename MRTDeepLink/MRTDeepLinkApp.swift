@@ -9,20 +9,18 @@ struct MRTDeepLinkApp: App {
 
     init() {
         MRTDeepLink.shared.configure(
-            apiKey: "dlh_sdk_bf5a418781645414bb0cb0dbbe4eb981",
-            debugLogging: true
+            apiKey: AppConfig.sdkAPIKey,
+            debugLogging: true,
+            serverURL: URL(string: AppConfig.serverURL)!,
+            universalLinkDomain: AppConfig.universalLinkDomain,
+            customURLScheme: AppConfig.customURLScheme
         )
     }
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootTabView()
                 .environmentObject(router)
-                .onAppear {
-                    MRTDeepLink.shared.onLicenseStatusChange { status in
-                        router.updateLicenseStatus(status)
-                    }
-                }
                 .handleMRTDeepLinks { payload in
                     router.handle(payload)
                 }
@@ -30,55 +28,69 @@ struct MRTDeepLinkApp: App {
     }
 }
 
+private struct RootTabView: View {
+    @EnvironmentObject private var router: AppDeepLinkRouter
+
+    var body: some View {
+        TabView(selection: $router.selectedTab) {
+            ContentView()
+                .tabItem {
+                    Label("Home", systemImage: "link")
+                }
+                .tag(AppTab.home)
+
+            ProductListView()
+                .tabItem {
+                    Label("Products", systemImage: "bag.fill")
+                }
+                .tag(AppTab.products)
+        }
+    }
+}
+
+enum AppTab: Hashable {
+    case home
+    case products
+}
+
 final class AppDeepLinkRouter: ObservableObject {
     @Published var destination: DeepLinkDestination?
     @Published var lastPayload: MRTDeepLinkPayload?
-    @Published var licenseStatus: MRTDeepLinkLicenseStatus = .idle
-
-    func updateLicenseStatus(_ status: MRTDeepLinkLicenseStatus) {
-        licenseStatus = status
-    }
+    @Published var selectedTab: AppTab = .home
+    @Published var pendingProductID: Int?
 
     func handle(_ payload: MRTDeepLinkPayload) {
         lastPayload = payload
+        printDeepLinkPayload(payload)
 
-        MRTAnalytics.shared.track(
-            eventName: "deep_link_opened",
-            properties: [
-                "url": payload.url.absoluteString,
-                "path": payload.path,
-                "source": payload.source.rawValue
-            ]
-        )
-
-        let components = Self.routeComponents(from: payload.pathComponents)
-        guard let route = components.first else {
-            destination = .home
-            return
-        }
-
-        switch route {
-        case "product":
-            let id = components.dropFirst().first ?? payload[query: "id"]
-            destination = .product(id: id ?? "unknown")
-        case "profile":
-            let userId = components.dropFirst().first ?? payload[query: "userId"]
-            destination = .profile(userId: userId ?? "unknown")
-        default:
-            destination = .home
+        if let productID = Self.parseProductID(from: payload) {
+            selectedTab = .products
+            pendingProductID = productID
         }
     }
 
-    /// Skips known URL prefixes such as `admin-smartlink`.
-    private static func routeComponents(from pathComponents: [String]) -> [String] {
-        var components = pathComponents
-        if components.first == "admin-smartlink" {
-            components.removeFirst()
+    private static func parseProductID(from payload: MRTDeepLinkPayload) -> Int? {
+        let components = payload.pathComponents
+        guard let productIndex = components.firstIndex(of: "product"),
+              productIndex + 1 < components.count,
+              let id = Int(components[productIndex + 1]) else {
+            return nil
         }
-        if components.first == "notifytest" {
-            components.removeFirst()
-        }
-        return components
+        return id
+    }
+
+    func clearPendingProduct() {
+        pendingProductID = nil
+    }
+
+    private func printDeepLinkPayload(_ payload: MRTDeepLinkPayload) {
+        print("══════════════════════════════════════")
+        print("🔗 DEEP LINK RECEIVED")
+        print("URL:      \(payload.url.absoluteString)")
+        print("Path:     \(payload.path)")
+        print("Source:   \(payload.source.rawValue)")
+        print("Deferred: \(payload.isDeferred ? "YES ✅" : "no")")
+        print("══════════════════════════════════════")
     }
 }
 
