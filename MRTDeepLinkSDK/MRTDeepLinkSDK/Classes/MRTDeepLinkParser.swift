@@ -29,12 +29,20 @@ enum MRTDeepLinkParser {
         }
 
         if scheme == "https" || scheme == "http" {
+            // No domain configured → accept any https host.
             if configuration.universalLinkDomains.isEmpty {
                 return .universalLink
             }
-            if let host = url.host?.lowercased(),
-               configuration.universalLinkDomains.map({ $0.lowercased() }).contains(host) {
-                return .universalLink
+            if let host = url.host?.lowercased() {
+                let allowed = configuration.universalLinkDomains.map { $0.lowercased() }
+                if allowed.contains(host) {
+                    return .universalLink
+                }
+                // Also accept common `www.` / without mismatch both ways.
+                let bare = host.hasPrefix("www.") ? String(host.dropFirst(4)) : host
+                if allowed.contains(bare) || allowed.contains("www.\(bare)") {
+                    return .universalLink
+                }
             }
         }
 

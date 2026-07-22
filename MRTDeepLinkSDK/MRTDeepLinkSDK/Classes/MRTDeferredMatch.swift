@@ -109,12 +109,13 @@ enum MRTDeferredMatchClient {
         case .success(let httpResult):
             let rawBody = String(data: httpResult.data, encoding: .utf8) ?? ""
             if debugLogging {
-                MRTSDKRequestAuth.logResponse(
-                    name: "Deferred Match",
-                    statusCode: httpResult.statusCode,
-                    body: rawBody,
-                    debugLogging: true
-                )
+                let pretty = prettyJSON(from: httpResult.data) ?? rawBody
+                print("══════════════════════════════════════")
+                print("📥 [MRTDeepLinkSDK] DEFERRED MATCH RESPONSE")
+                print("══════════════════════════════════════")
+                print("HTTP \(httpResult.statusCode)")
+                print(pretty.isEmpty ? "(empty body)" : pretty)
+                print("══════════════════════════════════════")
             }
 
             guard (200 ... 299).contains(httpResult.statusCode) else {
@@ -126,6 +127,9 @@ enum MRTDeferredMatchClient {
 
             do {
                 let decoded = try JSONDecoder().decode(MRTDeferredMatchResponse.self, from: httpResult.data)
+                if debugLogging {
+                    print("📥 [MRTDeepLinkSDK] decoded → matched=\(decoded.matched) tier=\(decoded.tier ?? "-") confidence=\(decoded.confidence ?? "-") score=\(decoded.score.map { String(format: "%.2f", $0) } ?? "-") destinationPath=\(decoded.destinationPath ?? "-") slug=\(decoded.slug ?? "-")")
+                }
                 return RunOutput(result: .success(decoded), requestJSON: requestJSON)
             } catch {
                 return RunOutput(
@@ -137,9 +141,21 @@ enum MRTDeferredMatchClient {
         case .failure(let error):
             switch error {
             case .requestFailed(let message):
+                if debugLogging {
+                    print("📥 [MRTDeepLinkSDK] DEFERRED MATCH FAILED: \(message)")
+                }
                 return RunOutput(result: .failure(.message(message)), requestJSON: requestJSON)
             }
         }
+    }
+
+    private static func prettyJSON(from data: Data) -> String? {
+        guard let object = try? JSONSerialization.jsonObject(with: data),
+              let pretty = try? JSONSerialization.data(withJSONObject: object, options: [.prettyPrinted, .sortedKeys]),
+              let string = String(data: pretty, encoding: .utf8) else {
+            return nil
+        }
+        return string
     }
 
     static func makeDeferredPayload(
@@ -179,7 +195,9 @@ enum MRTDeferredMatchClient {
 
     private struct RequestBody: Encodable, Sendable {
         let osVersionMajor: String
+        let osVersionMajorMinor: String
         let deviceModelClass: String
+        let deviceName: String
         let locale: String
         let timezone: String
         let screenBucket: String
@@ -197,9 +215,11 @@ enum MRTDeferredMatchClient {
         let reduceMotion: Bool?
         let increaseContrast: Bool?
         let hardwareConcurrency: Int?
-        let clockSkewMs: Double?
+        let clockSkewMs: Int?
         let devicePixelRatioBucket: String?
         let canvasHash: String?
+        let webglHash: String?
+        let webglVendor: String?
         let gpuRenderer: String?
         let audioFingerprint: String?
         let clickSessionId: String?
@@ -210,12 +230,10 @@ enum MRTDeferredMatchClient {
         probeDomain: String?,
         debugLogging: Bool
     ) async -> RequestBody {
+        _ = probeDomain
         let (level, charging) = MRTInstallDeviceInfo.batteryState()
         async let connection = MRTNetworkInfo.connectionType()
-        async let webFingerprint = MRTWebFingerprintCollector.collect(
-            domain: probeDomain,
-            debugLogging: debugLogging
-        )
+        async let webFingerprint = MRTWebFingerprintCollector.collect(debugLogging: debugLogging)
         let connectionType = await connection
         let web = await webFingerprint
 
@@ -231,27 +249,31 @@ enum MRTDeferredMatchClient {
 
         return RequestBody(
             osVersionMajor: MRTInstallDeviceInfo.osVersionMajor(),
+            osVersionMajorMinor: MRTInstallDeviceInfo.osVersionMajorMinor(),
             deviceModelClass: "ios",
+            deviceName: MRTInstallDeviceInfo.deviceName(),
             locale: MRTInstallDeviceInfo.matchLocale(),
             timezone: TimeZone.current.identifier,
             screenBucket: MRTInstallDeviceInfo.screenBucket(),
             appOpenAt: Int64(Date().timeIntervalSince1970 * 1000),
             connectionType: connectionType,
-            batteryLevel: level ?? web?.batteryLevel,
-            batteryCharging: charging ?? web?.batteryCharging,
+            batteryLevel: level,
+            batteryCharging: charging,
             languagesOrdered: Locale.preferredLanguages.joined(separator: ","),
             colorScheme: MRTInstallDeviceInfo.colorScheme(),
-            hourCycle: web?.hourCycle,
-            currency: web?.currency,
-            regionCode: web?.regionCode,
-            dynamicTypeSize: MRTInstallDeviceInfo.mapContentSizeCategory() ?? web?.dynamicTypeSize,
+            hourCycle: MRTInstallDeviceInfo.hourCycle(),
+            currency: MRTInstallDeviceInfo.currencyCode(),
+            regionCode: MRTInstallDeviceInfo.regionCode(),
+            dynamicTypeSize: MRTInstallDeviceInfo.mapContentSizeCategory(),
             boldText: boldText,
             reduceMotion: reduceMotion,
             increaseContrast: increaseContrast,
             hardwareConcurrency: ProcessInfo.processInfo.processorCount,
-            clockSkewMs: web?.clockSkewMs,
-            devicePixelRatioBucket: web?.devicePixelRatioBucket,
+            clockSkewMs: web?.clockSkewMs.map { Int($0.rounded()) },
+            devicePixelRatioBucket: MRTInstallDeviceInfo.devicePixelRatioBucket(),
             canvasHash: web?.canvasHash,
+            webglHash: web?.webglHash,
+            webglVendor: web?.webglVendor,
             gpuRenderer: web?.gpuRenderer,
             audioFingerprint: web?.audioFingerprint,
             clickSessionId: options.clickSessionId

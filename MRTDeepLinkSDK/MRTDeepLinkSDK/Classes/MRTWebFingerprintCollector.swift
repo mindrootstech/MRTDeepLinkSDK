@@ -5,83 +5,78 @@ import UIKit
 import WebKit
 #endif
 
-/// Fingerprint payload from `https://<domain>/fp-probe` (same JS as web click interstitial).
+/// Browser fingerprints from a hidden WKWebView (canvas / WebGL / audio / fonts).
+///
+/// On iOS, canvas / WebGL / audio are often identical across devices (WebKit privacy).
+/// Use `MRTCombinedFingerprint` (native + web) for something that actually varies per user.
 public struct MRTWebFingerprint: Sendable, Equatable {
-    public let source: String?
-    public let timezone: String?
-    public let screenBucket: String?
-    public let connectionType: String?
-    public let localeJs: String?
-    public let devicePixelRatioBucket: String?
-    public let languagesOrdered: String?
-    public let colorScheme: String?
-    public let hourCycle: String?
-    public let currency: String?
-    public let regionCode: String?
-    public let dynamicTypeSize: String?
-    public let boldText: Bool?
-    public let reduceMotion: Bool?
-    public let increaseContrast: Bool?
-    public let hardwareConcurrency: Int?
-    public let clockSkewMs: Double?
     public let canvasHash: String?
-    public let gpuRenderer: String?
-    public let audioFingerprint: String?
-    public let batteryLevel: Double?
-    public let batteryCharging: Bool?
+    public let webglHash: String?
+    public let webglVendor: String?
+    public let webglRenderer: String?
+    public let audioHash: String?
+    public let clockSkewMs: Double?
+    public let fontHash: String?
+    public let jsTimezone: String?
+    public let jsLanguages: String?
+    public let jsScreen: String?
+
+    public var gpuRenderer: String? { webglRenderer }
+    public var audioFingerprint: String? { audioHash }
 
     public var isEmpty: Bool {
         canvasHash == nil
-            && gpuRenderer == nil
-            && audioFingerprint == nil
-            && clockSkewMs == nil
-            && devicePixelRatioBucket == nil
-            && hourCycle == nil
-            && currency == nil
-            && regionCode == nil
+            && webglHash == nil
+            && audioHash == nil
+            && webglRenderer == nil
+            && fontHash == nil
     }
 
     public var debugDescription: String {
         [
-            "source=\(source ?? "nil")",
             "canvasHash=\(canvasHash ?? "nil")",
-            "gpuRenderer=\(gpuRenderer ?? "nil")",
-            "audioFingerprint=\(audioFingerprint ?? "nil")",
+            "webglHash=\(webglHash ?? "nil")",
+            "webglVendor=\(webglVendor ?? "nil")",
+            "webglRenderer=\(webglRenderer ?? "nil")",
+            "audioHash=\(audioHash ?? "nil")",
             "clockSkewMs=\(clockSkewMs.map { String($0) } ?? "nil")",
-            "devicePixelRatioBucket=\(devicePixelRatioBucket ?? "nil")"
+            "fontHash=\(fontHash ?? "nil")",
+            "jsTimezone=\(jsTimezone ?? "nil")",
+            "jsLanguages=\(jsLanguages ?? "nil")",
+            "jsScreen=\(jsScreen ?? "nil")"
         ].joined(separator: ", ")
     }
 }
 
 enum MRTWebFingerprintCollector {
     private static let defaultTimeout: TimeInterval = 4.0
+    private static let lock = NSLock()
+    private static var _lastResult: MRTWebFingerprint?
 
-    /// Loads `/fp-probe` in an off-screen WKWebView and returns the bridge payload.
+    /// Last successful (or empty) collect from this process.
+    static var lastResult: MRTWebFingerprint? {
+        lock.lock()
+        defer { lock.unlock() }
+        return _lastResult
+    }
+
+    private static func store(_ value: MRTWebFingerprint?) {
+        lock.lock()
+        _lastResult = value
+        lock.unlock()
+    }
+
+    /// Off-screen WKWebView — no remote page required.
     static func collect(
-        domain: String?,
+        domain: String? = nil,
         timeout: TimeInterval = defaultTimeout,
         debugLogging: Bool = false
     ) async -> MRTWebFingerprint? {
+        _ = domain // domain unused — local HTML probe
         #if canImport(UIKit)
-        guard let domain, !domain.isEmpty else {
-            if debugLogging {
-                print("🧪 [MRTDeepLinkSDK] WEB FINGERPRINT skipped — no probe domain")
-            }
-            return nil
-        }
-
-        let host = Self.normalizedHost(domain)
-        guard let probeURL = URL(string: "https://\(host)/fp-probe") else {
-            if debugLogging {
-                print("🧪 [MRTDeepLinkSDK] WEB FINGERPRINT invalid probe URL for \(host)")
-            }
-            return nil
-        }
-
         if debugLogging {
             print("══════════════════════════════════════")
-            print("🧪 [MRTDeepLinkSDK] WEB FINGERPRINT start")
-            print("probe: \(probeURL.absoluteString)")
+            print("🧪 [MRTDeepLinkSDK] WEB FINGERPRINT start (inline WKWebView)")
             print("══════════════════════════════════════")
         }
 
@@ -89,7 +84,7 @@ enum MRTWebFingerprintCollector {
             let gate = ResumeGate(continuation: continuation)
 
             Task { @MainActor in
-                let value = await Session.shared.run(probeURL: probeURL, debugLogging: debugLogging)
+                let value = await Session.shared.run(debugLogging: debugLogging)
                 gate.resume(value)
             }
 
@@ -101,6 +96,8 @@ enum MRTWebFingerprintCollector {
                 gate.resume(nil)
             }
         }
+
+        store(result)
 
         if debugLogging {
             if let result {
@@ -114,15 +111,6 @@ enum MRTWebFingerprintCollector {
         #else
         return nil
         #endif
-    }
-
-    private static func normalizedHost(_ value: String) -> String {
-        if value.hasPrefix("http://") || value.hasPrefix("https://"),
-           let host = URL(string: value)?.host {
-            return host
-        }
-        return value
-            .trimmingCharacters(in: CharacterSet(charactersIn: "/"))
     }
 
     #if canImport(UIKit)
@@ -143,9 +131,8 @@ enum MRTWebFingerprintCollector {
         }
     }
 
-    /// Strongly retained while a collect is in flight.
     @MainActor
-    private final class Session: NSObject, WKScriptMessageHandler, WKNavigationDelegate {
+    private final class Session: NSObject, WKNavigationDelegate {
         static let shared = Session()
 
         private var webView: WKWebView?
@@ -154,68 +141,97 @@ enum MRTWebFingerprintCollector {
         private var debugLogging = false
         private var finished = false
 
-        func run(probeURL: URL, debugLogging: Bool) async -> MRTWebFingerprint? {
+        func run(debugLogging: Bool) async -> MRTWebFingerprint? {
             tearDown(resumeValue: nil, force: true)
 
             self.debugLogging = debugLogging
             return await withCheckedContinuation { continuation in
                 self.continuation = continuation
                 self.finished = false
-                start(probeURL: probeURL)
+                start()
             }
         }
 
-        private func start(probeURL: URL) {
-            let controller = WKUserContentController()
-            controller.add(self, name: "fp")
-
+        private func start() {
             let config = WKWebViewConfiguration()
-            config.userContentController = controller
             config.suppressesIncrementalRendering = true
             if #available(iOS 14.0, *) {
                 config.defaultWebpagePreferences.allowsContentJavaScript = true
             }
 
-            let webView = WKWebView(frame: .zero, configuration: config)
+            let webView = WKWebView(frame: CGRect(x: 0, y: 0, width: 8, height: 8), configuration: config)
             webView.isOpaque = false
             webView.backgroundColor = .clear
             webView.navigationDelegate = self
             webView.alpha = 0.01
 
             if let window = keyWindow() {
-                let host = UIView(frame: CGRect(x: 0, y: 0, width: 1, height: 1))
+                let host = UIView(frame: CGRect(x: 0, y: 0, width: 8, height: 8))
                 host.isUserInteractionEnabled = false
                 host.alpha = 0.01
                 host.addSubview(webView)
                 window.addSubview(host)
                 self.hostView = host
                 if debugLogging {
-                    print("🧪 [MRTDeepLinkSDK] WKWebView attached — loading fp-probe")
+                    print("🧪 [MRTDeepLinkSDK] WKWebView attached (inline HTML)")
                 }
             } else if debugLogging {
-                print("🧪 [MRTDeepLinkSDK] no key window — fp-probe may fail")
+                print("🧪 [MRTDeepLinkSDK] no key window — WebGL may fail")
             }
 
             self.webView = webView
-            webView.load(URLRequest(url: probeURL))
+            webView.loadHTMLString(Self.htmlPage, baseURL: URL(string: "https://local.mrtdeeplink/"))
         }
 
-        func userContentController(
-            _ userContentController: WKUserContentController,
-            didReceive message: WKScriptMessage
-        ) {
-            guard message.name == "fp" else { return }
-
-            let fingerprint = Self.parse(message.body)
+        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
             if debugLogging {
-                print("🧪 [MRTDeepLinkSDK] fp bridge message received")
+                print("🧪 [MRTDeepLinkSDK] WKWebView didFinish — evaluating JS")
             }
-            tearDown(resumeValue: fingerprint, force: false)
+
+            if #available(iOS 15.0, *) {
+                webView.callAsyncJavaScript(
+                    "return await window.__mrtCollectFingerprint();",
+                    arguments: [:],
+                    in: nil,
+                    in: .page
+                ) { [weak self] result in
+                    Task { @MainActor in
+                        switch result {
+                        case .success(let value):
+                            if self?.debugLogging == true {
+                                print("🧪 [MRTDeepLinkSDK] JS success raw: \(String(describing: value))")
+                            }
+                            self?.tearDown(resumeValue: Self.parse(value), force: false)
+                        case .failure(let error):
+                            if self?.debugLogging == true {
+                                print("🧪 [MRTDeepLinkSDK] JS async failed: \(error.localizedDescription) — fallback sync")
+                            }
+                            self?.evaluateSyncFallback(on: webView)
+                        }
+                    }
+                }
+            } else {
+                evaluateSyncFallback(on: webView)
+            }
+        }
+
+        private func evaluateSyncFallback(on webView: WKWebView) {
+            webView.evaluateJavaScript("window.__mrtCollectFingerprintSync()") { [weak self] result, error in
+                Task { @MainActor in
+                    if let error, self?.debugLogging == true {
+                        print("🧪 [MRTDeepLinkSDK] JS sync failed: \(error.localizedDescription)")
+                    }
+                    if self?.debugLogging == true {
+                        print("🧪 [MRTDeepLinkSDK] JS sync raw: \(String(describing: result))")
+                    }
+                    self?.tearDown(resumeValue: Self.parse(result), force: false)
+                }
+            }
         }
 
         func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
             if debugLogging {
-                print("🧪 [MRTDeepLinkSDK] fp-probe didFail: \(error.localizedDescription)")
+                print("🧪 [MRTDeepLinkSDK] WKWebView didFail: \(error.localizedDescription)")
             }
             tearDown(resumeValue: nil, force: false)
         }
@@ -226,7 +242,7 @@ enum MRTWebFingerprintCollector {
             withError error: Error
         ) {
             if debugLogging {
-                print("🧪 [MRTDeepLinkSDK] fp-probe provisional fail: \(error.localizedDescription)")
+                print("🧪 [MRTDeepLinkSDK] WKWebView provisional fail: \(error.localizedDescription)")
             }
             tearDown(resumeValue: nil, force: false)
         }
@@ -235,7 +251,6 @@ enum MRTWebFingerprintCollector {
             if finished && !force { return }
             finished = true
 
-            webView?.configuration.userContentController.removeScriptMessageHandler(forName: "fp")
             webView?.navigationDelegate = nil
             webView?.stopLoading()
             webView?.removeFromSuperview()
@@ -248,17 +263,14 @@ enum MRTWebFingerprintCollector {
             cont?.resume(returning: resumeValue)
         }
 
-        private static func parse(_ body: Any) -> MRTWebFingerprint? {
+        private static func parse(_ result: Any?) -> MRTWebFingerprint? {
             let dict: [String: Any]?
-            if let jsonStr = body as? String,
-               let data = jsonStr.data(using: .utf8),
-               let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
-                dict = object
-            } else if let object = body as? [String: Any] {
-                dict = object
-            } else if let data = body as? Data,
-                      let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
-                dict = object
+            if let d = result as? [String: Any] {
+                dict = d
+            } else if let d = result as? [AnyHashable: Any] {
+                dict = Dictionary(uniqueKeysWithValues: d.compactMap { key, value in
+                    (key as? String).map { ($0, value) }
+                })
             } else {
                 return nil
             }
@@ -274,49 +286,22 @@ enum MRTWebFingerprintCollector {
                 return nil
             }
 
-            func bool(_ key: String) -> Bool? {
-                if let value = dict[key] as? Bool { return value }
-                if let value = dict[key] as? NSNumber { return value.boolValue }
-                return nil
-            }
-
-            func double(_ key: String) -> Double? {
-                if let value = dict[key] as? Double { return value }
-                if let value = dict[key] as? Int { return Double(value) }
-                if let value = dict[key] as? NSNumber { return value.doubleValue }
-                return nil
-            }
-
-            func int(_ key: String) -> Int? {
-                if let value = dict[key] as? Int { return value }
-                if let value = dict[key] as? Double { return Int(value) }
-                if let value = dict[key] as? NSNumber { return value.intValue }
-                return nil
-            }
-
             let fingerprint = MRTWebFingerprint(
-                source: string("source"),
-                timezone: string("timezone"),
-                screenBucket: string("screen_bucket"),
-                connectionType: string("connection_type"),
-                localeJs: string("locale_js"),
-                devicePixelRatioBucket: string("device_pixel_ratio_bucket"),
-                languagesOrdered: string("languages_ordered"),
-                colorScheme: string("color_scheme"),
-                hourCycle: string("hour_cycle"),
-                currency: string("currency"),
-                regionCode: string("region_code"),
-                dynamicTypeSize: string("dynamic_type_size"),
-                boldText: bool("bold_text"),
-                reduceMotion: bool("reduce_motion"),
-                increaseContrast: bool("increase_contrast"),
-                hardwareConcurrency: int("hardware_concurrency"),
-                clockSkewMs: double("clock_skew_ms"),
-                canvasHash: string("canvas_hash"),
-                gpuRenderer: string("gpu_renderer"),
-                audioFingerprint: string("audio_fingerprint"),
-                batteryLevel: double("battery_level"),
-                batteryCharging: bool("battery_charging")
+                canvasHash: string("canvasHash"),
+                webglHash: string("webglHash"),
+                webglVendor: string("webglVendor"),
+                webglRenderer: string("webglRenderer"),
+                audioHash: string("audioHash"),
+                clockSkewMs: {
+                    if let value = dict["clockSkewMs"] as? Double { return value }
+                    if let value = dict["clockSkewMs"] as? Int { return Double(value) }
+                    if let value = dict["clockSkewMs"] as? NSNumber { return value.doubleValue }
+                    return nil
+                }(),
+                fontHash: string("fontHash"),
+                jsTimezone: string("jsTimezone"),
+                jsLanguages: string("jsLanguages"),
+                jsScreen: string("jsScreen")
             )
             return fingerprint.isEmpty ? nil : fingerprint
         }
@@ -331,6 +316,164 @@ enum MRTWebFingerprintCollector {
                     .flatMap(\.windows)
                     .first
         }
+
+        private static let htmlPage = """
+        <!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head><body>
+        <canvas id="c" width="280" height="80"></canvas>
+        <script>
+        function __mrtHash(str) {
+          var h = 2166136261 >>> 0;
+          for (var i = 0; i < str.length; i++) {
+            h ^= str.charCodeAt(i);
+            h = Math.imul(h, 16777619) >>> 0;
+          }
+          return (h >>> 0).toString(16);
+        }
+        function __mrtCanvas() {
+          try {
+            var c = document.getElementById('c') || document.createElement('canvas');
+            c.width = 280; c.height = 80;
+            var ctx = c.getContext('2d');
+            if (!ctx) return null;
+            ctx.textBaseline = 'alphabetic';
+            ctx.fillStyle = '#f60';
+            ctx.fillRect(10, 1, 140, 24);
+            var grad = ctx.createLinearGradient(0, 0, 200, 60);
+            grad.addColorStop(0, '#069');
+            grad.addColorStop(1, 'rgba(102,204,0,0.7)');
+            ctx.fillStyle = grad;
+            ctx.font = '16px Arial';
+            ctx.fillText('MRTDeepLink,fp 🌐', 2, 20);
+            ctx.font = '14px "Courier New"';
+            ctx.fillText('mmmmmmmmmlli', 2, 42);
+            ctx.font = '12px Georgia';
+            ctx.fillText('Cwm fjord bank 😀', 2, 60);
+            ctx.beginPath();
+            ctx.arc(220, 40, 18, 0, Math.PI * 2);
+            ctx.strokeStyle = '#c33';
+            ctx.stroke();
+            return __mrtHash(c.toDataURL());
+          } catch (e) { return null; }
+        }
+        function __mrtFonts() {
+          try {
+            var base = ['monospace', 'sans-serif', 'serif'];
+            var test = ['Arial','Helvetica','Times New Roman','Courier New','Georgia','Verdana','Menlo','Avenir','PingFang SC','Hiragino Sans'];
+            var body = document.body;
+            var span = document.createElement('span');
+            span.style.fontSize = '72px';
+            span.style.position = 'absolute';
+            span.style.left = '-9999px';
+            span.textContent = 'mmmmmmmmmlli';
+            body.appendChild(span);
+            var widths = {};
+            for (var b = 0; b < base.length; b++) {
+              span.style.fontFamily = base[b];
+              widths[base[b]] = span.offsetWidth + 'x' + span.offsetHeight;
+            }
+            var detected = [];
+            for (var i = 0; i < test.length; i++) {
+              var name = test[i];
+              var hit = false;
+              for (var j = 0; j < base.length; j++) {
+                span.style.fontFamily = '"' + name + '",' + base[j];
+                var key = base[j];
+                if ((span.offsetWidth + 'x' + span.offsetHeight) !== widths[key]) { hit = true; break; }
+              }
+              if (hit) detected.push(name);
+            }
+            body.removeChild(span);
+            return __mrtHash(detected.join(','));
+          } catch (e) { return null; }
+        }
+        function __mrtWebGL() {
+          try {
+            var c = document.createElement('canvas');
+            c.width = 16; c.height = 16;
+            var gl = c.getContext('webgl') || c.getContext('experimental-webgl');
+            if (!gl) return { hash: null, vendor: null, renderer: null };
+            var dbg = gl.getExtension('WEBGL_debug_renderer_info');
+            var vendor = dbg ? String(gl.getParameter(dbg.UNMASKED_VENDOR_WEBGL)) : String(gl.getParameter(gl.VENDOR));
+            var renderer = dbg ? String(gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL)) : String(gl.getParameter(gl.RENDERER));
+            var params = [
+              String(gl.getParameter(gl.VERSION) || ''),
+              String(gl.getParameter(gl.SHADING_LANGUAGE_VERSION) || ''),
+              vendor || '',
+              renderer || '',
+              String(gl.getParameter(gl.MAX_TEXTURE_SIZE) || ''),
+              String(gl.getParameter(gl.MAX_RENDERBUFFER_SIZE) || ''),
+              (gl.getSupportedExtensions() || []).join(',')
+            ].join('|');
+            return { hash: __mrtHash(params), vendor: vendor || null, renderer: renderer || null };
+          } catch (e) {
+            return { hash: null, vendor: null, renderer: null };
+          }
+        }
+        function __mrtAudio() {
+          return new Promise(function(resolve) {
+            var settled = false;
+            function done(v) { if (settled) return; settled = true; resolve(v); }
+            try {
+              var AC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+              if (!AC) { done(null); return; }
+              var ctx = new AC(1, 44100, 44100);
+              var osc = ctx.createOscillator();
+              var comp = ctx.createDynamicsCompressor();
+              osc.type = 'triangle';
+              osc.frequency.value = 10000;
+              comp.threshold.value = -50;
+              comp.knee.value = 40;
+              comp.ratio.value = 12;
+              comp.attack.value = 0;
+              comp.release.value = 0.25;
+              osc.connect(comp);
+              comp.connect(ctx.destination);
+              osc.start(0);
+              ctx.oncomplete = function(ev) {
+                try {
+                  var data = ev.renderedBuffer.getChannelData(0);
+                  var sum = 0;
+                  for (var i = 4500; i < 5000; i++) sum += Math.abs(data[i]);
+                  done(__mrtHash(String(sum)));
+                } catch (e) { done(null); }
+              };
+              ctx.startRendering();
+              setTimeout(function() { done(null); }, 700);
+            } catch (e) { done(null); }
+          });
+        }
+        window.__mrtCollectFingerprintSync = function() {
+          var gl = __mrtWebGL();
+          var skew = null;
+          try {
+            if (window.performance && typeof performance.now === 'function' && performance.timeOrigin) {
+              skew = Date.now() - (performance.timeOrigin + performance.now());
+            }
+          } catch (e) {}
+          var tz = null, langs = null, screen = null;
+          try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || null; } catch (e) {}
+          try { langs = (navigator.languages || [navigator.language]).join(','); } catch (e) {}
+          try { screen = (window.screen.width||0) + 'x' + (window.screen.height||0) + '@' + (window.devicePixelRatio||1); } catch (e) {}
+          return {
+            canvasHash: __mrtCanvas(),
+            webglHash: gl.hash,
+            webglVendor: gl.vendor,
+            webglRenderer: gl.renderer,
+            audioHash: null,
+            clockSkewMs: skew,
+            fontHash: __mrtFonts(),
+            jsTimezone: tz,
+            jsLanguages: langs,
+            jsScreen: screen
+          };
+        };
+        window.__mrtCollectFingerprint = async function() {
+          var sync = window.__mrtCollectFingerprintSync();
+          sync.audioHash = await __mrtAudio();
+          return sync;
+        };
+        </script></body></html>
+        """
     }
     #endif
 }

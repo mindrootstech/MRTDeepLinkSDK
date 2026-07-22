@@ -2,6 +2,10 @@ import Foundation
 
 public typealias MRTDeepLinkHandler = (MRTDeepLinkPayload) -> Void
 
+public extension Notification.Name {
+    static let mrtDeepLinkIgnored = Notification.Name("MRTDeepLink.ignoredURL")
+}
+
 public final class MRTDeepLink: @unchecked Sendable {
     public static let shared = MRTDeepLink()
 
@@ -12,7 +16,7 @@ public final class MRTDeepLink: @unchecked Sendable {
     private var pendingPayload: MRTDeepLinkPayload?
     private var receivedDirectDeepLinkThisSession = false
     private var deferredMatchInFlight = false
-    private var lastDeferredMatchResponse: MRTDeferredMatchResponse?
+    private var lastDeferredMatchResponse: MRTDeferredMatchResponse?    
     private var lastMatchRequestJSON: String?
     private var launchClickSessionId: String?
     private let lock = NSLock()
@@ -40,13 +44,51 @@ public final class MRTDeepLink: @unchecked Sendable {
         return lastMatchRequestJSON
     }
 
+    /// Last WebView probe result (canvas / WebGL / audio / clock skew).
+    /// Note: on iOS these are often identical across devices — use `combinedFingerprint`.
+    public var currentWebFingerprint: MRTWebFingerprint? {
+        MRTWebFingerprintCollector.lastResult
+    }
+
+    /// SHA-256 over native locale/a11y/screen + WebView signals. Varies per user settings even when canvas/WebGL collide.
+    public var combinedFingerprint: MRTCombinedFingerprint {
+        MRTCombinedFingerprintBuilder.build(web: currentWebFingerprint)
+    }
+
+    /// Runs the hidden WKWebView probe and returns the fingerprint.
+    public func collectWebFingerprint() async -> MRTWebFingerprint? {
+        lock.lock()
+        let debug = configuration?.debugLogging == true
+        lock.unlock()
+        return await MRTWebFingerprintCollector.collect(debugLogging: debug)
+    }
+
+    /// WebView probe + combined native/web digest.
+    public func collectCombinedFingerprint() async -> MRTCombinedFingerprint {
+        _ = await collectWebFingerprint()
+        return combinedFingerprint
+    }
+
+    /// True while a deferred match network + fingerprint collect is running.
+    public var isDeferredMatchInFlight: Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return deferredMatchInFlight
+    }
+
+    /// True after a successful deferred match was reported for this install.
+    public var hasDeferredMatchBeenReported: Bool {
+        UserDefaults.standard.bool(forKey: Self.deferredMatchReportedKey)
+    }
+
     @discardableResult
     public func configure(
         apiKey: String,
         debugLogging: Bool = false,
         serverURL: URL = MRTDeepLinkDefaults.licenseServerURL,
         universalLinkDomain: String? = nil,
-        customURLScheme: String? = nil
+        customURLScheme: String? = nil,
+        clipboardMatchEnabled: Bool = false
     ) -> MRTDeepLink {
         return configure(
             MRTDeepLinkConfiguration(
@@ -54,9 +96,17 @@ public final class MRTDeepLink: @unchecked Sendable {
                 debugLogging: debugLogging,
                 serverURL: serverURL,
                 universalLinkDomain: universalLinkDomain,
-                customURLScheme: customURLScheme
+                customURLScheme: customURLScheme,
+                clipboardMatchEnabled: clipboardMatchEnabled
             )
         )
+    }
+
+    /// Silent clipboard check + conditional read for a copied SmartLink token.
+    /// Returns a session token only if the clipboard holds a web URL with a session param.
+    /// The read step may show the iOS paste prompt; the silent detect step never does.
+    public func readClipboardMatchToken() async -> String? {
+        await MRTClipboardMatchToken.readIfLinkPresent()
     }
 
     @discardableResult
@@ -112,16 +162,42 @@ public final class MRTDeepLink: @unchecked Sendable {
 
         guard let configuration else {
             log("Received URL before configure(): \(url.absoluteString)")
+            // Buffer so onDeepLink can retry after configure if needed.
+            lock.lock()
+            pendingPayload = MRTDeepLinkPayload(
+                url: url,
+                path: url.path.isEmpty ? "/" : url.path,
+                pathComponents: url.path.split(separator: "/").map(String.init).filter { !$0.isEmpty },
+                queryParameters: Self.queryItems(from: url),
+                source: .unknown
+            )
+            lock.unlock()
             return false
         }
 
         guard let payload = MRTDeepLinkParser.parse(url: url, configuration: configuration) else {
-            log("Ignored unsupported URL: \(url.absoluteString)")
+            log("Ignored unsupported URL: \(url.absoluteString) (host=\(url.host ?? "-") expected=\(configuration.universalLinkDomain ?? "-") scheme=\(configuration.customURLScheme ?? "-"))")
+            NotificationCenter.default.post(
+                name: .mrtDeepLinkIgnored,
+                object: nil,
+                userInfo: ["url": url.absoluteString]
+            )
             return false
         }
 
         receivedDirectDeepLinkThisSession = true
         return deliver(payload)
+    }
+
+    private static func queryItems(from url: URL) -> [String: String] {
+        guard let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems else {
+            return [:]
+        }
+        var params: [String: String] = [:]
+        for item in items {
+            params[item.name] = item.value ?? ""
+        }
+        return params
     }
 
     @discardableResult
@@ -180,12 +256,25 @@ public final class MRTDeepLink: @unchecked Sendable {
 
         lock.lock()
         let sessionId = launchClickSessionId
+        let clipboardEnabled = configuration?.clipboardMatchEnabled == true
         lock.unlock()
 
-        performDeferredMatch(
-            options: MRTDeferredMatchOptions(clickSessionId: sessionId),
-            markReported: true
-        )
+        // Universal Link already carried a session — no clipboard needed.
+        guard sessionId == nil, clipboardEnabled else {
+            performDeferredMatch(
+                options: MRTDeferredMatchOptions(clickSessionId: sessionId),
+                markReported: true
+            )
+            return
+        }
+
+        Task {
+            let token = await MRTClipboardMatchToken.readIfLinkPresent()
+            performDeferredMatch(
+                options: MRTDeferredMatchOptions(clickSessionId: token),
+                markReported: true
+            )
+        }
     }
 
     private func captureLaunchClickSessionId(from url: URL) {

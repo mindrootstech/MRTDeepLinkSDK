@@ -4,7 +4,7 @@
 <dict>
 	<key>com.apple.developer.associated-domains</key>
 	<array>
-		<string>applinks:apismartlink.digitalplayground.quest</string>
+		<string>applinks:app.digitalplayground.quest</string>
 	</array>
 </dict>
 </plist>

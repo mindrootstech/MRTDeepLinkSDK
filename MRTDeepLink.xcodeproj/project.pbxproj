@@ -42,6 +42,8 @@
 		93314B512FE16460005F6765 /* MRTSDKRequestAuth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTSDKRequestAuth.swift; sourceTree = "<group>"; };
 		935A1C833004ABE600013F9E /* MRTNetworkInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTNetworkInfo.swift; sourceTree = "<group>"; };
 		935A1C843004ABE600013F9E /* MRTWebFingerprintCollector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTWebFingerprintCollector.swift; sourceTree = "<group>"; };
+		935AC2C330064311004D9A88 /* MRTCombinedFingerprint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTCombinedFingerprint.swift; sourceTree = "<group>"; };
+		935AC2C430064311004D9A88 /* MRTDeferredMatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTDeferredMatch.swift; sourceTree = "<group>"; };
 		93BC69CA2FED3920001F9C16 /* MRTURLSessionRetry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTURLSessionRetry.swift; sourceTree = "<group>"; };
 		93ECDFCE2FDFC03900B67C81 /* MRTDeepLink.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MRTDeepLink.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		93ECDFDB2FDFC03A00B67C81 /* MRTDeepLinkTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MRTDeepLinkTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -83,11 +85,15 @@
 		};
 		93ECDFDE2FDFC03A00B67C81 /* MRTDeepLinkTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = MRTDeepLinkTests;
 			sourceTree = "<group>";
 		};
 		93ECDFE82FDFC03A00B67C81 /* MRTDeepLinkUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = MRTDeepLinkUITests;
 			sourceTree = "<group>";
 		};
@@ -160,6 +166,8 @@
 		93ECE0362FDFC44C00B67C81 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				935AC2C330064311004D9A88 /* MRTCombinedFingerprint.swift */,
+				935AC2C430064311004D9A88 /* MRTDeferredMatch.swift */,
 				935A1C833004ABE600013F9E /* MRTNetworkInfo.swift */,
 				935A1C843004ABE600013F9E /* MRTWebFingerprintCollector.swift */,
 				93BC69CA2FED3920001F9C16 /* MRTURLSessionRetry.swift */,
@@ -384,13 +392,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-MRTDeepLink/Pods-MRTDeepLink-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-MRTDeepLink/Pods-MRTDeepLink-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -608,7 +612,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = MRTDeepLink/MRTDeepLink.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = FZ4A29LK38;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -648,7 +652,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = MRTDeepLink/MRTDeepLink.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = FZ4A29LK38;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;

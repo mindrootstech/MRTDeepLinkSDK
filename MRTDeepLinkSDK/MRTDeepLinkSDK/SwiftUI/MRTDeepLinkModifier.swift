@@ -5,6 +5,9 @@ public struct MRTDeepLinkHandlerModifier: ViewModifier {
 
     public init(handler: @escaping MRTDeepLinkHandler) {
         self.handler = handler
+        // Register immediately — cold-start Universal Links often arrive
+        // before the first `onAppear`.
+        MRTDeepLink.shared.onDeepLink(handler)
     }
 
     public func body(content: Content) -> some View {

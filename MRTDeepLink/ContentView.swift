@@ -8,6 +8,12 @@ struct ContentView: View {
     @State private var matchRequestJSON: String?
     @State private var matchError: String?
     @State private var isMatchLoading = false
+    @State private var webFingerprint: MRTWebFingerprint?
+    @State private var combinedFingerprint: MRTCombinedFingerprint?
+    @State private var isCollectingFingerprint = false
+    @State private var clipboardToken: String?
+    @State private var clipboardChecked = false
+    @State private var isCheckingClipboard = false
 
     var body: some View {
         NavigationStack {
@@ -20,11 +26,28 @@ struct ContentView: View {
                     Text("Deferred Deep Link")
                         .font(.title2.bold())
 
-                    deferredMatchView
-
                     if let payload = router.lastPayload {
                         deepLinkDebugView(payload)
+                    } else if let ignored = router.lastIgnoredURL {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("Link ignored")
+                                .font(.headline)
+                            Text(ignored)
+                                .font(.caption.monospaced())
+                                .textSelection(.enabled)
+                            Text("Check universalLinkDomain matches the link host + Associated Domains.")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding()
+                        .background(Color.red.opacity(0.12))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
+
+                    clipboardMatchView
+                    webFingerprintView
+                    deferredMatchView
 
                     testLinksView
                     configView
@@ -32,26 +55,185 @@ struct ContentView: View {
                 .padding()
             }
             .navigationTitle("Deep Link")
+            .overlay {
+                if isMatchLoading {
+                    ZStack {
+                        Color.black.opacity(0.25)
+                            .ignoresSafeArea()
+                        VStack(spacing: 12) {
+                            ProgressView()
+                                .controlSize(.large)
+                            Text("Matching deferred link…")
+                                .font(.subheadline)
+                                .foregroundStyle(.primary)
+                        }
+                        .padding(24)
+                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+                    }
+                }
+            }
             .onAppear {
                 MRTDeepLink.shared.onDeferredMatchDebugRequest { json in
+                    isMatchLoading = true
                     matchRequestJSON = json
+                    webFingerprint = MRTDeepLink.shared.currentWebFingerprint
+                    combinedFingerprint = MRTDeepLink.shared.combinedFingerprint
                 }
                 MRTDeepLink.shared.onDeferredMatchDebug { result in
                     isMatchLoading = false
+                    webFingerprint = MRTDeepLink.shared.currentWebFingerprint
+                    combinedFingerprint = MRTDeepLink.shared.combinedFingerprint
                     switch result {
                     case .success(let response):
                         matchResponse = response
                         matchError = nil
+                        print("══════════════════════════════════════")
+                        print("📥 DEFERRED API RESPONSE")
+                        print("matched:          \(response.matched)")
+                        print("tier:             \(response.tier ?? "-")")
+                        print("confidence:       \(response.confidence ?? "-")")
+                        print("score:            \(response.score.map { String(format: "%.2f", $0) } ?? "-")")
+                        print("destinationPath:  \(response.destinationPath ?? "-")")
+                        print("slug:             \(response.slug ?? "-")")
+                        print("══════════════════════════════════════")
                     case .failure(let error):
                         matchError = error.localizedDescription
+                        print("📥 DEFERRED API ERROR: \(error.localizedDescription)")
                     }
                 }
                 if let cached = MRTDeepLink.shared.currentDeferredMatchDebugResponse {
                     matchResponse = cached
+                    isMatchLoading = false
+                } else if MRTDeepLink.shared.hasDeferredMatchBeenReported {
+                    isMatchLoading = false
+                } else {
+                    isMatchLoading = MRTDeepLink.shared.isDeferredMatchInFlight
                 }
                 if let json = MRTDeepLink.shared.currentMatchDebugRequestJSON {
                     matchRequestJSON = json
                 }
+                webFingerprint = MRTDeepLink.shared.currentWebFingerprint
+                combinedFingerprint = MRTDeepLink.shared.combinedFingerprint
+            }
+        }
+    }
+
+    private var clipboardMatchView: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Clipboard match token")
+                .font(.headline)
+
+            Text("Silent detect (no prompt) → reads only if a SmartLink URL is on the clipboard (one paste prompt). Copy a link like …/r/xxxx?session=<uuid> then tap.")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+
+            Button(isCheckingClipboard ? "Checking…" : "Check clipboard for link") {
+                checkClipboard()
+            }
+            .buttonStyle(.bordered)
+            .disabled(isCheckingClipboard)
+
+            if clipboardChecked {
+                if let token = clipboardToken {
+                    debugRow("token", token)
+                } else {
+                    Text("No SmartLink token on clipboard.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding()
+        .background(.quaternary.opacity(0.25))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    private func checkClipboard() {
+        isCheckingClipboard = true
+        Task {
+            let token = await MRTDeepLink.shared.readClipboardMatchToken()
+            await MainActor.run {
+                clipboardToken = token
+                clipboardChecked = true
+                isCheckingClipboard = false
+                if let token { clickSessionId = token }
+            }
+        }
+    }
+
+    private var webFingerprintView: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Fingerprint")
+                .font(.headline)
+
+            Text("iOS WebView canvas/WebGL/audio almost always collide across phones. Uniqueness comes from locale, languages, timezone, Dynamic Type, a11y — see Combined digest.")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+
+            Button(isCollectingFingerprint ? "Collecting…" : "Collect fingerprint") {
+                collectFingerprint()
+            }
+            .buttonStyle(.bordered)
+            .disabled(isCollectingFingerprint || isMatchLoading)
+
+            if isCollectingFingerprint {
+                ProgressView("Running canvas / WebGL / audio…")
+                    .font(.caption)
+            }
+
+            if let combined = combinedFingerprint {
+                Text("Combined (native + web)")
+                    .font(.subheadline.bold())
+                debugRow("digest", combined.shortDigest + "…")
+                Text(combined.digest)
+                    .font(.caption2.monospaced())
+                    .textSelection(.enabled)
+                ForEach(
+                    ["deviceName", "locale", "languages", "timezone", "screen", "dynamicTypeSize", "colorScheme"]
+                        .compactMap { key in combined.parts[key].map { (key, $0) } },
+                    id: \.0
+                ) { key, value in
+                    debugRow(key, value)
+                }
+            }
+
+            if let fp = webFingerprint {
+                Text("WebView-only (often same on all iPhones)")
+                    .font(.subheadline.bold())
+                debugRow("canvasHash", fp.canvasHash ?? "—")
+                debugRow("webglHash", fp.webglHash ?? "—")
+                debugRow("webglVendor", fp.webglVendor ?? "—")
+                debugRow("gpuRenderer", fp.gpuRenderer ?? "—")
+                debugRow("audioFingerprint", fp.audioFingerprint ?? "—")
+                debugRow("fontHash", fp.fontHash ?? "—")
+                debugRow("jsTimezone", fp.jsTimezone ?? "—")
+                debugRow("jsLanguages", fp.jsLanguages ?? "—")
+                debugRow("jsScreen", fp.jsScreen ?? "—")
+                debugRow(
+                    "clockSkewMs",
+                    fp.clockSkewMs.map { String(format: "%.2f", $0) } ?? "—"
+                )
+            } else if combinedFingerprint == nil {
+                Text("No probe yet — run match or collect above.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding()
+        .background(.quaternary.opacity(0.25))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    private func collectFingerprint() {
+        isCollectingFingerprint = true
+        Task {
+            let combined = await MRTDeepLink.shared.collectCombinedFingerprint()
+            await MainActor.run {
+                webFingerprint = MRTDeepLink.shared.currentWebFingerprint
+                combinedFingerprint = combined
+                isCollectingFingerprint = false
             }
         }
     }
@@ -75,11 +257,6 @@ struct ContentView: View {
             }
             .buttonStyle(.borderedProminent)
             .disabled(isMatchLoading)
-
-            if isMatchLoading {
-                ProgressView("Calling /api/deferred/app/match…")
-                    .font(.caption)
-            }
 
             if let matchError {
                 Text(matchError)
@@ -168,22 +345,48 @@ struct ContentView: View {
     private func deepLinkDebugView(_ payload: MRTDeepLinkPayload) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("Last Deep Link")
+                Text(payload.isDeferred ? "Deferred Deep Link" : "Opened from Link")
                     .font(.headline)
-                if payload.isDeferred {
-                    Text("DEFERRED")
-                        .font(.caption2.bold())
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(.orange.opacity(0.2))
-                        .foregroundStyle(.orange)
-                        .clipShape(Capsule())
-                }
+                Text(payload.isDeferred ? "DEFERRED" : "DIRECT")
+                    .font(.caption2.bold())
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(payload.isDeferred ? Color.orange.opacity(0.2) : Color.green.opacity(0.2))
+                    .foregroundStyle(payload.isDeferred ? .orange : .green)
+                    .clipShape(Capsule())
             }
 
             debugRow("URL", payload.url.absoluteString)
             debugRow("Path", payload.path)
             debugRow("Source", payload.source.rawValue)
+
+            if !payload.pathComponents.isEmpty {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Path segments")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                    ForEach(Array(payload.pathComponents.enumerated()), id: \.offset) { index, segment in
+                        Text("[\(index)] \(segment)")
+                            .font(.caption.monospaced())
+                            .textSelection(.enabled)
+                    }
+                }
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Parameters")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                if payload.queryParameters.isEmpty {
+                    Text("(none)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else {
+                    ForEach(payload.queryParameters.keys.sorted(), id: \.self) { key in
+                        debugRow(key, payload.queryParameters[key] ?? "")
+                    }
+                }
+            }
         }
         .font(.caption)
         .frame(maxWidth: .infinity, alignment: .leading)

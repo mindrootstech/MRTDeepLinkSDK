@@ -5,6 +5,22 @@ import UIKit
 #endif
 
 enum MRTInstallDeviceInfo {
+    /// Exact hardware model id, e.g. `iPhone15,2` (simulator → `SIMULATOR_MODEL_IDENTIFIER`).
+    static func deviceName() -> String {
+        var systemInfo = utsname()
+        uname(&systemInfo)
+        let identifier = withUnsafePointer(to: &systemInfo.machine) {
+            $0.withMemoryRebound(to: CChar.self, capacity: 1) {
+                String(cString: $0)
+            }
+        }
+        if identifier == "x86_64" || identifier == "i386" || identifier == "arm64",
+           let sim = ProcessInfo.processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"] {
+            return sim
+        }
+        return identifier
+    }
+
     static var osVersion: String {
         #if canImport(UIKit)
         return UIDevice.current.systemVersion
@@ -19,6 +35,12 @@ enum MRTInstallDeviceInfo {
         #else
         return osVersion.split(separator: ".").first.map(String.init) ?? osVersion
         #endif
+    }
+
+    /// `"16.3"` — major + minor only (patch dropped).
+    static func osVersionMajorMinor() -> String {
+        let v = ProcessInfo.processInfo.operatingSystemVersion
+        return "\(v.majorVersion).\(v.minorVersion)"
     }
 
     static func matchLocale() -> String {
@@ -82,6 +104,50 @@ enum MRTInstallDeviceInfo {
         return style == .dark ? "dark" : "light"
         #else
         return "light"
+        #endif
+    }
+
+    /// `"h12"` / `"h24"` — medium-impact locale signal.
+    static func hourCycle() -> String {
+        #if canImport(UIKit)
+        if #available(iOS 16.0, *) {
+            return Locale.current.hourCycle == .zeroToEleven || Locale.current.hourCycle == .oneToTwelve
+                ? "h12"
+                : "h24"
+        }
+        #endif
+        let format = DateFormatter.dateFormat(fromTemplate: "j", options: 0, locale: .current) ?? ""
+        return format.contains("a") ? "h12" : "h24"
+    }
+
+    /// ISO 4217 currency code when available.
+    static func currencyCode() -> String? {
+        if #available(iOS 16.0, *) {
+            return Locale.current.currency?.identifier
+        }
+        return Locale.current.currencyCode
+    }
+
+    /// ISO 3166-1 alpha-2 region.
+    static func regionCode() -> String? {
+        if #available(iOS 16.0, *) {
+            return Locale.current.region?.identifier
+        }
+        return Locale.current.regionCode
+    }
+
+    /// `"high"` (≥2×) or `"standard"` — matches web `device_pixel_ratio_bucket`.
+    static func devicePixelRatioBucket() -> String {
+        #if canImport(UIKit)
+        let scale: CGFloat
+        if Thread.isMainThread {
+            scale = UIScreen.main.scale
+        } else {
+            scale = DispatchQueue.main.sync { UIScreen.main.scale }
+        }
+        return scale >= 2.0 ? "high" : "standard"
+        #else
+        return "standard"
         #endif
     }
 

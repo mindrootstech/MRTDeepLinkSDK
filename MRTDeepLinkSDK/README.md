@@ -2,7 +2,7 @@
 
 iOS SDK for **deferred deep linking** — attributes a SmartLink web click to the first app open, then routes the user to the matched in-app path.
 
-**Version:** `0.6.0` · **iOS 15+** · **Swift 5**
+**Version:** `0.6.1` · **iOS 15+** · **Swift 5**
 
 ---
 
@@ -184,7 +184,8 @@ Deferred match runs **once per install** (guarded by `UserDefaults`).
 
 Auth headers: `X-SDK-Key`, `Authorization: Bearer {apiKey}`
 
-Body includes native signals (`osVersionMajor`, `locale`, `timezone`, `screenBucket`, …) and optional `/fp-probe` fields (`canvasHash`, `gpuRenderer`, `audioFingerprint`, …). If a Universal Link carried `?session=` / `clickSessionId`, that UUID is sent as `clickSessionId`.
+Body includes native signals (`osVersionMajor`, `deviceName`, `locale`, `timezone`, `screenBucket`, …) and optional `/fp-probe` fields (`canvasHash`, `gpuRenderer`, `audioFingerprint`, …). If a Universal Link carried `?session=` / `clickSessionId`, that UUID is sent as `clickSessionId`.
+`deviceName` is the hardware model id (e.g. `iPhone15,2`).
 
 ### Response
 

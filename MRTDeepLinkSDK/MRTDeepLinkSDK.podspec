@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'MRTDeepLinkSDK'
-  s.version          = '0.6.0'
+  s.version          = '0.6.1'
   s.summary          = 'Deferred deep linking SDK for iOS.'
   s.description      = <<-DESC
     MRTDeepLinkSDK attributes pre-install SmartLink clicks on first app open

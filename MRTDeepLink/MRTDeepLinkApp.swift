@@ -13,89 +13,54 @@ struct MRTDeepLinkApp: App {
             debugLogging: true,
             serverURL: URL(string: AppConfig.serverURL)!,
             universalLinkDomain: AppConfig.universalLinkDomain,
-            customURLScheme: AppConfig.customURLScheme
+            customURLScheme: AppConfig.customURLScheme,
+            clipboardMatchEnabled: true
         )
     }
 
     var body: some Scene {
         WindowGroup {
-            RootTabView()
+            ContentView()
                 .environmentObject(router)
                 .handleMRTDeepLinks { payload in
                     router.handle(payload)
                 }
+                .onReceive(NotificationCenter.default.publisher(for: .mrtDeepLinkIgnored)) { note in
+                    if let url = note.userInfo?["url"] as? String {
+                        router.lastIgnoredURL = url
+                    }
+                }
         }
     }
-}
-
-private struct RootTabView: View {
-    @EnvironmentObject private var router: AppDeepLinkRouter
-
-    var body: some View {
-        TabView(selection: $router.selectedTab) {
-            ContentView()
-                .tabItem {
-                    Label("Home", systemImage: "link")
-                }
-                .tag(AppTab.home)
-
-            ProductListView()
-                .tabItem {
-                    Label("Products", systemImage: "bag.fill")
-                }
-                .tag(AppTab.products)
-        }
-    }
-}
-
-enum AppTab: Hashable {
-    case home
-    case products
 }
 
 final class AppDeepLinkRouter: ObservableObject {
-    @Published var destination: DeepLinkDestination?
     @Published var lastPayload: MRTDeepLinkPayload?
-    @Published var selectedTab: AppTab = .home
-    @Published var pendingProductID: Int?
+    @Published var lastIgnoredURL: String?
 
     func handle(_ payload: MRTDeepLinkPayload) {
         lastPayload = payload
-        printDeepLinkPayload(payload)
-
-        if let productID = Self.parseProductID(from: payload) {
-            selectedTab = .products
-            pendingProductID = productID
-        }
-    }
-
-    private static func parseProductID(from payload: MRTDeepLinkPayload) -> Int? {
-        let components = payload.pathComponents
-        guard let productIndex = components.firstIndex(of: "product"),
-              productIndex + 1 < components.count,
-              let id = Int(components[productIndex + 1]) else {
-            return nil
-        }
-        return id
-    }
-
-    func clearPendingProduct() {
-        pendingProductID = nil
-    }
-
-    private func printDeepLinkPayload(_ payload: MRTDeepLinkPayload) {
+        lastIgnoredURL = nil
         print("══════════════════════════════════════")
         print("🔗 DEEP LINK RECEIVED")
         print("URL:      \(payload.url.absoluteString)")
         print("Path:     \(payload.path)")
+        print("Segments: \(payload.pathComponents.joined(separator: " → "))")
         print("Source:   \(payload.source.rawValue)")
         print("Deferred: \(payload.isDeferred ? "YES ✅" : "no")")
+        if payload.queryParameters.isEmpty {
+            print("Params:   (none)")
+        } else {
+            print("Params:")
+            for key in payload.queryParameters.keys.sorted() {
+                print("  • \(key) = \(payload.queryParameters[key] ?? "")")
+            }
+        }
         print("══════════════════════════════════════")
     }
-}
 
-enum DeepLinkDestination: Equatable {
-    case home
-    case product(id: String)
-    case profile(userId: String)
+    func noteIgnoredURL(_ url: URL) {
+        lastIgnoredURL = url.absoluteString
+        print("⚠️ Ignored deep link (domain/scheme mismatch): \(url.absoluteString)")
+    }
 }

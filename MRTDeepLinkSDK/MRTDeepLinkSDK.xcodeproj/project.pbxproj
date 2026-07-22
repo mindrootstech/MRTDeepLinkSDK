@@ -23,6 +23,8 @@
 		A1000000000000000000000F /* MRTWebFingerprintCollector.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000F /* MRTWebFingerprintCollector.swift */; };
 		A10000000000000000000010 /* MRTDeepLinkModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000010 /* MRTDeepLinkModifier.swift */; };
 		A10000000000000000000011 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B10000000000000000000011 /* WebKit.framework */; };
+		A10000000000000000000012 /* MRTCombinedFingerprint.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000013 /* MRTCombinedFingerprint.swift */; };
+		A10000000000000000000014 /* MRTClipboardMatchToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000015 /* MRTClipboardMatchToken.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -43,6 +45,8 @@
 		B1000000000000000000000F /* MRTWebFingerprintCollector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTWebFingerprintCollector.swift; sourceTree = "<group>"; };
 		B10000000000000000000010 /* MRTDeepLinkModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTDeepLinkModifier.swift; sourceTree = "<group>"; };
 		B10000000000000000000011 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
+		B10000000000000000000013 /* MRTCombinedFingerprint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTCombinedFingerprint.swift; sourceTree = "<group>"; };
+		B10000000000000000000015 /* MRTClipboardMatchToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTClipboardMatchToken.swift; sourceTree = "<group>"; };
 		B10000000000000000000012 /* MRTDeepLinkSDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = MRTDeepLinkSDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -94,6 +98,8 @@
 				B1000000000000000000000D /* MRTSmartLinkConfiguration.swift */,
 				B1000000000000000000000E /* MRTURLSessionRetry.swift */,
 				B1000000000000000000000F /* MRTWebFingerprintCollector.swift */,
+				B10000000000000000000013 /* MRTCombinedFingerprint.swift */,
+				B10000000000000000000015 /* MRTClipboardMatchToken.swift */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -186,6 +192,8 @@
 				A1000000000000000000000E /* MRTURLSessionRetry.swift in Sources */,
 				A1000000000000000000000F /* MRTWebFingerprintCollector.swift in Sources */,
 				A10000000000000000000010 /* MRTDeepLinkModifier.swift in Sources */,
+				A10000000000000000000012 /* MRTCombinedFingerprint.swift in Sources */,
+				A10000000000000000000014 /* MRTClipboardMatchToken.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

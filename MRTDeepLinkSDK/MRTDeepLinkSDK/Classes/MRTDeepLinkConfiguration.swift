@@ -6,19 +6,25 @@ public struct MRTDeepLinkConfiguration: Sendable {
     public let debugLogging: Bool
     public let universalLinkDomain: String?
     public let customURLScheme: String?
+    /// When true, deferred match silently checks the clipboard for a copied SmartLink
+    /// (no prompt) and only reads it (one iOS paste prompt) if a web URL is present.
+    /// Off by default because the read can show the system paste prompt.
+    public let clipboardMatchEnabled: Bool
 
     public init(
         apiKey: String,
         debugLogging: Bool = false,
         serverURL: URL = MRTDeepLinkDefaults.licenseServerURL,
         universalLinkDomain: String? = nil,
-        customURLScheme: String? = nil
+        customURLScheme: String? = nil,
+        clipboardMatchEnabled: Bool = false
     ) {
         self.apiKey = apiKey
         self.serverURL = serverURL
         self.debugLogging = debugLogging
         self.universalLinkDomain = Self.normalizedDomain(universalLinkDomain)
         self.customURLScheme = customURLScheme
+        self.clipboardMatchEnabled = clipboardMatchEnabled
     }
 
     var deferredMatchPath: String { MRTDeepLinkDefaults.deferredMatchPath }
