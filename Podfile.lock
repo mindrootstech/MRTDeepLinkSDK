@@ -1,21 +1,21 @@
 PODS:
-  - MRTDeepLinkSDK (0.6.0):
-    - MRTDeepLinkSDK/Core (= 0.6.0)
-    - MRTDeepLinkSDK/SwiftUI (= 0.6.0)
-  - MRTDeepLinkSDK/Core (0.6.0)
-  - MRTDeepLinkSDK/SwiftUI (0.6.0):
-    - MRTDeepLinkSDK/Core
+  - CliqIt (2.0.1):
+    - CliqIt/Core (= 2.0.1)
+    - CliqIt/SwiftUI (= 2.0.1)
+  - CliqIt/Core (2.0.1)
+  - CliqIt/SwiftUI (2.0.1):
+    - CliqIt/Core
 
 DEPENDENCIES:
-  - MRTDeepLinkSDK (from `./MRTDeepLinkSDK`)
+  - CliqIt (from `./CliqIt`)
 
 EXTERNAL SOURCES:
-  MRTDeepLinkSDK:
-    :path: "./MRTDeepLinkSDK"
+  CliqIt:
+    :path: "./CliqIt"
 
 SPEC CHECKSUMS:
-  MRTDeepLinkSDK: ecaaf3e5fc5fc57739f4ebca74a9f1c39ce5162a
+  CliqIt: 7f48ffa967620eaba35970a182aca20e4f15ab67
 
-PODFILE CHECKSUM: 9d12941b2681ef59e715658ef9fd1ad936c535c8
+PODFILE CHECKSUM: ee0aecba4d715fe19db0a6f6597e033694d65a37
 
 COCOAPODS: 1.16.2

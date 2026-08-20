@@ -1,0 +1,31 @@
+{
+  "name": "react-native-cliqit",
+  "version": "0.1.0",
+  "description": "React Native bridge for CliqIt deferred deep linking (iOS).",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "react-native": "src/index.js",
+  "source": "src/index.js",
+  "files": [
+    "src",
+    "ios",
+    "android",
+    "react-native-cliqit.podspec",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "echo \"no tests yet\""
+  },
+  "keywords": [
+    "react-native",
+    "cliqit",
+    "deep-link",
+    "deferred"
+  ],
+  "author": "MindRoots",
+  "license": "UNLICENSED",
+  "peerDependencies": {
+    "react": "*",
+    "react-native": "*"
+  }
+}

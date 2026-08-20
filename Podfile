@@ -2,12 +2,12 @@
 platform :ios, '15.0'
 
 # Local path pod — always compile SDK from source (not the vendored XCFramework).
-ENV['MRT_SDK_SOURCE'] = '1'
+ENV['CLIQIT_SDK_SOURCE'] = '1'
 
 target 'MRTDeepLink' do
   use_frameworks!
 
-  pod 'MRTDeepLinkSDK', :path => './MRTDeepLinkSDK'
+  pod 'CliqIt', :path => './CliqIt'
 
   target 'MRTDeepLinkTests' do
     inherit! :search_paths

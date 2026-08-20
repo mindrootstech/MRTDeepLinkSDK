@@ -1,19 +1,16 @@
 import SwiftUI
-import MRTDeepLinkSDK
+import CliqIt
 
 struct ContentView: View {
     @EnvironmentObject private var router: AppDeepLinkRouter
     @State private var clickSessionId = AppConfig.defaultClickSessionId
-    @State private var matchResponse: MRTDeferredMatchResponse?
+    @State private var matchResponse: CliqItDeferredMatchResponse?
     @State private var matchRequestJSON: String?
     @State private var matchError: String?
     @State private var isMatchLoading = false
-    @State private var webFingerprint: MRTWebFingerprint?
-    @State private var combinedFingerprint: MRTCombinedFingerprint?
+    @State private var webFingerprint: CliqItWebFingerprint?
+    @State private var combinedFingerprint: CliqItCombinedFingerprint?
     @State private var isCollectingFingerprint = false
-    @State private var clipboardToken: String?
-    @State private var clipboardChecked = false
-    @State private var isCheckingClipboard = false
 
     var body: some View {
         NavigationStack {
@@ -35,7 +32,7 @@ struct ContentView: View {
                             Text(ignored)
                                 .font(.caption.monospaced())
                                 .textSelection(.enabled)
-                            Text("Check universalLinkDomain matches the link host + Associated Domains.")
+                            Text("Check Associated Domains entitlements match the link host.")
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                         }
@@ -45,7 +42,6 @@ struct ContentView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
 
-                    clipboardMatchView
                     webFingerprintView
                     deferredMatchView
 
@@ -73,91 +69,61 @@ struct ContentView: View {
                 }
             }
             .onAppear {
-                MRTDeepLink.shared.onDeferredMatchDebugRequest { json in
+                CliqItSDK.shared.onDeferredMatchDebugRequest { json in
                     isMatchLoading = true
                     matchRequestJSON = json
-                    webFingerprint = MRTDeepLink.shared.currentWebFingerprint
-                    combinedFingerprint = MRTDeepLink.shared.combinedFingerprint
+                    webFingerprint = CliqItSDK.shared.currentWebFingerprint
+                    combinedFingerprint = CliqItSDK.shared.combinedFingerprint
                 }
-                MRTDeepLink.shared.onDeferredMatchDebug { result in
+                CliqItSDK.shared.onDirectLinkLookup { result in
+                    switch result {
+                    case .success(let details):
+                        print("Demo link lookup → path=\(details[.resolvedPath] ?? "-") slug=\(details[.slug] ?? "-")")
+                    case .failure(let error):
+                        print("Demo link lookup error: \(error.localizedDescription)")
+                    }
+                }
+                CliqItSDK.shared.onDeferredMatchDebug { result in
                     isMatchLoading = false
-                    webFingerprint = MRTDeepLink.shared.currentWebFingerprint
-                    combinedFingerprint = MRTDeepLink.shared.combinedFingerprint
+                    webFingerprint = CliqItSDK.shared.currentWebFingerprint
+                    combinedFingerprint = CliqItSDK.shared.combinedFingerprint
                     switch result {
                     case .success(let response):
                         matchResponse = response
                         matchError = nil
-                        print("══════════════════════════════════════")
-                        print("📥 DEFERRED API RESPONSE")
-                        print("matched:          \(response.matched)")
-                        print("tier:             \(response.tier ?? "-")")
-                        print("confidence:       \(response.confidence ?? "-")")
-                        print("score:            \(response.score.map { String(format: "%.2f", $0) } ?? "-")")
-                        print("destinationPath:  \(response.destinationPath ?? "-")")
-                        print("slug:             \(response.slug ?? "-")")
-                        print("══════════════════════════════════════")
+                        // Typed access — no string hunting / print-check needed:
+                        // response[.destinationPath], response.outcome, etc.
+                        switch response.outcome {
+                        case .matched(let info):
+                            print("══════════════════════════════════════")
+                            print("📥 DEFERRED MATCHED")
+                            print("path: \(info.destinationPath ?? "-")")
+                            print("slug: \(info[.slug] ?? "-")")
+                            print("tier: \(info[.tier] ?? "-")")
+                            print("══════════════════════════════════════")
+                        case .notMatched(let info):
+                            print("📥 DEFERRED NOT MATCHED score=\(info[.score] ?? "-")")
+                        case .failed(let error):
+                            print("📥 DEFERRED FAILED: \(error.localizedDescription)")
+                        }
                     case .failure(let error):
                         matchError = error.localizedDescription
                         print("📥 DEFERRED API ERROR: \(error.localizedDescription)")
                     }
                 }
-                if let cached = MRTDeepLink.shared.currentDeferredMatchDebugResponse {
+                if let cached = CliqItSDK.shared.currentDeferredMatchDebugResponse {
                     matchResponse = cached
                     isMatchLoading = false
-                } else if MRTDeepLink.shared.hasDeferredMatchBeenReported {
+                } else if CliqItSDK.shared.hasDeferredMatchBeenReported {
                     isMatchLoading = false
                 } else {
-                    isMatchLoading = MRTDeepLink.shared.isDeferredMatchInFlight
+                    isMatchLoading = CliqItSDK.shared.isDeferredMatchInFlight
                 }
-                if let json = MRTDeepLink.shared.currentMatchDebugRequestJSON {
+                if let json = CliqItSDK.shared.currentMatchDebugRequestJSON {
                     matchRequestJSON = json
                 }
-                webFingerprint = MRTDeepLink.shared.currentWebFingerprint
-                combinedFingerprint = MRTDeepLink.shared.combinedFingerprint
-            }
-        }
-    }
-
-    private var clipboardMatchView: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Clipboard match token")
-                .font(.headline)
-
-            Text("Silent detect (no prompt) → reads only if a SmartLink URL is on the clipboard (one paste prompt). Copy a link like …/r/xxxx?session=<uuid> then tap.")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-
-            Button(isCheckingClipboard ? "Checking…" : "Check clipboard for link") {
-                checkClipboard()
-            }
-            .buttonStyle(.bordered)
-            .disabled(isCheckingClipboard)
-
-            if clipboardChecked {
-                if let token = clipboardToken {
-                    debugRow("token", token)
-                } else {
-                    Text("No SmartLink token on clipboard.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
-        .background(.quaternary.opacity(0.25))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-    }
-
-    private func checkClipboard() {
-        isCheckingClipboard = true
-        Task {
-            let token = await MRTDeepLink.shared.readClipboardMatchToken()
-            await MainActor.run {
-                clipboardToken = token
-                clipboardChecked = true
-                isCheckingClipboard = false
-                if let token { clickSessionId = token }
+                webFingerprint = CliqItSDK.shared.currentWebFingerprint
+                combinedFingerprint = CliqItSDK.shared.combinedFingerprint
             }
         }
     }
@@ -229,9 +195,9 @@ struct ContentView: View {
     private func collectFingerprint() {
         isCollectingFingerprint = true
         Task {
-            let combined = await MRTDeepLink.shared.collectCombinedFingerprint()
+            let combined = await CliqItSDK.shared.collectCombinedFingerprint()
             await MainActor.run {
-                webFingerprint = MRTDeepLink.shared.currentWebFingerprint
+                webFingerprint = CliqItSDK.shared.currentWebFingerprint
                 combinedFingerprint = combined
                 isCollectingFingerprint = false
             }
@@ -243,7 +209,7 @@ struct ContentView: View {
             Text("Deferred Match")
                 .font(.headline)
 
-            Text("POST /api/deferred/app/match")
+            Text("POST /api/v1/sdk/app/match")
                 .font(.caption2.monospaced())
                 .foregroundStyle(.secondary)
 
@@ -299,7 +265,7 @@ struct ContentView: View {
         matchError = nil
         matchRequestJSON = nil
         let sessionId = clickSessionId.trimmingCharacters(in: .whitespacesAndNewlines)
-        MRTDeepLink.shared.runDeferredMatchDebug(
+        CliqItSDK.shared.runDeferredMatchDebug(
             clickSessionId: sessionId.isEmpty ? nil : sessionId
         )
     }
@@ -342,7 +308,7 @@ struct ContentView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private func deepLinkDebugView(_ payload: MRTDeepLinkPayload) -> some View {
+    private func deepLinkDebugView(_ payload: CliqItPayload) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Text(payload.isDeferred ? "Deferred Deep Link" : "Opened from Link")

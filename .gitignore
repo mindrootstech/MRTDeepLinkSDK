@@ -8,3 +8,9 @@ DerivedData/
 
 # macOS
 .DS_Store
+
+# XCFramework scratch builds
+**/.build-xcframework/
+
+# Public binary packaging lives in mindrootstech/CliqIt — keep local only
+.binary-release/

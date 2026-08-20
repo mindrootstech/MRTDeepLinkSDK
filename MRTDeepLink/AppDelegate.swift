@@ -1,4 +1,4 @@
-import MRTDeepLinkSDK
+import CliqIt
 import UIKit
 
 final class AppDelegate: NSObject, UIApplicationDelegate {
@@ -7,7 +7,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         continue userActivity: NSUserActivity,
         restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void
     ) -> Bool {
-        MRTDeepLink.shared.handle(userActivity: userActivity)
+        CliqItSDK.shared.handle(userActivity: userActivity)
     }
 
     func application(
@@ -15,6 +15,6 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         open url: URL,
         options: [UIApplication.OpenURLOptionsKey: Any] = [:]
     ) -> Bool {
-        MRTDeepLink.shared.handle(url: url)
+        CliqItSDK.shared.handle(url: url)
     }
 }

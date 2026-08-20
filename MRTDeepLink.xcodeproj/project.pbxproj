@@ -7,9 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		378693678CF2A4608D4FEEFB /* Pods_MRTDeepLinkTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F4FE237414AE557C13C4BB9B /* Pods_MRTDeepLinkTests.framework */; };
-		9A6BEE4534B24A94444FC6C5 /* Pods_MRTDeepLink.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7A9AB21E941352E2DA49FD59 /* Pods_MRTDeepLink.framework */; };
-		E818BFB7C08B9ADBA18BE86B /* Pods_MRTDeepLinkUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6580DFA7D99A5A7E914624E1 /* Pods_MRTDeepLinkUITests.framework */; };
+		0680FC788A76E533D8847C7A /* Pods_MRTDeepLinkUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 368A0543092C7CA14B713E8F /* Pods_MRTDeepLinkUITests.framework */; };
+		13C668F6ABE93178E71B3A19 /* Pods_MRTDeepLink.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D17958F118084C4ABD1FD4D6 /* Pods_MRTDeepLink.framework */; };
+		A76B799D988E6E6D2C8A7793 /* Pods_MRTDeepLinkTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A3876C570E6FB9E46A6DEBD /* Pods_MRTDeepLinkTests.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -18,50 +18,56 @@
 			containerPortal = 93ECDFC62FDFC03900B67C81 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 93ECDFCD2FDFC03900B67C81;
-			remoteInfo = MRTDeepLink;
+			remoteInfo = CliqIt;
 		};
 		93ECDFE62FDFC03A00B67C81 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 93ECDFC62FDFC03900B67C81 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 93ECDFCD2FDFC03900B67C81;
-			remoteInfo = MRTDeepLink;
+			remoteInfo = CliqIt;
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		1FA8B9AB593D3254D9CF0BEC /* Pods-MRTDeepLink.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MRTDeepLink.debug.xcconfig"; path = "Target Support Files/Pods-MRTDeepLink/Pods-MRTDeepLink.debug.xcconfig"; sourceTree = "<group>"; };
-		362A6C1AA0216FBD7F8FDB5B /* Pods-MRTDeepLinkTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MRTDeepLinkTests.release.xcconfig"; path = "Target Support Files/Pods-MRTDeepLinkTests/Pods-MRTDeepLinkTests.release.xcconfig"; sourceTree = "<group>"; };
-		3D4F4CFD7D6CADF70A1DFC60 /* Pods-MRTDeepLink.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MRTDeepLink.release.xcconfig"; path = "Target Support Files/Pods-MRTDeepLink/Pods-MRTDeepLink.release.xcconfig"; sourceTree = "<group>"; };
-		60EC8A094788C4AAA5BFC01B /* Pods-MRTDeepLinkUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MRTDeepLinkUITests.release.xcconfig"; path = "Target Support Files/Pods-MRTDeepLinkUITests/Pods-MRTDeepLinkUITests.release.xcconfig"; sourceTree = "<group>"; };
-		6580DFA7D99A5A7E914624E1 /* Pods_MRTDeepLinkUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MRTDeepLinkUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		7A9AB21E941352E2DA49FD59 /* Pods_MRTDeepLink.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MRTDeepLink.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		932D08A82FE9032F00B50EBC /* MRTInstallDeviceInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTInstallDeviceInfo.swift; sourceTree = "<group>"; };
-		932D08A92FE9032F00B50EBC /* MRTSDKLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTSDKLogger.swift; sourceTree = "<group>"; };
-		93314AC72FE15E38005F6765 /* MRTDeepLinkSceneSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTDeepLinkSceneSupport.swift; sourceTree = "<group>"; };
-		93314B512FE16460005F6765 /* MRTSDKRequestAuth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTSDKRequestAuth.swift; sourceTree = "<group>"; };
-		935A1C833004ABE600013F9E /* MRTNetworkInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTNetworkInfo.swift; sourceTree = "<group>"; };
-		935A1C843004ABE600013F9E /* MRTWebFingerprintCollector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTWebFingerprintCollector.swift; sourceTree = "<group>"; };
-		935AC2C330064311004D9A88 /* MRTCombinedFingerprint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTCombinedFingerprint.swift; sourceTree = "<group>"; };
-		935AC2C430064311004D9A88 /* MRTDeferredMatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTDeferredMatch.swift; sourceTree = "<group>"; };
-		93BC69CA2FED3920001F9C16 /* MRTURLSessionRetry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTURLSessionRetry.swift; sourceTree = "<group>"; };
+		1E332DC291DBFFD0B41A02DF /* Pods-MRTDeepLink.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MRTDeepLink.debug.xcconfig"; path = "Target Support Files/Pods-MRTDeepLink/Pods-MRTDeepLink.debug.xcconfig"; sourceTree = "<group>"; };
+		1FA8B9AB593D3254D9CF0BEC /* Pods-CliqIt.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CliqIt.debug.xcconfig"; path = "Target Support Files/Pods-CliqIt/Pods-CliqIt.debug.xcconfig"; sourceTree = "<group>"; };
+		362A6C1AA0216FBD7F8FDB5B /* Pods-CliqItTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CliqItTests.release.xcconfig"; path = "Target Support Files/Pods-CliqItTests/Pods-CliqItTests.release.xcconfig"; sourceTree = "<group>"; };
+		368A0543092C7CA14B713E8F /* Pods_MRTDeepLinkUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MRTDeepLinkUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		3D4F4CFD7D6CADF70A1DFC60 /* Pods-CliqIt.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CliqIt.release.xcconfig"; path = "Target Support Files/Pods-CliqIt/Pods-CliqIt.release.xcconfig"; sourceTree = "<group>"; };
+		55ECD6A24F6353F729AA9807 /* Pods-MRTDeepLink.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MRTDeepLink.release.xcconfig"; path = "Target Support Files/Pods-MRTDeepLink/Pods-MRTDeepLink.release.xcconfig"; sourceTree = "<group>"; };
+		60EC8A094788C4AAA5BFC01B /* Pods-CliqItUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CliqItUITests.release.xcconfig"; path = "Target Support Files/Pods-CliqItUITests/Pods-CliqItUITests.release.xcconfig"; sourceTree = "<group>"; };
+		8F09831C82EFC733DF2BFE3E /* Pods-MRTDeepLinkUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MRTDeepLinkUITests.release.xcconfig"; path = "Target Support Files/Pods-MRTDeepLinkUITests/Pods-MRTDeepLinkUITests.release.xcconfig"; sourceTree = "<group>"; };
+		932D08A82FE9032F00B50EBC /* CliqItInstallDeviceInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CliqItInstallDeviceInfo.swift; sourceTree = "<group>"; };
+		932D08A92FE9032F00B50EBC /* CliqItLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CliqItLogger.swift; sourceTree = "<group>"; };
+		93314AC72FE15E38005F6765 /* CliqItSceneSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CliqItSceneSupport.swift; sourceTree = "<group>"; };
+		93314B512FE16460005F6765 /* CliqItRequestAuth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CliqItRequestAuth.swift; sourceTree = "<group>"; };
+		935A1C833004ABE600013F9E /* CliqItNetworkInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CliqItNetworkInfo.swift; sourceTree = "<group>"; };
+		935A1C843004ABE600013F9E /* CliqItWebFingerprintCollector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CliqItWebFingerprintCollector.swift; sourceTree = "<group>"; };
+		935AC2C330064311004D9A88 /* CliqItCombinedFingerprint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CliqItCombinedFingerprint.swift; sourceTree = "<group>"; };
+		935AC2C430064311004D9A88 /* CliqItDeferredMatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CliqItDeferredMatch.swift; sourceTree = "<group>"; };
+		93BC69CA2FED3920001F9C16 /* CliqItURLSessionRetry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CliqItURLSessionRetry.swift; sourceTree = "<group>"; };
 		93ECDFCE2FDFC03900B67C81 /* MRTDeepLink.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MRTDeepLink.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		93ECDFDB2FDFC03A00B67C81 /* MRTDeepLinkTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MRTDeepLinkTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		93ECDFE52FDFC03A00B67C81 /* MRTDeepLinkUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MRTDeepLinkUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		93ECE0322FDFC44C00B67C81 /* MRTDeepLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTDeepLink.swift; sourceTree = "<group>"; };
-		93ECE0332FDFC44C00B67C81 /* MRTDeepLinkConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTDeepLinkConfiguration.swift; sourceTree = "<group>"; };
-		93ECE0342FDFC44C00B67C81 /* MRTDeepLinkParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTDeepLinkParser.swift; sourceTree = "<group>"; };
-		93ECE0352FDFC44C00B67C81 /* MRTDeepLinkPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTDeepLinkPayload.swift; sourceTree = "<group>"; };
-		93ECE0372FDFC44C00B67C81 /* MRTDeepLinkModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTDeepLinkModifier.swift; sourceTree = "<group>"; };
+		93ECE0322FDFC44C00B67C81 /* CliqIt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CliqIt.swift; sourceTree = "<group>"; };
+		93ECE0332FDFC44C00B67C81 /* CliqItConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CliqItConfiguration.swift; sourceTree = "<group>"; };
+		93ECE0342FDFC44C00B67C81 /* CliqItParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CliqItParser.swift; sourceTree = "<group>"; };
+		93ECE0352FDFC44C00B67C81 /* CliqItPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CliqItPayload.swift; sourceTree = "<group>"; };
+		93ECE0372FDFC44C00B67C81 /* CliqItModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CliqItModifier.swift; sourceTree = "<group>"; };
 		93ECE03A2FDFC44C00B67C81 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
-		93ECE03B2FDFC44C00B67C81 /* MRTDeepLinkSDK.podspec */ = {isa = PBXFileReference; lastKnownFileType = text; path = MRTDeepLinkSDK.podspec; sourceTree = "<group>"; };
+		93ECE03B2FDFC44C00B67C81 /* CliqIt.podspec */ = {isa = PBXFileReference; lastKnownFileType = text; path = CliqIt.podspec; sourceTree = "<group>"; };
 		93ECE03C2FDFC44C00B67C81 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
-		93ECE10D2FE0206500B67C81 /* MRTDeepLinkDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTDeepLinkDefaults.swift; sourceTree = "<group>"; };
-		93ECE10F2FE0206500B67C81 /* MRTSmartLinkBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTSmartLinkBuilder.swift; sourceTree = "<group>"; };
-		93ECE1102FE0206500B67C81 /* MRTSmartLinkConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRTSmartLinkConfiguration.swift; sourceTree = "<group>"; };
-		A1032D5D9445FD69E7F2B19A /* Pods-MRTDeepLinkTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MRTDeepLinkTests.debug.xcconfig"; path = "Target Support Files/Pods-MRTDeepLinkTests/Pods-MRTDeepLinkTests.debug.xcconfig"; sourceTree = "<group>"; };
-		B9318208DEBC003EFD2C048A /* Pods-MRTDeepLinkUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MRTDeepLinkUITests.debug.xcconfig"; path = "Target Support Files/Pods-MRTDeepLinkUITests/Pods-MRTDeepLinkUITests.debug.xcconfig"; sourceTree = "<group>"; };
-		F4FE237414AE557C13C4BB9B /* Pods_MRTDeepLinkTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MRTDeepLinkTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		93ECE10D2FE0206500B67C81 /* CliqItDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CliqItDefaults.swift; sourceTree = "<group>"; };
+		93ECE10F2FE0206500B67C81 /* CliqItSmartLinkBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CliqItSmartLinkBuilder.swift; sourceTree = "<group>"; };
+		93ECE1102FE0206500B67C81 /* CliqItSmartLinkConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CliqItSmartLinkConfiguration.swift; sourceTree = "<group>"; };
+		9A3876C570E6FB9E46A6DEBD /* Pods_MRTDeepLinkTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MRTDeepLinkTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1032D5D9445FD69E7F2B19A /* Pods-CliqItTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CliqItTests.debug.xcconfig"; path = "Target Support Files/Pods-CliqItTests/Pods-CliqItTests.debug.xcconfig"; sourceTree = "<group>"; };
+		B9318208DEBC003EFD2C048A /* Pods-CliqItUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CliqItUITests.debug.xcconfig"; path = "Target Support Files/Pods-CliqItUITests/Pods-CliqItUITests.debug.xcconfig"; sourceTree = "<group>"; };
+		BC31B125AEB558FC8061A89E /* Pods-MRTDeepLinkTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MRTDeepLinkTests.debug.xcconfig"; path = "Target Support Files/Pods-MRTDeepLinkTests/Pods-MRTDeepLinkTests.debug.xcconfig"; sourceTree = "<group>"; };
+		BD8FCE890B90A79C7600551D /* Pods-MRTDeepLinkTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MRTDeepLinkTests.release.xcconfig"; path = "Target Support Files/Pods-MRTDeepLinkTests/Pods-MRTDeepLinkTests.release.xcconfig"; sourceTree = "<group>"; };
+		D17958F118084C4ABD1FD4D6 /* Pods_MRTDeepLink.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MRTDeepLink.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		FCFC30B1D520DC6A65BCD870 /* Pods-MRTDeepLinkUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MRTDeepLinkUITests.debug.xcconfig"; path = "Target Support Files/Pods-MRTDeepLinkUITests/Pods-MRTDeepLinkUITests.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -104,7 +110,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9A6BEE4534B24A94444FC6C5 /* Pods_MRTDeepLink.framework in Frameworks */,
+				13C668F6ABE93178E71B3A19 /* Pods_MRTDeepLink.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,7 +118,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				378693678CF2A4608D4FEEFB /* Pods_MRTDeepLinkTests.framework in Frameworks */,
+				A76B799D988E6E6D2C8A7793 /* Pods_MRTDeepLinkTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -120,7 +126,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E818BFB7C08B9ADBA18BE86B /* Pods_MRTDeepLinkUITests.framework in Frameworks */,
+				0680FC788A76E533D8847C7A /* Pods_MRTDeepLinkUITests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -130,12 +136,18 @@
 		174C3DC3A81FC15AAB327A19 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				1FA8B9AB593D3254D9CF0BEC /* Pods-MRTDeepLink.debug.xcconfig */,
-				3D4F4CFD7D6CADF70A1DFC60 /* Pods-MRTDeepLink.release.xcconfig */,
-				A1032D5D9445FD69E7F2B19A /* Pods-MRTDeepLinkTests.debug.xcconfig */,
-				362A6C1AA0216FBD7F8FDB5B /* Pods-MRTDeepLinkTests.release.xcconfig */,
-				B9318208DEBC003EFD2C048A /* Pods-MRTDeepLinkUITests.debug.xcconfig */,
-				60EC8A094788C4AAA5BFC01B /* Pods-MRTDeepLinkUITests.release.xcconfig */,
+				1FA8B9AB593D3254D9CF0BEC /* Pods-CliqIt.debug.xcconfig */,
+				3D4F4CFD7D6CADF70A1DFC60 /* Pods-CliqIt.release.xcconfig */,
+				A1032D5D9445FD69E7F2B19A /* Pods-CliqItTests.debug.xcconfig */,
+				362A6C1AA0216FBD7F8FDB5B /* Pods-CliqItTests.release.xcconfig */,
+				B9318208DEBC003EFD2C048A /* Pods-CliqItUITests.debug.xcconfig */,
+				60EC8A094788C4AAA5BFC01B /* Pods-CliqItUITests.release.xcconfig */,
+				1E332DC291DBFFD0B41A02DF /* Pods-MRTDeepLink.debug.xcconfig */,
+				55ECD6A24F6353F729AA9807 /* Pods-MRTDeepLink.release.xcconfig */,
+				BC31B125AEB558FC8061A89E /* Pods-MRTDeepLinkTests.debug.xcconfig */,
+				BD8FCE890B90A79C7600551D /* Pods-MRTDeepLinkTests.release.xcconfig */,
+				FCFC30B1D520DC6A65BCD870 /* Pods-MRTDeepLinkUITests.debug.xcconfig */,
+				8F09831C82EFC733DF2BFE3E /* Pods-MRTDeepLinkUITests.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -143,7 +155,7 @@
 		93ECDFC52FDFC03900B67C81 = {
 			isa = PBXGroup;
 			children = (
-				93ECE03D2FDFC44C00B67C81 /* MRTDeepLinkSDK */,
+				93ECE03D2FDFC44C00B67C81 /* CliqIt */,
 				93ECDFD02FDFC03900B67C81 /* MRTDeepLink */,
 				93ECDFDE2FDFC03A00B67C81 /* MRTDeepLinkTests */,
 				93ECDFE82FDFC03A00B67C81 /* MRTDeepLinkUITests */,
@@ -166,22 +178,22 @@
 		93ECE0362FDFC44C00B67C81 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
-				935AC2C330064311004D9A88 /* MRTCombinedFingerprint.swift */,
-				935AC2C430064311004D9A88 /* MRTDeferredMatch.swift */,
-				935A1C833004ABE600013F9E /* MRTNetworkInfo.swift */,
-				935A1C843004ABE600013F9E /* MRTWebFingerprintCollector.swift */,
-				93BC69CA2FED3920001F9C16 /* MRTURLSessionRetry.swift */,
-				932D08A82FE9032F00B50EBC /* MRTInstallDeviceInfo.swift */,
-				932D08A92FE9032F00B50EBC /* MRTSDKLogger.swift */,
-				93314B512FE16460005F6765 /* MRTSDKRequestAuth.swift */,
-				93314AC72FE15E38005F6765 /* MRTDeepLinkSceneSupport.swift */,
-				93ECE10D2FE0206500B67C81 /* MRTDeepLinkDefaults.swift */,
-				93ECE10F2FE0206500B67C81 /* MRTSmartLinkBuilder.swift */,
-				93ECE1102FE0206500B67C81 /* MRTSmartLinkConfiguration.swift */,
-				93ECE0322FDFC44C00B67C81 /* MRTDeepLink.swift */,
-				93ECE0332FDFC44C00B67C81 /* MRTDeepLinkConfiguration.swift */,
-				93ECE0342FDFC44C00B67C81 /* MRTDeepLinkParser.swift */,
-				93ECE0352FDFC44C00B67C81 /* MRTDeepLinkPayload.swift */,
+				935AC2C330064311004D9A88 /* CliqItCombinedFingerprint.swift */,
+				935AC2C430064311004D9A88 /* CliqItDeferredMatch.swift */,
+				935A1C833004ABE600013F9E /* CliqItNetworkInfo.swift */,
+				935A1C843004ABE600013F9E /* CliqItWebFingerprintCollector.swift */,
+				93BC69CA2FED3920001F9C16 /* CliqItURLSessionRetry.swift */,
+				932D08A82FE9032F00B50EBC /* CliqItInstallDeviceInfo.swift */,
+				932D08A92FE9032F00B50EBC /* CliqItLogger.swift */,
+				93314B512FE16460005F6765 /* CliqItRequestAuth.swift */,
+				93314AC72FE15E38005F6765 /* CliqItSceneSupport.swift */,
+				93ECE10D2FE0206500B67C81 /* CliqItDefaults.swift */,
+				93ECE10F2FE0206500B67C81 /* CliqItSmartLinkBuilder.swift */,
+				93ECE1102FE0206500B67C81 /* CliqItSmartLinkConfiguration.swift */,
+				93ECE0322FDFC44C00B67C81 /* CliqIt.swift */,
+				93ECE0332FDFC44C00B67C81 /* CliqItConfiguration.swift */,
+				93ECE0342FDFC44C00B67C81 /* CliqItParser.swift */,
+				93ECE0352FDFC44C00B67C81 /* CliqItPayload.swift */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -189,37 +201,37 @@
 		93ECE0382FDFC44C00B67C81 /* SwiftUI */ = {
 			isa = PBXGroup;
 			children = (
-				93ECE0372FDFC44C00B67C81 /* MRTDeepLinkModifier.swift */,
+				93ECE0372FDFC44C00B67C81 /* CliqItModifier.swift */,
 			);
 			path = SwiftUI;
 			sourceTree = "<group>";
 		};
-		93ECE0392FDFC44C00B67C81 /* MRTDeepLinkSDK */ = {
+		93ECE0392FDFC44C00B67C81 /* CliqIt */ = {
 			isa = PBXGroup;
 			children = (
 				93ECE0362FDFC44C00B67C81 /* Classes */,
 				93ECE0382FDFC44C00B67C81 /* SwiftUI */,
 			);
-			path = MRTDeepLinkSDK;
+			path = CliqIt;
 			sourceTree = "<group>";
 		};
-		93ECE03D2FDFC44C00B67C81 /* MRTDeepLinkSDK */ = {
+		93ECE03D2FDFC44C00B67C81 /* CliqIt */ = {
 			isa = PBXGroup;
 			children = (
-				93ECE0392FDFC44C00B67C81 /* MRTDeepLinkSDK */,
+				93ECE0392FDFC44C00B67C81 /* CliqIt */,
 				93ECE03A2FDFC44C00B67C81 /* LICENSE */,
-				93ECE03B2FDFC44C00B67C81 /* MRTDeepLinkSDK.podspec */,
+				93ECE03B2FDFC44C00B67C81 /* CliqIt.podspec */,
 				93ECE03C2FDFC44C00B67C81 /* README.md */,
 			);
-			path = MRTDeepLinkSDK;
+			path = CliqIt;
 			sourceTree = "<group>";
 		};
 		C19F9ACA55EC43793C1BF048 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				7A9AB21E941352E2DA49FD59 /* Pods_MRTDeepLink.framework */,
-				F4FE237414AE557C13C4BB9B /* Pods_MRTDeepLinkTests.framework */,
-				6580DFA7D99A5A7E914624E1 /* Pods_MRTDeepLinkUITests.framework */,
+				D17958F118084C4ABD1FD4D6 /* Pods_MRTDeepLink.framework */,
+				9A3876C570E6FB9E46A6DEBD /* Pods_MRTDeepLinkTests.framework */,
+				368A0543092C7CA14B713E8F /* Pods_MRTDeepLinkUITests.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -606,13 +618,13 @@
 		};
 		93ECDFF02FDFC03A00B67C81 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 1FA8B9AB593D3254D9CF0BEC /* Pods-MRTDeepLink.debug.xcconfig */;
+			baseConfigurationReference = 1E332DC291DBFFD0B41A02DF /* Pods-MRTDeepLink.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = MRTDeepLink/MRTDeepLink.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = FZ4A29LK38;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -646,13 +658,13 @@
 		};
 		93ECDFF12FDFC03A00B67C81 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 3D4F4CFD7D6CADF70A1DFC60 /* Pods-MRTDeepLink.release.xcconfig */;
+			baseConfigurationReference = 55ECD6A24F6353F729AA9807 /* Pods-MRTDeepLink.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = MRTDeepLink/MRTDeepLink.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = FZ4A29LK38;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -686,7 +698,7 @@
 		};
 		93ECDFF32FDFC03A00B67C81 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = A1032D5D9445FD69E7F2B19A /* Pods-MRTDeepLinkTests.debug.xcconfig */;
+			baseConfigurationReference = BC31B125AEB558FC8061A89E /* Pods-MRTDeepLinkTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
@@ -703,13 +715,13 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MRTDeepLink.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/MRTDeepLink";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CliqIt.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/CliqIt";
 			};
 			name = Debug;
 		};
 		93ECDFF42FDFC03A00B67C81 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 362A6C1AA0216FBD7F8FDB5B /* Pods-MRTDeepLinkTests.release.xcconfig */;
+			baseConfigurationReference = BD8FCE890B90A79C7600551D /* Pods-MRTDeepLinkTests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
@@ -726,13 +738,13 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MRTDeepLink.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/MRTDeepLink";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CliqIt.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/CliqIt";
 			};
 			name = Release;
 		};
 		93ECDFF62FDFC03A00B67C81 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = B9318208DEBC003EFD2C048A /* Pods-MRTDeepLinkUITests.debug.xcconfig */;
+			baseConfigurationReference = FCFC30B1D520DC6A65BCD870 /* Pods-MRTDeepLinkUITests.debug.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -747,13 +759,13 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = MRTDeepLink;
+				TEST_TARGET_NAME = CliqIt;
 			};
 			name = Debug;
 		};
 		93ECDFF72FDFC03A00B67C81 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 60EC8A094788C4AAA5BFC01B /* Pods-MRTDeepLinkUITests.release.xcconfig */;
+			baseConfigurationReference = 8F09831C82EFC733DF2BFE3E /* Pods-MRTDeepLinkUITests.release.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -768,7 +780,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = MRTDeepLink;
+				TEST_TARGET_NAME = CliqIt;
 			};
 			name = Release;
 		};

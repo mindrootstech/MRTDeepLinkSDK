@@ -1,13 +1,13 @@
 //
-//  MRTDeepLinkUITestsLaunchTests.swift
-//  MRTDeepLinkUITests
+//  CliqItUITestsLaunchTests.swift
+//  CliqItUITests
 //
 //  Created by Gurpreet Singh on 15/06/26.
 //
 
 import XCTest
 
-final class MRTDeepLinkUITestsLaunchTests: XCTestCase {
+final class CliqItUITestsLaunchTests: XCTestCase {
 
     override class var runsForEachTargetApplicationUIConfiguration: Bool {
         true

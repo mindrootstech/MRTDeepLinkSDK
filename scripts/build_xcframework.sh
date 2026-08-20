@@ -4,11 +4,11 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-SDK_DIR="$ROOT/MRTDeepLinkSDK"
+SDK_DIR="$ROOT/CliqIt"
 OUT_DIR="$SDK_DIR/Frameworks"
 BUILD_DIR="$SDK_DIR/.build-xcframework"
-FRAMEWORK_NAME="MRTDeepLinkSDK"
-PROJECT="$SDK_DIR/MRTDeepLinkSDK.xcodeproj"
+FRAMEWORK_NAME="CliqIt"
+PROJECT="$SDK_DIR/CliqIt.xcodeproj"
 XCFRAMEWORK="$OUT_DIR/${FRAMEWORK_NAME}.xcframework"
 
 if [[ ! -d "$PROJECT" ]]; then
@@ -78,6 +78,6 @@ echo "✅ Closed-source XCFramework ready:"
 echo "   $XCFRAMEWORK"
 echo ""
 echo "Next:"
-echo "  1. Tag/release with Frameworks/MRTDeepLinkSDK.xcframework (do NOT publish Sources)"
+echo "  1. Tag/release with Frameworks/CliqIt.xcframework (do NOT publish Sources)"
 echo "  2. cd .. && pod install"
-echo "  3. Local source edits: MRT_SDK_SOURCE=1 pod install"
+echo "  3. Local source edits: CLIQIT_SDK_SOURCE=1 pod install"

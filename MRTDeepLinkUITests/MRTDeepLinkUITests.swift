@@ -1,13 +1,13 @@
 //
-//  MRTDeepLinkUITests.swift
-//  MRTDeepLinkUITests
+//  CliqItUITests.swift
+//  CliqItUITests
 //
 //  Created by Gurpreet Singh on 15/06/26.
 //
 
 import XCTest
 
-final class MRTDeepLinkUITests: XCTestCase {
+final class CliqItUITests: XCTestCase {
 
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.

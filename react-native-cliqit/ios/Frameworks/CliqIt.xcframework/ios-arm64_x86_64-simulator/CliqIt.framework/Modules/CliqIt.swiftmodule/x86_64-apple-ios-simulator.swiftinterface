@@ -1,0 +1,270 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 6.3.3 effective-5.10 (swiftlang-6.3.3.1.3 clang-2100.1.1.101)
+// swift-module-flags: -target x86_64-apple-ios15.0-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -O -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -module-name CliqIt
+// swift-module-flags-ignorable: -no-verify-emitted-module-interface -formal-cxx-interoperability-mode=off -interface-compiler-version 6.3.3
+import CryptoKit
+import Foundation
+import Network
+import Swift
+import SwiftUI
+import UIKit
+import WebKit
+import _Concurrency
+import _StringProcessing
+import _SwiftConcurrencyShims
+public typealias CliqItHandler = (CliqIt.CliqItPayload) -> Swift.Void
+extension Foundation.NSNotification.Name {
+  public static let cliqItDeepLinkIgnored: Foundation.Notification.Name
+}
+@_hasMissingDesignatedInitializers final public class CliqItSDK : @unchecked Swift.Sendable {
+  public static let shared: CliqIt.CliqItSDK
+  final public var isConfigured: Swift.Bool {
+    get
+  }
+  final public var currentDeferredMatchDebugResponse: CliqIt.CliqItDeferredMatchResponse? {
+    get
+  }
+  final public var currentMatchDebugRequestJSON: Swift.String? {
+    get
+  }
+  final public var currentWebFingerprint: CliqIt.CliqItWebFingerprint? {
+    get
+  }
+  final public var combinedFingerprint: CliqIt.CliqItCombinedFingerprint {
+    get
+  }
+  final public func collectWebFingerprint() async -> CliqIt.CliqItWebFingerprint?
+  final public func collectCombinedFingerprint() async -> CliqIt.CliqItCombinedFingerprint
+  final public var isDeferredMatchInFlight: Swift.Bool {
+    get
+  }
+  final public var hasDeferredMatchBeenReported: Swift.Bool {
+    get
+  }
+  @discardableResult
+  final public func configure(apiKey: Swift.String) -> CliqIt.CliqItSDK
+  @discardableResult
+  final public func configure(_ configuration: CliqIt.CliqItConfiguration) -> CliqIt.CliqItSDK
+  final public func onDeferredMatchDebug(_ handler: @escaping CliqIt.CliqItDeferredMatchDebugHandler)
+  final public func onDeferredMatch(_ handler: @escaping CliqIt.CliqItDeferredMatchHandler)
+  final public func onDeferredMatchDebugRequest(_ handler: @escaping CliqIt.CliqItDeferredMatchDebugRequestHandler)
+  final public func runDeferredMatchDebug(clickSessionId: Swift.String? = nil)
+  final public func onDeepLink(_ handler: @escaping CliqIt.CliqItHandler)
+  @discardableResult
+  final public func handle(url: Foundation.URL) -> Swift.Bool
+  @discardableResult
+  final public func handle(userActivity: Foundation.NSUserActivity) -> Swift.Bool
+  final public func consumePendingDeepLink() -> CliqIt.CliqItPayload?
+  @objc deinit
+}
+public struct CliqItConfiguration : Swift.Sendable {
+  public let apiKey: Swift.String
+  public let serverURL: Foundation.URL
+  public let debugLogging: Swift.Bool
+  public let universalLinkDomain: Swift.String?
+  public let customURLScheme: Swift.String?
+  public init(apiKey: Swift.String)
+}
+public enum CliqItDefaults {
+  public static let licenseServerURL: Foundation.URL
+  public static let deferredMatchPath: Swift.String
+  public static let apiKeyHeader: Swift.String
+  public static let apiMaxRetryAttempts: Swift.Int
+  public static let apiRetryInitialDelay: Swift.Double
+}
+public enum CliqItSource : Swift.String, Swift.Sendable {
+  case universalLink
+  case customScheme
+  case deferred
+  case unknown
+  public init?(rawValue: Swift.String)
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+public enum CliqItParam : Swift.String, Swift.CaseIterable, Swift.Sendable {
+  case session
+  case clickSessionId
+  case click_session_id
+  public init?(rawValue: Swift.String)
+  public typealias AllCases = [CliqIt.CliqItParam]
+  public typealias RawValue = Swift.String
+  nonisolated public static var allCases: [CliqIt.CliqItParam] {
+    get
+  }
+  public var rawValue: Swift.String {
+    get
+  }
+}
+public struct CliqItPayload : Swift.Sendable, Swift.Equatable {
+  public let url: Foundation.URL
+  public let path: Swift.String
+  public let pathComponents: [Swift.String]
+  public let queryParameters: [Swift.String : Swift.String]
+  public let source: CliqIt.CliqItSource
+  public let isDeferred: Swift.Bool
+  public let receivedAt: Foundation.Date
+  public init(url: Foundation.URL, path: Swift.String, pathComponents: [Swift.String], queryParameters: [Swift.String : Swift.String], source: CliqIt.CliqItSource, receivedAt: Foundation.Date = Date(), isDeferred: Swift.Bool = false)
+  public subscript(query key: Swift.String) -> Swift.String? {
+    get
+  }
+  public subscript(param: CliqIt.CliqItParam) -> Swift.String? {
+    get
+  }
+  public var clickSessionId: Swift.String? {
+    get
+  }
+  public static func == (a: CliqIt.CliqItPayload, b: CliqIt.CliqItPayload) -> Swift.Bool
+}
+public enum CliqItSceneSupport {
+  public static func handle(connectionOptions: UIKit.UIScene.ConnectionOptions)
+  @discardableResult
+  public static func handle(userActivity: Foundation.NSUserActivity) -> Swift.Bool
+  public static func handle(urlContexts: Swift.Set<UIKit.UIOpenURLContext>)
+}
+public struct CliqItDeferredMatchOptions : Swift.Sendable {
+  public let clickSessionId: Swift.String?
+  public init(clickSessionId: Swift.String? = nil)
+}
+public enum CliqItDeferredMatchField : Swift.String, Swift.CaseIterable, Swift.Sendable {
+  case matched
+  case tier
+  case confidence
+  case score
+  case destinationPath
+  case slug
+  public init?(rawValue: Swift.String)
+  public typealias AllCases = [CliqIt.CliqItDeferredMatchField]
+  public typealias RawValue = Swift.String
+  nonisolated public static var allCases: [CliqIt.CliqItDeferredMatchField] {
+    get
+  }
+  public var rawValue: Swift.String {
+    get
+  }
+}
+public enum CliqItDeferredMatchOutcome : Swift.Sendable, Swift.Equatable {
+  case matched(CliqIt.CliqItDeferredMatchInfo)
+  case notMatched(CliqIt.CliqItDeferredMatchInfo)
+  case failed(CliqIt.CliqItDeferredMatchError)
+  public var isMatched: Swift.Bool {
+    get
+  }
+  public var info: CliqIt.CliqItDeferredMatchInfo? {
+    get
+  }
+  public var destinationPath: Swift.String? {
+    get
+  }
+  public static func == (a: CliqIt.CliqItDeferredMatchOutcome, b: CliqIt.CliqItDeferredMatchOutcome) -> Swift.Bool
+}
+public struct CliqItDeferredMatchInfo : Swift.Sendable, Swift.Equatable {
+  public let matched: Swift.Bool
+  public let tier: Swift.String?
+  public let confidence: Swift.String?
+  public let score: Swift.Double?
+  public let destinationPath: Swift.String?
+  public let slug: Swift.String?
+  public init(from response: CliqIt.CliqItDeferredMatchResponse)
+  public subscript(field: CliqIt.CliqItDeferredMatchField) -> Swift.String? {
+    get
+  }
+  public static func == (a: CliqIt.CliqItDeferredMatchInfo, b: CliqIt.CliqItDeferredMatchInfo) -> Swift.Bool
+}
+public struct CliqItDeferredMatchResponse : Swift.Decodable, Swift.Sendable, Swift.Equatable {
+  public let matched: Swift.Bool
+  public let tier: Swift.String?
+  public let confidence: Swift.String?
+  public let score: Swift.Double?
+  public let destinationPath: Swift.String?
+  public let slug: Swift.String?
+  public init(from decoder: any Swift.Decoder) throws
+  public var info: CliqIt.CliqItDeferredMatchInfo {
+    get
+  }
+  public var outcome: CliqIt.CliqItDeferredMatchOutcome {
+    get
+  }
+  public subscript(field: CliqIt.CliqItDeferredMatchField) -> Swift.String? {
+    get
+  }
+  public static func == (a: CliqIt.CliqItDeferredMatchResponse, b: CliqIt.CliqItDeferredMatchResponse) -> Swift.Bool
+}
+public enum CliqItDeferredMatchError : Swift.Error, Swift.Sendable, Swift.Equatable, Foundation.LocalizedError {
+  case notConfigured
+  case message(Swift.String)
+  public var errorDescription: Swift.String? {
+    get
+  }
+  public static func == (a: CliqIt.CliqItDeferredMatchError, b: CliqIt.CliqItDeferredMatchError) -> Swift.Bool
+}
+public typealias CliqItDeferredMatchHandler = (CliqIt.CliqItDeferredMatchOutcome) -> Swift.Void
+public typealias CliqItDeferredMatchDebugOptions = CliqIt.CliqItDeferredMatchOptions
+public typealias CliqItDeferredMatchDebugResponse = CliqIt.CliqItDeferredMatchResponse
+public typealias CliqItDeferredMatchDebugError = CliqIt.CliqItDeferredMatchError
+public typealias CliqItDeferredMatchDebugHandler = (Swift.Result<CliqIt.CliqItDeferredMatchResponse, CliqIt.CliqItDeferredMatchError>) -> Swift.Void
+public typealias CliqItDeferredMatchDebugRequestHandler = (Swift.String) -> Swift.Void
+public enum CliqItSmartLinkBuilder {
+  public static func makeWebURL(path: Swift.String, queryItems: [Foundation.URLQueryItem] = [], configuration: CliqIt.CliqItSmartLinkConfiguration) -> Foundation.URL?
+  public static func makeAppURL(path: Swift.String, queryItems: [Foundation.URLQueryItem] = [], scheme: Swift.String) -> Foundation.URL?
+}
+public struct CliqItSmartLinkConfiguration : Swift.Sendable {
+  public let webDomain: Swift.String
+  public let customURLScheme: Swift.String
+  public let iOSAppStoreURL: Foundation.URL
+  public init(webDomain: Swift.String, customURLScheme: Swift.String, iOSAppStoreURL: Foundation.URL)
+}
+public struct CliqItWebFingerprint : Swift.Sendable, Swift.Equatable {
+  public let canvasHash: Swift.String?
+  public let webglHash: Swift.String?
+  public let webglVendor: Swift.String?
+  public let webglRenderer: Swift.String?
+  public let audioHash: Swift.String?
+  public let clockSkewMs: Swift.Double?
+  public let fontHash: Swift.String?
+  public let jsTimezone: Swift.String?
+  public let jsLanguages: Swift.String?
+  public let jsScreen: Swift.String?
+  public var gpuRenderer: Swift.String? {
+    get
+  }
+  public var audioFingerprint: Swift.String? {
+    get
+  }
+  public var isEmpty: Swift.Bool {
+    get
+  }
+  public var debugDescription: Swift.String {
+    get
+  }
+  public static func == (a: CliqIt.CliqItWebFingerprint, b: CliqIt.CliqItWebFingerprint) -> Swift.Bool
+}
+@_Concurrency.MainActor @preconcurrency public struct CliqItHandlerModifier : SwiftUICore.ViewModifier {
+  @_Concurrency.MainActor @preconcurrency public init(handler: @escaping CliqIt.CliqItHandler)
+  @_Concurrency.MainActor @preconcurrency public func body(content: CliqIt.CliqItHandlerModifier.Content) -> some SwiftUICore.View
+  
+  public typealias Body = @_opaqueReturnTypeOf("$s6CliqIt0aB15HandlerModifierV4body7contentQr7SwiftUI05_ViewD8_ContentVyACG_tF", 0) __
+}
+extension SwiftUICore.View {
+  @_Concurrency.MainActor @preconcurrency public func handleCliqItDeepLinks(_ handler: @escaping CliqIt.CliqItHandler) -> some SwiftUICore.View
+  
+}
+public struct CliqItCombinedFingerprint : Swift.Sendable, Swift.Equatable {
+  public let digest: Swift.String
+  public let parts: [Swift.String : Swift.String]
+  public var shortDigest: Swift.String {
+    get
+  }
+  public static func == (a: CliqIt.CliqItCombinedFingerprint, b: CliqIt.CliqItCombinedFingerprint) -> Swift.Bool
+}
+extension CliqIt.CliqItSource : Swift.Equatable {}
+extension CliqIt.CliqItSource : Swift.Hashable {}
+extension CliqIt.CliqItSource : Swift.RawRepresentable {}
+extension CliqIt.CliqItParam : Swift.Equatable {}
+extension CliqIt.CliqItParam : Swift.Hashable {}
+extension CliqIt.CliqItParam : Swift.RawRepresentable {}
+extension CliqIt.CliqItDeferredMatchField : Swift.Equatable {}
+extension CliqIt.CliqItDeferredMatchField : Swift.Hashable {}
+extension CliqIt.CliqItDeferredMatchField : Swift.RawRepresentable {}
+extension CliqIt.CliqItHandlerModifier : Swift.Sendable {}

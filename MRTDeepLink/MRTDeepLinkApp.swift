@@ -1,6 +1,6 @@
 import Combine
 import SwiftUI
-import MRTDeepLinkSDK
+import CliqIt
 
 @main
 struct MRTDeepLinkApp: App {
@@ -8,24 +8,17 @@ struct MRTDeepLinkApp: App {
     @StateObject private var router = AppDeepLinkRouter()
 
     init() {
-        MRTDeepLink.shared.configure(
-            apiKey: AppConfig.sdkAPIKey,
-            debugLogging: true,
-            serverURL: URL(string: AppConfig.serverURL)!,
-            universalLinkDomain: AppConfig.universalLinkDomain,
-            customURLScheme: AppConfig.customURLScheme,
-            clipboardMatchEnabled: true
-        )
+        CliqItSDK.shared.configure(apiKey: AppConfig.sdkAPIKey)
     }
 
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environmentObject(router)
-                .handleMRTDeepLinks { payload in
+                .handleCliqItDeepLinks { payload in
                     router.handle(payload)
                 }
-                .onReceive(NotificationCenter.default.publisher(for: .mrtDeepLinkIgnored)) { note in
+                .onReceive(NotificationCenter.default.publisher(for: .cliqItDeepLinkIgnored)) { note in
                     if let url = note.userInfo?["url"] as? String {
                         router.lastIgnoredURL = url
                     }
@@ -35,10 +28,10 @@ struct MRTDeepLinkApp: App {
 }
 
 final class AppDeepLinkRouter: ObservableObject {
-    @Published var lastPayload: MRTDeepLinkPayload?
+    @Published var lastPayload: CliqItPayload?
     @Published var lastIgnoredURL: String?
 
-    func handle(_ payload: MRTDeepLinkPayload) {
+    func handle(_ payload: CliqItPayload) {
         lastPayload = payload
         lastIgnoredURL = nil
         print("══════════════════════════════════════")

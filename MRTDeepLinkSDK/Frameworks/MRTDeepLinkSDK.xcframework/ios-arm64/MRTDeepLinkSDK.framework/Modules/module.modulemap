@@ -1,3 +1,0 @@
-framework module MRTDeepLinkSDK {
-  header "MRTDeepLinkSDK-Swift.h"
-}
