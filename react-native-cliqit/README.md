@@ -27,7 +27,7 @@ import CliqIt from 'react-native-cliqit';
 useEffect(() => {
   CliqIt.configure('pk_live_…');
 
-  const offDeepLink = CliqIt.onDeepLink((payload) => {
+  const offLink = CliqIt.onLinkReceived((payload) => {
     // Direct + deferred share the same fields
     console.log(payload.status, payload.path, payload.isDeferred, payload.slug);
     if (payload.shouldNavigate) {
@@ -43,7 +43,7 @@ useEffect(() => {
   });
 
   return () => {
-    offDeepLink();
+    offLink();
     linkSub.remove();
   };
 }, []);
@@ -51,6 +51,6 @@ useEffect(() => {
 
 ## Notes
 
-- One listener: `onDeepLink` — `status` is `opened` | `matched` | `notMatched` | `failed` | `alreadyReported`.
+- One listener: `onLinkReceived` — `status` is `opened` | `matched` | `notMatched` | `failed` | `alreadyReported`.
 - Navigate when `shouldNavigate` (or non-empty `path` + opened/matched).
 - iOS 15+.

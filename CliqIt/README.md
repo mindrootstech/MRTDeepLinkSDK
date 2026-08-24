@@ -15,7 +15,7 @@ iOS SDK for **deferred deep linking** — attributes a SmartLink web click to th
 | Universal Links | Handles `https://<domain>/…` when the app is installed |
 | Direct link lookup | `GET /api/v1/sdk/link/{slug}` → destination path |
 | Custom URL scheme | Optional `yourapp://…` links |
-| SwiftUI helper | `.handleCliqItDeepLinks { … }` |
+| SwiftUI helper | `.handleCliqItLinkReceived { … }` |
 | Smart link builder | Build shareable web / custom-scheme URLs |
 
 This SDK is **deferred-only**. Analytics, license validation, and install APIs are not included.
@@ -113,8 +113,8 @@ struct MyApp: App {
             }
         }
 
-        // onDeepLink — direct opens + deferred match (same fields)
-        CliqItSDK.shared.onDeepLink { payload in
+        // onLinkReceived — direct opens + deferred match (same fields)
+        CliqItSDK.shared.onLinkReceived { payload in
             print(payload.status, payload.path, payload.isDeferred)
             if payload.shouldNavigate {
                 // navigate to payload.path
@@ -138,7 +138,7 @@ struct MyApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .handleCliqItDeepLinks { payload in
+                .handleCliqItLinkReceived { payload in
                     print(payload.path, payload.isDeferred)
                 }
         }
@@ -156,7 +156,7 @@ func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
 ) -> Bool {
-    CliqItSDK.shared.onDeepLink { payload in
+    CliqItSDK.shared.onLinkReceived { payload in
         print(payload.status, payload.path, payload.isDeferred)
     }
     CliqItSDK.shared.configure(apiKey: "pk_live_…")
@@ -187,16 +187,16 @@ _ = CliqItSDK.shared.handle(userActivity: userActivity)
 |-----|----------------|
 | `configure(apiKey:)` | Call once at launch. Starts **verify** + **deferred match**. |
 | `onVerify` | After configure — identity check (`bundleId` vs admin). |
-| `onDeepLink` | **One callback** for direct opens **and** deferred outcomes (same `CliqItPayload` fields). |
+| `onLinkReceived` | **One callback** for direct opens **and** deferred outcomes (same `CliqItPayload` fields). |
 | `onDirectLinkLookup` | Direct open with a slug — after `GET /api/v1/sdk/link/{slug}`. |
 | `handle(url:)` | Pass Universal Links / custom schemes into the SDK (Scene / `openURL`). |
-| `onDeferredMatch` | **Deprecated** — use `onDeepLink` (`status` / `isDeferred`). |
+| `onDeferredMatch` | **Deprecated** — use `onLinkReceived` (`status` / `isDeferred`). |
 
 ---
 
 ## Callback results (what you get)
 
-### `onDeepLink` → `CliqItPayload` (direct + deferred)
+### `onLinkReceived` → `CliqItPayload` (direct + deferred)
 
 | Property | Type | Notes |
 |----------|------|--------|
@@ -248,12 +248,12 @@ Use `CliqItLinkField` keys, e.g. `details[.resolvedPath]` (`iosDestination ?? de
 App launch
     └─ configure(apiKey:)
          ├─ POST /api/v1/sdk/verify     → onVerify
-         └─ POST /api/v1/sdk/app/match  → onDeepLink(status: matched|notMatched|failed)
+         └─ POST /api/v1/sdk/app/match  → onLinkReceived(status: matched|notMatched|failed)
 
 Universal Link / custom scheme
     └─ handle(url:)
          ├─ GET /api/v1/sdk/link/{slug} → onDirectLinkLookup (if slug)
-         └─ onDeepLink(status: opened)
+         └─ onLinkReceived(status: opened)
 ```
 
 Deferred match is persisted only after a **real match** (`matched == true`).

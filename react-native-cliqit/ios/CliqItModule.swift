@@ -13,7 +13,7 @@ class CliqItModule: RCTEventEmitter {
   override static func requiresMainQueueSetup() -> Bool { true }
 
   override func supportedEvents() -> [String]! {
-    ["CliqItDeepLink", "CliqItLinkLookup", "CliqItVerify"]
+    ["CliqItLinkReceived", "CliqItLinkLookup", "CliqItVerify"]
   }
 
   override func startObserving() {
@@ -33,8 +33,8 @@ class CliqItModule: RCTEventEmitter {
 
     CliqItSDK.shared.configure(apiKey: apiKey)
 
-    CliqItSDK.shared.onDeepLink { [weak self] payload in
-      self?.emitDeepLink(payload)
+    CliqItSDK.shared.onLinkReceived { [weak self] payload in
+      self?.emitLinkReceived(payload)
     }
 
     CliqItSDK.shared.onDirectLinkLookup { [weak self] result in
@@ -74,7 +74,7 @@ class CliqItModule: RCTEventEmitter {
 
   // MARK: - Emit / buffer
 
-  private func emitDeepLink(_ payload: CliqItPayload) {
+  private func emitLinkReceived(_ payload: CliqItPayload) {
     var body: [String: Any] = [
       "url": payload.url.absoluteString,
       "path": payload.path,
@@ -92,7 +92,7 @@ class CliqItModule: RCTEventEmitter {
     if let slug = payload.slug { body["slug"] = slug }
     if let destinationPath = payload.destinationPath { body["destinationPath"] = destinationPath }
     if let errorMessage = payload.errorMessage { body["error"] = errorMessage }
-    emitBody(event: "CliqItDeepLink", body: body, pendingKey: \.pendingDeepLink)
+    emitBody(event: "CliqItLinkReceived", body: body, pendingKey: \.pendingDeepLink)
   }
 
   private func emitLinkLookup(_ result: Result<CliqItLinkDetails, CliqItDeferredMatchError>) {
@@ -181,7 +181,7 @@ class CliqItModule: RCTEventEmitter {
   private func flushPending() {
     if let deep = pendingDeepLink {
       pendingDeepLink = nil
-      sendEvent(withName: "CliqItDeepLink", body: deep)
+      sendEvent(withName: "CliqItLinkReceived", body: deep)
     }
     if let lookup = pendingLinkLookup {
       pendingLinkLookup = nil

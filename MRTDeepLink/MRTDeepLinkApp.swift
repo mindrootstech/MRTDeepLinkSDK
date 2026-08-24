@@ -15,7 +15,7 @@ struct MRTDeepLinkApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(router)
-                .handleCliqItDeepLinks { payload in
+                .handleCliqItLinkReceived { payload in
                     router.handle(payload)
                 }
                 .onReceive(NotificationCenter.default.publisher(for: .cliqItDeepLinkIgnored)) { note in

@@ -238,7 +238,7 @@ enum CliqItDeferredMatchClient {
         return string
     }
 
-    /// Unified deferred payload for `onDeepLink` (matched / notMatched share the same fields).
+    /// Unified deferred payload for `onLinkReceived` (matched / notMatched share the same fields).
     static func makeDeferredPayload(
         response: CliqItDeferredMatchResponse,
         configuration: CliqItConfiguration,

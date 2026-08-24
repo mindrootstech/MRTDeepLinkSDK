@@ -160,9 +160,9 @@ public final class CliqItSDK: @unchecked Sendable {
         }
     }
 
-    /// - Warning: Deprecated. Use `onDeepLink` — deferred outcomes arrive there with the same fields
+    /// - Warning: Deprecated. Use `onLinkReceived` — deferred outcomes arrive there with the same fields
     ///   (`status`, `matched`, `tier`, `score`, `slug`, `destinationPath`, …).
-    @available(*, deprecated, message: "Use onDeepLink — unified payload for direct + deferred")
+    @available(*, deprecated, message: "Use onLinkReceived — unified payload for direct + deferred")
     public func onDeferredMatch(_ handler: @escaping CliqItDeferredMatchHandler) {
         lock.lock()
         deferredMatchOutcomeHandler = handler
@@ -181,7 +181,7 @@ public final class CliqItSDK: @unchecked Sendable {
         }
     }
 
-    /// Emits `status: alreadyReported` on `onDeepLink` when match already ran this install.
+    /// Emits `status: alreadyReported` on `onLinkReceived` when match already ran this install.
     public func notifyAlreadyReportedIfNeeded() {
         guard hasDeferredMatchBeenReported, !isDeferredMatchInFlight else { return }
         lock.lock()
@@ -224,14 +224,20 @@ public final class CliqItSDK: @unchecked Sendable {
 
     /// Direct opens **and** deferred match outcomes (same `CliqItPayload` fields).
     /// Check `status` / `isDeferred` / `shouldNavigate`.
-    public func onDeepLink(_ handler: @escaping CliqItHandler) {
+    public func onLinkReceived(_ handler: @escaping CliqItHandler) {
         if !isConfigured {
-            Self.warnNotConfigured(context: "onDeepLink")
+            Self.warnNotConfigured(context: "onLinkReceived")
         }
         lock.lock()
         self.handler = handler
         lock.unlock()
         deliverPendingPayloadIfNeeded()
+    }
+
+    /// - Warning: Deprecated. Use `onLinkReceived`.
+    @available(*, deprecated, renamed: "onLinkReceived")
+    public func onDeepLink(_ handler: @escaping CliqItHandler) {
+        onLinkReceived(handler)
     }
 
     @discardableResult
@@ -240,7 +246,7 @@ public final class CliqItSDK: @unchecked Sendable {
 
         guard let configuration else {
             log("Received URL before configure(): \(url.absoluteString)")
-            // Buffer so onDeepLink can retry after configure if needed.
+            // Buffer so onLinkReceived can retry after configure if needed.
             lock.lock()
             pendingPayload = CliqItPayload(
                 url: url,

@@ -28,7 +28,7 @@ public enum CliqItParam: String, CaseIterable, Sendable {
     case click_session_id
 }
 
-/// Single result shape for `onDeepLink` — direct opens and deferred outcomes share these fields.
+/// Single result shape for `onLinkReceived` — direct opens and deferred outcomes share these fields.
 public struct CliqItPayload: Sendable, Equatable {
     public let url: URL
     public let path: String

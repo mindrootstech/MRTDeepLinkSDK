@@ -7,13 +7,13 @@ public struct CliqItHandlerModifier: ViewModifier {
         self.handler = handler
         // Register immediately — cold-start Universal Links often arrive
         // before the first `onAppear`.
-        CliqItSDK.shared.onDeepLink(handler)
+        CliqItSDK.shared.onLinkReceived(handler)
     }
 
     public func body(content: Content) -> some View {
         content
             .onAppear {
-                CliqItSDK.shared.onDeepLink(handler)
+                CliqItSDK.shared.onLinkReceived(handler)
             }
             .onOpenURL { url in
                 _ = CliqItSDK.shared.handle(url: url)
@@ -25,7 +25,12 @@ public struct CliqItHandlerModifier: ViewModifier {
 }
 
 public extension View {
-    func handleCliqItDeepLinks(_ handler: @escaping CliqItHandler) -> some View {
+    func handleCliqItLinkReceived(_ handler: @escaping CliqItHandler) -> some View {
         modifier(CliqItHandlerModifier(handler: handler))
+    }
+
+    @available(*, deprecated, renamed: "handleCliqItLinkReceived")
+    func handleCliqItDeepLinks(_ handler: @escaping CliqItHandler) -> some View {
+        handleCliqItLinkReceived(handler)
     }
 }

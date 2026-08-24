@@ -56,7 +56,7 @@ object CliqItSDK {
     beginDeferredMatchIfNeeded()
   }
 
-  fun onDeepLink(handler: (CliqItPayload) -> Unit) {
+  fun onLinkReceived(handler: (CliqItPayload) -> Unit) {
     deepLinkHandler = handler
     pendingPayload?.let {
       pendingPayload = null
@@ -64,7 +64,10 @@ object CliqItSDK {
     }
   }
 
-  @Deprecated("Use onDeepLink — unified payload for direct + deferred")
+  @Deprecated("Use onLinkReceived", ReplaceWith("onLinkReceived(handler)"))
+  fun onDeepLink(handler: (CliqItPayload) -> Unit) = onLinkReceived(handler)
+
+  @Deprecated("Use onLinkReceived — unified payload for direct + deferred")
   fun onDeferredMatch(handler: (DeferredMatchOutcome) -> Unit) {
     deferredHandler = handler
     lastDeferredOutcome?.let { outcome ->
@@ -72,7 +75,7 @@ object CliqItSDK {
     }
   }
 
-  /** Emit alreadyReported via onDeepLink when match already ran this install. */
+  /** Emit alreadyReported via onLinkReceived when match already ran this install. */
   fun notifyAlreadyReportedIfNeeded() {
     if (!hasDeferredMatchBeenReported || isDeferredMatchInFlight) return
     deliver(

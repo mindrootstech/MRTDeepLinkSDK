@@ -953,6 +953,46 @@
           },
           {
             "kind": "Function",
+            "name": "onLinkReceived",
+            "printedName": "onLinkReceived(_:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(CliqIt.CliqItPayload) -> ()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "CliqItPayload",
+                    "printedName": "CliqIt.CliqItPayload",
+                    "usr": "s:6CliqIt0aB7PayloadV"
+                  }
+                ]
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:6CliqIt0aB3SDKC14onLinkReceivedyyyAA0aB7PayloadVcF",
+            "mangledName": "$s6CliqIt0aB3SDKC14onLinkReceivedyyyAA0aB7PayloadVcF",
+            "moduleName": "CliqIt",
+            "declAttributes": [
+              "Final",
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
             "name": "onDeepLink",
             "printedName": "onDeepLink(_:)",
             "children": [
@@ -984,9 +1024,11 @@
             "usr": "s:6CliqIt0aB3SDKC10onDeepLinkyyyAA0aB7PayloadVcF",
             "mangledName": "$s6CliqIt0aB3SDKC10onDeepLinkyyyAA0aB7PayloadVcF",
             "moduleName": "CliqIt",
+            "deprecated": true,
             "declAttributes": [
               "Final",
               "AccessControl",
+              "Available",
               "RawDocComment"
             ],
             "funcSelfKind": "NonMutating"
@@ -12851,6 +12893,56 @@
         "children": [
           {
             "kind": "Function",
+            "name": "handleCliqItLinkReceived",
+            "printedName": "handleCliqItLinkReceived(_:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "OpaqueTypeArchetype",
+                "printedName": "some SwiftUI.View",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "View",
+                    "printedName": "SwiftUI.View",
+                    "usr": "s:7SwiftUI4ViewP"
+                  }
+                ]
+              },
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(CliqIt.CliqItPayload) -> ()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "CliqItPayload",
+                    "printedName": "CliqIt.CliqItPayload",
+                    "usr": "s:6CliqIt0aB7PayloadV"
+                  }
+                ]
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:7SwiftUI4ViewP6CliqItE06handledE12LinkReceivedyQryAD0dE7PayloadVcF",
+            "mangledName": "$s7SwiftUI4ViewP6CliqItE06handledE12LinkReceivedyQryAD0dE7PayloadVcF",
+            "moduleName": "CliqIt",
+            "genericSig": "<τ_0_0 where τ_0_0 : SwiftUI.View>",
+            "sugared_genericSig": "<Self where Self : SwiftUI.View>",
+            "declAttributes": [
+              "Preconcurrency",
+              "Custom"
+            ],
+            "isFromExtension": true,
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
             "name": "handleCliqItDeepLinks",
             "printedName": "handleCliqItDeepLinks(_:)",
             "children": [
@@ -12892,9 +12984,11 @@
             "moduleName": "CliqIt",
             "genericSig": "<τ_0_0 where τ_0_0 : SwiftUI.View>",
             "sugared_genericSig": "<Self where Self : SwiftUI.View>",
+            "deprecated": true,
             "declAttributes": [
               "Preconcurrency",
-              "Custom"
+              "Custom",
+              "Available"
             ],
             "isFromExtension": true,
             "funcSelfKind": "NonMutating"
@@ -13047,7 +13141,7 @@
     {
       "filePath": "\/Volumes\/ExternalDisk\/MRTDeepLink\/CliqIt\/CliqIt\/Classes\/CliqItPayload.swift",
       "kind": "BooleanLiteral",
-      "offset": 1949,
+      "offset": 1953,
       "length": 5,
       "value": "false"
     },

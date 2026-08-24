@@ -56,11 +56,13 @@ extension Foundation.NSNotification.Name {
   final public func configure(_ configuration: CliqIt.CliqItConfiguration) -> CliqIt.CliqItSDK
   final public func onVerify(_ handler: @escaping CliqIt.CliqItVerifyHandler)
   final public func onDeferredMatchDebug(_ handler: @escaping CliqIt.CliqItDeferredMatchDebugHandler)
-  @available(*, deprecated, message: "Use onDeepLink — unified payload for direct + deferred")
+  @available(*, deprecated, message: "Use onLinkReceived — unified payload for direct + deferred")
   final public func onDeferredMatch(_ handler: @escaping CliqIt.CliqItDeferredMatchHandler)
   final public func notifyAlreadyReportedIfNeeded()
   final public func onDeferredMatchDebugRequest(_ handler: @escaping CliqIt.CliqItDeferredMatchDebugRequestHandler)
   final public func runDeferredMatchDebug(clickSessionId: Swift.String? = nil)
+  final public func onLinkReceived(_ handler: @escaping CliqIt.CliqItHandler)
+  @available(*, deprecated, renamed: "onLinkReceived")
   final public func onDeepLink(_ handler: @escaping CliqIt.CliqItHandler)
   @discardableResult
   final public func handle(url: Foundation.URL) -> Swift.Bool
@@ -286,6 +288,9 @@ public struct CliqItWebFingerprint : Swift.Sendable, Swift.Equatable {
   public typealias Body = @_opaqueReturnTypeOf("$s6CliqIt0aB15HandlerModifierV4body7contentQr7SwiftUI05_ViewD8_ContentVyACG_tF", 0) __
 }
 extension SwiftUICore.View {
+  @_Concurrency.MainActor @preconcurrency public func handleCliqItLinkReceived(_ handler: @escaping CliqIt.CliqItHandler) -> some SwiftUICore.View
+  
+  @available(*, deprecated, renamed: "handleCliqItLinkReceived")
   @_Concurrency.MainActor @preconcurrency public func handleCliqItDeepLinks(_ handler: @escaping CliqIt.CliqItHandler) -> some SwiftUICore.View
   
 }

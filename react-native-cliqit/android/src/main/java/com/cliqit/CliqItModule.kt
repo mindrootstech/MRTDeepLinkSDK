@@ -71,7 +71,7 @@ class CliqItModule(private val reactContext: ReactApplicationContext) :
     if (handlersBound) return
     handlersBound = true
 
-    CliqItSDK.onDeepLink { payload ->
+    CliqItSDK.onLinkReceived { payload ->
       val query = Arguments.createMap()
       payload.query.forEach { (k, v) -> query.putString(k, v) }
       val components = Arguments.createArray()
@@ -93,7 +93,7 @@ class CliqItModule(private val reactContext: ReactApplicationContext) :
         putOpt(this, "error", payload.errorMessage)
         putBoolean("shouldNavigate", payload.shouldNavigate)
       }
-      emitOrBuffer("CliqItDeepLink", map) { pendingDeepLink = it }
+      emitOrBuffer("CliqItLinkReceived", map) { pendingDeepLink = it }
     }
 
     CliqItSDK.onDirectLinkLookup { result ->
@@ -184,7 +184,7 @@ class CliqItModule(private val reactContext: ReactApplicationContext) :
   private fun flushPending() {
     pendingDeepLink?.let {
       pendingDeepLink = null
-      sendEvent("CliqItDeepLink", it)
+      sendEvent("CliqItLinkReceived", it)
     }
     pendingLinkLookup?.let {
       pendingLinkLookup = null
