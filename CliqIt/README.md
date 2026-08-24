@@ -104,34 +104,11 @@ import SwiftUI
 @main
 struct MyApp: App {
     init() {
-        // onVerify — after configure: API key + bundleId identity check
-        CliqItSDK.shared.onVerify { outcome in
-            switch outcome {
-            case .passed(let r): print("verify ok", r.appName ?? "")
-            case .mismatched(let r): print("verify mismatch", r.mismatchMessage)
-            case .error(let e): print("verify error", e)
-            }
-        }
-
-        // onLinkReceived — direct opens + deferred match (same fields)
         CliqItSDK.shared.onLinkReceived { payload in
-            print(payload.status, payload.path, payload.isDeferred)
-            if payload.shouldNavigate {
-                // navigate to payload.path
-            }
+            if let err = payload.errorMessage { print("error", err, payload.status) }
+            else if payload.shouldNavigate { print(payload.path) }
         }
 
-        // onDirectLinkLookup — direct slug → destination API (when handle(url:) has a slug)
-        CliqItSDK.shared.onDirectLinkLookup { result in
-            switch result {
-            case .success(let details):
-                print(details[.resolvedPath] ?? "")
-            case .failure(let error):
-                print(error)
-            }
-        }
-
-        // configure — starts verify + deferred match
         CliqItSDK.shared.configure(apiKey: "pk_live_…")
     }
 
@@ -185,12 +162,10 @@ _ = CliqItSDK.shared.handle(userActivity: userActivity)
 
 | API | When it runs |
 |-----|----------------|
-| `configure(apiKey:)` | Call once at launch. Starts **verify** + **deferred match**. |
-| `onVerify` | After configure — identity check (`bundleId` vs admin). |
-| `onLinkReceived` | **One callback** for direct opens **and** deferred outcomes (same `CliqItPayload` fields). |
-| `onDirectLinkLookup` | Direct open with a slug — after `GET /api/v1/sdk/link/{slug}`. |
-| `handle(url:)` | Pass Universal Links / custom schemes into the SDK (Scene / `openURL`). |
-| `onDeferredMatch` | **Deprecated** — use `onLinkReceived` (`status` / `isDeferred`). |
+| `onLinkReceived` | **Only public callback** — direct opens, deferred outcomes, and verify/lookup **errors**. |
+| `configure(apiKey:)` | Call once at launch. Starts **verify** + **deferred match** in background. |
+| `handle(url:)` | Pass Universal Links / custom schemes (slug lookup runs in background). |
+| `onVerify` / `onDirectLinkLookup` / `onDeferredMatch` | **Deprecated** — use `onLinkReceived`. |
 
 ---
 
@@ -206,17 +181,19 @@ _ = CliqItSDK.shared.handle(userActivity: userActivity)
 | `queryParameters` | `[String: String]` | Query map |
 | `source` | `CliqItSource` | `.universalLink` / `.customScheme` / `.deferred` / `.unknown` |
 | `isDeferred` | `Bool` | `true` for deferred match outcomes |
-| `status` | `CliqItLinkStatus` | `opened` \| `matched` \| `notMatched` \| `failed` \| `alreadyReported` |
+| `status` | `CliqItLinkStatus` | `opened` \| `matched` \| `notMatched` \| `failed` \| `verifyFailed` \| `lookupFailed` \| `alreadyReported` |
 | `matched` | `Bool?` | Deferred only; `nil` for direct `opened` |
 | `destinationPath` | `String?` | Server destination when known |
 | `slug` / `tier` / `confidence` / `score` | optional | Deferred attribution fields |
-| `errorMessage` | `String?` | When `status == .failed` (RN / Flutter bridge key: `error`) |
-| `shouldNavigate` | `Bool` | `path` non-empty and status is `opened` or `matched` |
+| `errorMessage` | `String?` | When status is a failure (`failed` / `verifyFailed` / `lookupFailed`) — RN/Flutter key: `error` |
+| `shouldNavigate` | `Bool` | `path` non-empty and status is `opened`, `matched`, or `lookupFailed` |
 | `receivedAt` | `Date` | Receive time |
 
 Navigate when `payload.shouldNavigate` (or check `status` + `path`).
 
-**React Native / Flutter:** listeners also wrap payloads as `{ result, error }` — top-level `error` is set when `status` is `failed` (or the event is empty).
+**Integrators only need `onLinkReceived`.** Verify, slug lookup, and deferred match run in the background; successes for verify are silent; failures and link/match outcomes arrive on this callback.
+
+**React Native / Flutter:** wrap as `{ result, error }` — top-level `error` is set for failure statuses.
 
 ### `onVerify` → `CliqItVerifyOutcome`
 

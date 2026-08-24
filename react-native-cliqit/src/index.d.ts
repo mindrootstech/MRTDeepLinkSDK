@@ -15,8 +15,16 @@ export type CliqItLinkReceivedPayload = {
   query: Record<string, string>;
   source: string;
   isDeferred: boolean;
-  /** opened | matched | notMatched | failed | alreadyReported */
-  status: 'opened' | 'matched' | 'notMatched' | 'failed' | 'alreadyReported' | string;
+  /** opened | matched | notMatched | failed | verifyFailed | lookupFailed | alreadyReported */
+  status:
+    | 'opened'
+    | 'matched'
+    | 'notMatched'
+    | 'failed'
+    | 'verifyFailed'
+    | 'lookupFailed'
+    | 'alreadyReported'
+    | string;
   matched?: boolean | null;
   tier?: string | null;
   confidence?: string | null;
@@ -73,10 +81,12 @@ export function onDeferredMatch(
   callback: CliqItCallback<CliqItLinkReceivedPayload>
 ): () => void;
 
+/** @deprecated Use onLinkReceived */
 export function onLinkLookup(
   callback: CliqItCallback<CliqItLinkLookupResult>
 ): () => void;
 
+/** @deprecated Use onLinkReceived */
 export function onVerify(
   callback: CliqItCallback<CliqItVerifyResult>
 ): () => void;

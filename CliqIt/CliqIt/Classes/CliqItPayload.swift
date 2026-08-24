@@ -15,8 +15,12 @@ public enum CliqItLinkStatus: String, Sendable {
     case matched
     /// Deferred ran; no install attribution.
     case notMatched
-    /// Deferred or transport failure.
+    /// Deferred match transport / decode failure.
     case failed
+    /// `POST /verify` failed or identity mismatch.
+    case verifyFailed
+    /// Direct slug `GET /link/{slug}` failed (URL path may still be usable).
+    case lookupFailed
     /// Match already consumed on this install.
     case alreadyReported
 }
@@ -38,7 +42,7 @@ public struct CliqItPayload: Sendable, Equatable {
     public let isDeferred: Bool
     public let receivedAt: Date
 
-    /// `opened` | `matched` | `notMatched` | `failed` | `alreadyReported`
+    /// `opened` | `matched` | `notMatched` | `failed` | `verifyFailed` | `lookupFailed` | `alreadyReported`
     public let status: CliqItLinkStatus
     /// Deferred only — `true`/`false`; `nil` for direct `opened`.
     public let matched: Bool?
@@ -97,8 +101,8 @@ public struct CliqItPayload: Sendable, Equatable {
         self[.session] ?? self[.clickSessionId] ?? self[.click_session_id]
     }
 
-    /// True when `path` is non-empty and status is `.opened` or `.matched`.
+    /// True when `path` is non-empty and status is navigable (`opened` / `matched` / `lookupFailed`).
     public var shouldNavigate: Bool {
-        !path.isEmpty && (status == .opened || status == .matched)
+        !path.isEmpty && (status == .opened || status == .matched || status == .lookupFailed)
     }
 }

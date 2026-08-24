@@ -124,14 +124,35 @@ public final class CliqItSDK: @unchecked Sendable {
             self.lastVerifyOutcome = outcome
             if let raw { self.lastVerifyJSON = raw }
             let handler = self.verifyHandler
+            let config = self.configuration
             self.lock.unlock()
             handler?(outcome)
+            // User-facing: only surface verify problems on onLinkReceived (success is silent).
+            switch outcome {
+            case .passed:
+                break
+            case .mismatched(let result):
+                self.deliver(
+                    CliqItDeferredMatchClient.makeVerifyFailedPayload(
+                        configuration: config,
+                        message: result.mismatchMessage
+                    )
+                )
+            case .error(let error):
+                self.deliver(
+                    CliqItDeferredMatchClient.makeVerifyFailedPayload(
+                        configuration: config,
+                        message: error.localizedDescription
+                    )
+                )
+            }
         }
         beginDeferredMatchIfNeeded()
         return self
     }
 
-    /// Typed verify result — `.mismatched` when server returns `ok: false`.
+    /// - Warning: Deprecated. Prefer `onLinkReceived` — verify runs in the background; failures arrive there as `status: verifyFailed`.
+    @available(*, deprecated, message: "Use onLinkReceived — verify failures are delivered there")
     public func onVerify(_ handler: @escaping CliqItVerifyHandler) {
         lock.lock()
         verifyHandler = handler
@@ -285,7 +306,8 @@ public final class CliqItSDK: @unchecked Sendable {
         return deliver(payload)
     }
 
-    /// Fires after each direct-link GET `/api/v1/sdk/link/{slug}`.
+    /// - Warning: Deprecated. Prefer `onLinkReceived` — slug lookup runs in the background; path arrives as `status: opened`, failures as `lookupFailed`.
+    @available(*, deprecated, message: "Use onLinkReceived — lookup results/errors are delivered there")
     public func onDirectLinkLookup(_ handler: @escaping CliqItDirectLinkLookupHandler) {
         lock.lock()
         directLinkLookupHandler = handler
@@ -424,7 +446,12 @@ public final class CliqItSDK: @unchecked Sendable {
                 if let handler {
                     DispatchQueue.main.async { handler(.failure(error)) }
                 }
-                _ = deliver(fallbackPayload)
+                _ = deliver(
+                    CliqItDeferredMatchClient.makeLookupFailedPayload(
+                        fallback: fallbackPayload,
+                        message: error.localizedDescription
+                    )
+                )
             }
         }
     }

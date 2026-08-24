@@ -7,11 +7,10 @@ npm install github:mindrootstech/react-native-cliqit#unify-onDeepLink-2.0.7
 cd ios && pod install && cd ..
 ```
 
-Rebuild the native app after upgrading.
+## Usage — one listener
 
-## Usage
-
-All listeners use **`({ result, error })`**.
+`configure` + `handleUrl` + **`onLinkReceived`**.  
+Verify, slug lookup, and deferred match all run in the background. You only get navigation results and errors here.
 
 ```js
 import { useEffect } from 'react';
@@ -21,11 +20,10 @@ import CliqIt from 'react-native-cliqit';
 useEffect(() => {
   const off = CliqIt.onLinkReceived(({ result, error }) => {
     if (error) {
-      // Transport / failed status — also see result?.error when status === 'failed'
-      console.warn(error);
+      // status: failed | verifyFailed | lookupFailed (see result?.status)
+      console.warn(error, result?.status);
       return;
     }
-    // status: opened | matched | notMatched | failed | alreadyReported
     if (result?.shouldNavigate) {
       // navigate to result.path
     }
@@ -45,28 +43,26 @@ useEffect(() => {
 
 ## Callback envelope
 
-Every listener / callback:
-
 | Field | Type | Notes |
 |-------|------|--------|
 | `result` | `object \| null` | Payload when available |
-| `error` | `string \| null` | Set on failure (`status: failed`, empty event, configure/handleUrl validation, …) |
+| `error` | `string \| null` | Set for `failed` / `verifyFailed` / `lookupFailed` |
 
-## `onLinkReceived` → `result` fields
+## `result` fields
 
 | Field | Notes |
 |-------|--------|
-| `status` | `opened` \| `matched` \| `notMatched` \| `failed` \| `alreadyReported` |
-| `path` / `destinationPath` | In-app path (empty when nothing to open) |
-| `isDeferred` | `true` for deferred outcomes |
-| `shouldNavigate` | `true` when you should route |
-| `matched` / `slug` / `tier` / `score` / `confidence` | Deferred attribution |
-| `url` / `source` / `query` / `pathComponents` | Common link fields |
-| `error` | Message when `status === 'failed'` (native `errorMessage`) |
+| `status` | `opened` \| `matched` \| `notMatched` \| `failed` \| `verifyFailed` \| `lookupFailed` \| `alreadyReported` |
+| `path` / `destinationPath` | In-app path |
+| `shouldNavigate` | Route when `true` (`opened` / `matched` / `lookupFailed` with path) |
+| `isDeferred` | Deferred outcomes |
+| `matched` / `slug` / `tier` / `score` / `confidence` | Attribution |
+| `url` / `source` / `query` / `pathComponents` | Link fields |
+| `error` | Detail when a failure status is set |
 
-`onDeepLink` / `onDeferredMatch` are **deprecated** aliases.
+**Background (no separate listener needed):** API verify after configure; slug → destination on direct SmartLink open; deferred fingerprint match.
 
-Also: `onLinkLookup`, `onVerify`, `LinkField`.
+Deprecated: `onDeepLink`, `onDeferredMatch`, `onLinkLookup`, `onVerify`.
 
 ## Notes
 

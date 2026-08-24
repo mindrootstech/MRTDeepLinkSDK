@@ -37,7 +37,7 @@ data class CliqItPayload(
   val errorMessage: String? = null,
 ) {
   val shouldNavigate: Boolean
-    get() = path.isNotEmpty() && (status == "opened" || status == "matched")
+    get() = path.isNotEmpty() && (status == "opened" || status == "matched" || status == "lookupFailed")
 }
 
 data class DeferredMatchInfo(

@@ -54,6 +54,7 @@ extension Foundation.NSNotification.Name {
   final public func configure(apiKey: Swift.String) -> CliqIt.CliqItSDK
   @discardableResult
   final public func configure(_ configuration: CliqIt.CliqItConfiguration) -> CliqIt.CliqItSDK
+  @available(*, deprecated, message: "Use onLinkReceived — verify failures are delivered there")
   final public func onVerify(_ handler: @escaping CliqIt.CliqItVerifyHandler)
   final public func onDeferredMatchDebug(_ handler: @escaping CliqIt.CliqItDeferredMatchDebugHandler)
   @available(*, deprecated, message: "Use onLinkReceived — unified payload for direct + deferred")
@@ -66,6 +67,7 @@ extension Foundation.NSNotification.Name {
   final public func onDeepLink(_ handler: @escaping CliqIt.CliqItHandler)
   @discardableResult
   final public func handle(url: Foundation.URL) -> Swift.Bool
+  @available(*, deprecated, message: "Use onLinkReceived — lookup results/errors are delivered there")
   final public func onDirectLinkLookup(_ handler: @escaping CliqIt.CliqItDirectLinkLookupHandler)
   @discardableResult
   final public func handle(userActivity: Foundation.NSUserActivity) -> Swift.Bool
@@ -106,6 +108,8 @@ public enum CliqItLinkStatus : Swift.String, Swift.Sendable {
   case matched
   case notMatched
   case failed
+  case verifyFailed
+  case lookupFailed
   case alreadyReported
   public init?(rawValue: Swift.String)
   public typealias RawValue = Swift.String

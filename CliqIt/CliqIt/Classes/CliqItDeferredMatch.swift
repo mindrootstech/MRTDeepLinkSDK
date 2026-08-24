@@ -308,6 +308,41 @@ enum CliqItDeferredMatchClient {
         )
     }
 
+    static func makeVerifyFailedPayload(
+        configuration: CliqItConfiguration?,
+        message: String
+    ) -> CliqItPayload {
+        let url = configuration?.serverURL ?? URL(string: "https://theblockyapp.com")!
+        return CliqItPayload(
+            url: url,
+            path: "",
+            pathComponents: [],
+            queryParameters: [:],
+            source: .unknown,
+            isDeferred: false,
+            status: .verifyFailed,
+            errorMessage: message
+        )
+    }
+
+    static func makeLookupFailedPayload(
+        fallback: CliqItPayload,
+        message: String
+    ) -> CliqItPayload {
+        CliqItPayload(
+            url: fallback.url,
+            path: fallback.path,
+            pathComponents: fallback.pathComponents,
+            queryParameters: fallback.queryParameters,
+            source: fallback.source,
+            isDeferred: false,
+            status: .lookupFailed,
+            slug: fallback.slug,
+            destinationPath: fallback.destinationPath,
+            errorMessage: message
+        )
+    }
+
     private static func matchURL(serverURL: URL, matchPath: String) -> URL? {
         var components = URLComponents(url: serverURL, resolvingAgainstBaseURL: false)
         let normalizedPath = matchPath.hasPrefix("/") ? matchPath : "/\(matchPath)"

@@ -752,9 +752,11 @@
             "usr": "s:6CliqIt0aB3SDKC8onVerifyyyyAA0abE7OutcomeOcF",
             "mangledName": "$s6CliqIt0aB3SDKC8onVerifyyyyAA0abE7OutcomeOcF",
             "moduleName": "CliqIt",
+            "deprecated": true,
             "declAttributes": [
               "Final",
               "AccessControl",
+              "Available",
               "RawDocComment"
             ],
             "funcSelfKind": "NonMutating"
@@ -1109,9 +1111,11 @@
             "usr": "s:6CliqIt0aB3SDKC18onDirectLinkLookupyyys6ResultOyAA0abF7DetailsVAA0aB18DeferredMatchErrorOGcF",
             "mangledName": "$s6CliqIt0aB3SDKC18onDirectLinkLookupyyys6ResultOyAA0abF7DetailsVAA0aB18DeferredMatchErrorOGcF",
             "moduleName": "CliqIt",
+            "deprecated": true,
             "declAttributes": [
               "Final",
               "AccessControl",
+              "Available",
               "RawDocComment"
             ],
             "funcSelfKind": "NonMutating"
@@ -2440,6 +2444,86 @@
             "declKind": "EnumElement",
             "usr": "s:6CliqIt0aB10LinkStatusO6failedyA2CmF",
             "mangledName": "$s6CliqIt0aB10LinkStatusO6failedyA2CmF",
+            "moduleName": "CliqIt",
+            "declAttributes": [
+              "RawDocComment"
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "verifyFailed",
+            "printedName": "verifyFailed",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(CliqIt.CliqItLinkStatus.Type) -> CliqIt.CliqItLinkStatus",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "CliqItLinkStatus",
+                    "printedName": "CliqIt.CliqItLinkStatus",
+                    "usr": "s:6CliqIt0aB10LinkStatusO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "CliqIt.CliqItLinkStatus.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "CliqItLinkStatus",
+                        "printedName": "CliqIt.CliqItLinkStatus",
+                        "usr": "s:6CliqIt0aB10LinkStatusO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:6CliqIt0aB10LinkStatusO12verifyFailedyA2CmF",
+            "mangledName": "$s6CliqIt0aB10LinkStatusO12verifyFailedyA2CmF",
+            "moduleName": "CliqIt",
+            "declAttributes": [
+              "RawDocComment"
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "lookupFailed",
+            "printedName": "lookupFailed",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(CliqIt.CliqItLinkStatus.Type) -> CliqIt.CliqItLinkStatus",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "CliqItLinkStatus",
+                    "printedName": "CliqIt.CliqItLinkStatus",
+                    "usr": "s:6CliqIt0aB10LinkStatusO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "CliqIt.CliqItLinkStatus.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "CliqItLinkStatus",
+                        "printedName": "CliqIt.CliqItLinkStatus",
+                        "usr": "s:6CliqIt0aB10LinkStatusO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:6CliqIt0aB10LinkStatusO12lookupFailedyA2CmF",
+            "mangledName": "$s6CliqIt0aB10LinkStatusO12lookupFailedyA2CmF",
             "moduleName": "CliqIt",
             "declAttributes": [
               "RawDocComment"
@@ -13141,7 +13225,7 @@
     {
       "filePath": "\/Volumes\/ExternalDisk\/MRTDeepLink\/CliqIt\/CliqIt\/Classes\/CliqItPayload.swift",
       "kind": "BooleanLiteral",
-      "offset": 1953,
+      "offset": 2173,
       "length": 5,
       "value": "false"
     },

@@ -54,11 +54,15 @@ function listen(eventName, mapRaw, callback) {
   return () => sub.remove();
 }
 
-/** Unified direct + deferred payload. `status: failed` → error set. */
+/** Unified direct + deferred payload. Failures set `error`. */
 function mapLinkReceived(raw) {
   if (!raw) return { result: null, error: 'Empty link payload' };
-  if (raw.status === 'failed') {
-    return { result: raw, error: raw.error || 'Link / deferred match failed' };
+  const failStatuses = new Set(['failed', 'verifyFailed', 'lookupFailed']);
+  if (failStatuses.has(raw.status)) {
+    return {
+      result: raw,
+      error: raw.error || `Link failed (${raw.status})`,
+    };
   }
   return { result: raw, error: null };
 }
@@ -125,7 +129,8 @@ const CliqIt = {
   },
 
   /**
-   * Direct opens + deferred match outcomes (same fields).
+   * Direct opens + deferred match + verify/lookup errors (same fields).
+   * Verify + slug lookup run in the background — only listen here.
    * @param {(payload: { result: object | null, error: string | null }) => void} callback
    */
   onLinkReceived(callback) {
@@ -141,7 +146,7 @@ const CliqIt = {
   },
 
   /**
-   * @deprecated Use onLinkReceived — same unified payload (filter `isDeferred` / `status`).
+   * @deprecated Use onLinkReceived
    * @param {(payload: { result: object | null, error: string | null }) => void} callback
    */
   onDeferredMatch(callback) {
@@ -155,12 +160,18 @@ const CliqIt = {
     return () => sub.remove();
   },
 
-  /** @param {(payload: { result: object | null, error: string | null }) => void} callback */
+  /**
+   * @deprecated Use onLinkReceived — slug lookup is background; failures arrive as status lookupFailed.
+   * @param {(payload: { result: object | null, error: string | null }) => void} callback
+   */
   onLinkLookup(callback) {
     return listen('CliqItLinkLookup', mapLinkLookup, callback);
   },
 
-  /** @param {(payload: { result: object | null, error: string | null }) => void} callback */
+  /**
+   * @deprecated Use onLinkReceived — verify is background; failures arrive as status verifyFailed.
+   * @param {(payload: { result: object | null, error: string | null }) => void} callback
+   */
   onVerify(callback) {
     return listen('CliqItVerify', mapVerify, callback);
   },
