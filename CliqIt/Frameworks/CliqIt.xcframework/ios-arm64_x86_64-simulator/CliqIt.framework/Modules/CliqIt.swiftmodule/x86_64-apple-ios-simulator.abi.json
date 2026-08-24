@@ -845,6 +845,30 @@
             "usr": "s:6CliqIt0aB3SDKC15onDeferredMatchyyyAA0abeF7OutcomeOcF",
             "mangledName": "$s6CliqIt0aB3SDKC15onDeferredMatchyyyAA0abeF7OutcomeOcF",
             "moduleName": "CliqIt",
+            "deprecated": true,
+            "declAttributes": [
+              "Final",
+              "AccessControl",
+              "Available",
+              "RawDocComment"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "notifyAlreadyReportedIfNeeded",
+            "printedName": "notifyAlreadyReportedIfNeeded()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:6CliqIt0aB3SDKC29notifyAlreadyReportedIfNeededyyF",
+            "mangledName": "$s6CliqIt0aB3SDKC29notifyAlreadyReportedIfNeededyyF",
+            "moduleName": "CliqIt",
             "declAttributes": [
               "Final",
               "AccessControl",
@@ -962,7 +986,8 @@
             "moduleName": "CliqIt",
             "declAttributes": [
               "Final",
-              "AccessControl"
+              "AccessControl",
+              "RawDocComment"
             ],
             "funcSelfKind": "NonMutating"
           },
@@ -2215,6 +2240,360 @@
       },
       {
         "kind": "TypeDecl",
+        "name": "CliqItLinkStatus",
+        "printedName": "CliqItLinkStatus",
+        "children": [
+          {
+            "kind": "Var",
+            "name": "opened",
+            "printedName": "opened",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(CliqIt.CliqItLinkStatus.Type) -> CliqIt.CliqItLinkStatus",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "CliqItLinkStatus",
+                    "printedName": "CliqIt.CliqItLinkStatus",
+                    "usr": "s:6CliqIt0aB10LinkStatusO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "CliqIt.CliqItLinkStatus.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "CliqItLinkStatus",
+                        "printedName": "CliqIt.CliqItLinkStatus",
+                        "usr": "s:6CliqIt0aB10LinkStatusO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:6CliqIt0aB10LinkStatusO6openedyA2CmF",
+            "mangledName": "$s6CliqIt0aB10LinkStatusO6openedyA2CmF",
+            "moduleName": "CliqIt",
+            "declAttributes": [
+              "RawDocComment"
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "matched",
+            "printedName": "matched",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(CliqIt.CliqItLinkStatus.Type) -> CliqIt.CliqItLinkStatus",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "CliqItLinkStatus",
+                    "printedName": "CliqIt.CliqItLinkStatus",
+                    "usr": "s:6CliqIt0aB10LinkStatusO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "CliqIt.CliqItLinkStatus.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "CliqItLinkStatus",
+                        "printedName": "CliqIt.CliqItLinkStatus",
+                        "usr": "s:6CliqIt0aB10LinkStatusO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:6CliqIt0aB10LinkStatusO7matchedyA2CmF",
+            "mangledName": "$s6CliqIt0aB10LinkStatusO7matchedyA2CmF",
+            "moduleName": "CliqIt",
+            "declAttributes": [
+              "RawDocComment"
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "notMatched",
+            "printedName": "notMatched",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(CliqIt.CliqItLinkStatus.Type) -> CliqIt.CliqItLinkStatus",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "CliqItLinkStatus",
+                    "printedName": "CliqIt.CliqItLinkStatus",
+                    "usr": "s:6CliqIt0aB10LinkStatusO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "CliqIt.CliqItLinkStatus.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "CliqItLinkStatus",
+                        "printedName": "CliqIt.CliqItLinkStatus",
+                        "usr": "s:6CliqIt0aB10LinkStatusO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:6CliqIt0aB10LinkStatusO10notMatchedyA2CmF",
+            "mangledName": "$s6CliqIt0aB10LinkStatusO10notMatchedyA2CmF",
+            "moduleName": "CliqIt",
+            "declAttributes": [
+              "RawDocComment"
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "failed",
+            "printedName": "failed",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(CliqIt.CliqItLinkStatus.Type) -> CliqIt.CliqItLinkStatus",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "CliqItLinkStatus",
+                    "printedName": "CliqIt.CliqItLinkStatus",
+                    "usr": "s:6CliqIt0aB10LinkStatusO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "CliqIt.CliqItLinkStatus.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "CliqItLinkStatus",
+                        "printedName": "CliqIt.CliqItLinkStatus",
+                        "usr": "s:6CliqIt0aB10LinkStatusO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:6CliqIt0aB10LinkStatusO6failedyA2CmF",
+            "mangledName": "$s6CliqIt0aB10LinkStatusO6failedyA2CmF",
+            "moduleName": "CliqIt",
+            "declAttributes": [
+              "RawDocComment"
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "alreadyReported",
+            "printedName": "alreadyReported",
+            "children": [
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(CliqIt.CliqItLinkStatus.Type) -> CliqIt.CliqItLinkStatus",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "CliqItLinkStatus",
+                    "printedName": "CliqIt.CliqItLinkStatus",
+                    "usr": "s:6CliqIt0aB10LinkStatusO"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Metatype",
+                    "printedName": "CliqIt.CliqItLinkStatus.Type",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "CliqItLinkStatus",
+                        "printedName": "CliqIt.CliqItLinkStatus",
+                        "usr": "s:6CliqIt0aB10LinkStatusO"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "EnumElement",
+            "usr": "s:6CliqIt0aB10LinkStatusO15alreadyReportedyA2CmF",
+            "mangledName": "$s6CliqIt0aB10LinkStatusO15alreadyReportedyA2CmF",
+            "moduleName": "CliqIt",
+            "declAttributes": [
+              "RawDocComment"
+            ]
+          },
+          {
+            "kind": "Constructor",
+            "name": "init",
+            "printedName": "init(rawValue:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "CliqIt.CliqItLinkStatus?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "CliqItLinkStatus",
+                    "printedName": "CliqIt.CliqItLinkStatus",
+                    "usr": "s:6CliqIt0aB10LinkStatusO"
+                  }
+                ],
+                "usr": "s:Sq"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Constructor",
+            "usr": "s:6CliqIt0aB10LinkStatusO8rawValueACSgSS_tcfc",
+            "mangledName": "$s6CliqIt0aB10LinkStatusO8rawValueACSgSS_tcfc",
+            "moduleName": "CliqIt",
+            "implicit": true,
+            "init_kind": "Designated"
+          },
+          {
+            "kind": "Var",
+            "name": "rawValue",
+            "printedName": "rawValue",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:6CliqIt0aB10LinkStatusO8rawValueSSvp",
+            "mangledName": "$s6CliqIt0aB10LinkStatusO8rawValueSSvp",
+            "moduleName": "CliqIt",
+            "implicit": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:6CliqIt0aB10LinkStatusO8rawValueSSvg",
+                "mangledName": "$s6CliqIt0aB10LinkStatusO8rawValueSSvg",
+                "moduleName": "CliqIt",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          }
+        ],
+        "declKind": "Enum",
+        "usr": "s:6CliqIt0aB10LinkStatusO",
+        "mangledName": "$s6CliqIt0aB10LinkStatusO",
+        "moduleName": "CliqIt",
+        "declAttributes": [
+          "AccessControl",
+          "RawDocComment"
+        ],
+        "enumRawTypeName": "String",
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP",
+            "mangledName": "$ss8CopyableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Equatable",
+            "printedName": "Equatable",
+            "usr": "s:SQ",
+            "mangledName": "$sSQ"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP",
+            "mangledName": "$ss9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Hashable",
+            "printedName": "Hashable",
+            "usr": "s:SH",
+            "mangledName": "$sSH"
+          },
+          {
+            "kind": "Conformance",
+            "name": "RawRepresentable",
+            "printedName": "RawRepresentable",
+            "children": [
+              {
+                "kind": "TypeWitness",
+                "name": "RawValue",
+                "printedName": "RawValue",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ]
+              }
+            ],
+            "usr": "s:SY",
+            "mangledName": "$sSY"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Sendable",
+            "printedName": "Sendable",
+            "usr": "s:s8SendableP",
+            "mangledName": "$ss8SendableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "SendableMetatype",
+            "printedName": "SendableMetatype",
+            "usr": "s:s16SendableMetatypeP",
+            "mangledName": "$ss16SendableMetatypeP"
+          }
+        ]
+      },
+      {
+        "kind": "TypeDecl",
         "name": "CliqItParam",
         "printedName": "CliqItParam",
         "children": [
@@ -2926,9 +3305,476 @@
             ]
           },
           {
+            "kind": "Var",
+            "name": "status",
+            "printedName": "status",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "CliqItLinkStatus",
+                "printedName": "CliqIt.CliqItLinkStatus",
+                "usr": "s:6CliqIt0aB10LinkStatusO"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:6CliqIt0aB7PayloadV6statusAA0aB10LinkStatusOvp",
+            "mangledName": "$s6CliqIt0aB7PayloadV6statusAA0aB10LinkStatusOvp",
+            "moduleName": "CliqIt",
+            "declAttributes": [
+              "HasStorage",
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "isLet": true,
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "CliqItLinkStatus",
+                    "printedName": "CliqIt.CliqItLinkStatus",
+                    "usr": "s:6CliqIt0aB10LinkStatusO"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:6CliqIt0aB7PayloadV6statusAA0aB10LinkStatusOvg",
+                "mangledName": "$s6CliqIt0aB7PayloadV6statusAA0aB10LinkStatusOvg",
+                "moduleName": "CliqIt",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "matched",
+            "printedName": "matched",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Swift.Bool?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Bool",
+                    "printedName": "Swift.Bool",
+                    "usr": "s:Sb"
+                  }
+                ],
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:6CliqIt0aB7PayloadV7matchedSbSgvp",
+            "mangledName": "$s6CliqIt0aB7PayloadV7matchedSbSgvp",
+            "moduleName": "CliqIt",
+            "declAttributes": [
+              "HasStorage",
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "isLet": true,
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.Bool?",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Bool",
+                        "printedName": "Swift.Bool",
+                        "usr": "s:Sb"
+                      }
+                    ],
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:6CliqIt0aB7PayloadV7matchedSbSgvg",
+                "mangledName": "$s6CliqIt0aB7PayloadV7matchedSbSgvg",
+                "moduleName": "CliqIt",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "tier",
+            "printedName": "tier",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Swift.String?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:6CliqIt0aB7PayloadV4tierSSSgvp",
+            "mangledName": "$s6CliqIt0aB7PayloadV4tierSSSgvp",
+            "moduleName": "CliqIt",
+            "declAttributes": [
+              "HasStorage",
+              "AccessControl"
+            ],
+            "isLet": true,
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.String?",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:6CliqIt0aB7PayloadV4tierSSSgvg",
+                "mangledName": "$s6CliqIt0aB7PayloadV4tierSSSgvg",
+                "moduleName": "CliqIt",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "confidence",
+            "printedName": "confidence",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Swift.String?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:6CliqIt0aB7PayloadV10confidenceSSSgvp",
+            "mangledName": "$s6CliqIt0aB7PayloadV10confidenceSSSgvp",
+            "moduleName": "CliqIt",
+            "declAttributes": [
+              "HasStorage",
+              "AccessControl"
+            ],
+            "isLet": true,
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.String?",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:6CliqIt0aB7PayloadV10confidenceSSSgvg",
+                "mangledName": "$s6CliqIt0aB7PayloadV10confidenceSSSgvg",
+                "moduleName": "CliqIt",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "score",
+            "printedName": "score",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Swift.Double?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Double",
+                    "printedName": "Swift.Double",
+                    "usr": "s:Sd"
+                  }
+                ],
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:6CliqIt0aB7PayloadV5scoreSdSgvp",
+            "mangledName": "$s6CliqIt0aB7PayloadV5scoreSdSgvp",
+            "moduleName": "CliqIt",
+            "declAttributes": [
+              "HasStorage",
+              "AccessControl"
+            ],
+            "isLet": true,
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.Double?",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Double",
+                        "printedName": "Swift.Double",
+                        "usr": "s:Sd"
+                      }
+                    ],
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:6CliqIt0aB7PayloadV5scoreSdSgvg",
+                "mangledName": "$s6CliqIt0aB7PayloadV5scoreSdSgvg",
+                "moduleName": "CliqIt",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "slug",
+            "printedName": "slug",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Swift.String?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:6CliqIt0aB7PayloadV4slugSSSgvp",
+            "mangledName": "$s6CliqIt0aB7PayloadV4slugSSSgvp",
+            "moduleName": "CliqIt",
+            "declAttributes": [
+              "HasStorage",
+              "AccessControl"
+            ],
+            "isLet": true,
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.String?",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:6CliqIt0aB7PayloadV4slugSSSgvg",
+                "mangledName": "$s6CliqIt0aB7PayloadV4slugSSSgvg",
+                "moduleName": "CliqIt",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "destinationPath",
+            "printedName": "destinationPath",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Swift.String?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:6CliqIt0aB7PayloadV15destinationPathSSSgvp",
+            "mangledName": "$s6CliqIt0aB7PayloadV15destinationPathSSSgvp",
+            "moduleName": "CliqIt",
+            "declAttributes": [
+              "HasStorage",
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "isLet": true,
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.String?",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:6CliqIt0aB7PayloadV15destinationPathSSSgvg",
+                "mangledName": "$s6CliqIt0aB7PayloadV15destinationPathSSSgvg",
+                "moduleName": "CliqIt",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
+            "name": "errorMessage",
+            "printedName": "errorMessage",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Swift.String?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:6CliqIt0aB7PayloadV12errorMessageSSSgvp",
+            "mangledName": "$s6CliqIt0aB7PayloadV12errorMessageSSSgvp",
+            "moduleName": "CliqIt",
+            "declAttributes": [
+              "HasStorage",
+              "AccessControl"
+            ],
+            "isLet": true,
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "Swift.String?",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      }
+                    ],
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:6CliqIt0aB7PayloadV12errorMessageSSSgvg",
+                "mangledName": "$s6CliqIt0aB7PayloadV12errorMessageSSSgvg",
+                "moduleName": "CliqIt",
+                "implicit": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
             "kind": "Constructor",
             "name": "init",
-            "printedName": "init(url:path:pathComponents:queryParameters:source:receivedAt:isDeferred:)",
+            "printedName": "init(url:path:pathComponents:queryParameters:source:receivedAt:isDeferred:status:matched:tier:confidence:score:slug:destinationPath:errorMessage:)",
             "children": [
               {
                 "kind": "TypeNominal",
@@ -3001,11 +3847,123 @@
                 "printedName": "Swift.Bool",
                 "hasDefaultArg": true,
                 "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "CliqItLinkStatus",
+                "printedName": "CliqIt.CliqItLinkStatus",
+                "hasDefaultArg": true,
+                "usr": "s:6CliqIt0aB10LinkStatusO"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Swift.Bool?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Bool",
+                    "printedName": "Swift.Bool",
+                    "usr": "s:Sb"
+                  }
+                ],
+                "hasDefaultArg": true,
+                "usr": "s:Sq"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Swift.String?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "hasDefaultArg": true,
+                "usr": "s:Sq"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Swift.String?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "hasDefaultArg": true,
+                "usr": "s:Sq"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Swift.Double?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Double",
+                    "printedName": "Swift.Double",
+                    "usr": "s:Sd"
+                  }
+                ],
+                "hasDefaultArg": true,
+                "usr": "s:Sq"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Swift.String?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "hasDefaultArg": true,
+                "usr": "s:Sq"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Swift.String?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "hasDefaultArg": true,
+                "usr": "s:Sq"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Swift.String?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "hasDefaultArg": true,
+                "usr": "s:Sq"
               }
             ],
             "declKind": "Constructor",
-            "usr": "s:6CliqIt0aB7PayloadV3url4path0E10Components15queryParameters6source10receivedAt10isDeferredAC10Foundation3URLV_SSSaySSGSDyS2SGAA0aB6SourceOAK4DateVSbtcfc",
-            "mangledName": "$s6CliqIt0aB7PayloadV3url4path0E10Components15queryParameters6source10receivedAt10isDeferredAC10Foundation3URLV_SSSaySSGSDyS2SGAA0aB6SourceOAK4DateVSbtcfc",
+            "usr": "s:6CliqIt0aB7PayloadV3url4path0E10Components15queryParameters6source10receivedAt10isDeferred6status7matched4tier10confidence5score4slug15destinationPath12errorMessageAC10Foundation3URLV_SSSaySSGSDyS2SGAA0aB6SourceOAS4DateVSbAA0aB10LinkStatusOSbSgSSSgA3_SdSgA3_A3_A3_tcfc",
+            "mangledName": "$s6CliqIt0aB7PayloadV3url4path0E10Components15queryParameters6source10receivedAt10isDeferred6status7matched4tier10confidence5score4slug15destinationPath12errorMessageAC10Foundation3URLV_SSSaySSGSDyS2SGAA0aB6SourceOAS4DateVSbAA0aB10LinkStatusOSbSgSSSgA3_SdSgA3_A3_A3_tcfc",
             "moduleName": "CliqIt",
             "declAttributes": [
               "AccessControl"
@@ -3206,6 +4164,47 @@
             ]
           },
           {
+            "kind": "Var",
+            "name": "shouldNavigate",
+            "printedName": "shouldNavigate",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "usr": "s:Sb"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:6CliqIt0aB7PayloadV14shouldNavigateSbvp",
+            "mangledName": "$s6CliqIt0aB7PayloadV14shouldNavigateSbvp",
+            "moduleName": "CliqIt",
+            "declAttributes": [
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Bool",
+                    "printedName": "Swift.Bool",
+                    "usr": "s:Sb"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:6CliqIt0aB7PayloadV14shouldNavigateSbvg",
+                "mangledName": "$s6CliqIt0aB7PayloadV14shouldNavigateSbvg",
+                "moduleName": "CliqIt",
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
             "kind": "Function",
             "name": "==",
             "printedName": "==(_:_:)",
@@ -3243,7 +4242,8 @@
         "mangledName": "$s6CliqIt0aB7PayloadV",
         "moduleName": "CliqIt",
         "declAttributes": [
-          "AccessControl"
+          "AccessControl",
+          "RawDocComment"
         ],
         "conformances": [
           {
@@ -12047,7 +13047,7 @@
     {
       "filePath": "\/Volumes\/ExternalDisk\/MRTDeepLink\/CliqIt\/CliqIt\/Classes\/CliqItPayload.swift",
       "kind": "BooleanLiteral",
-      "offset": 864,
+      "offset": 1949,
       "length": 5,
       "value": "false"
     },

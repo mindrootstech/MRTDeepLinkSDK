@@ -2,7 +2,7 @@
 
 iOS SDK for **deferred deep linking** — attributes a SmartLink web click to the first app open, then routes the user to the matched in-app path.
 
-**Version:** `2.0.2` · **iOS 15+** · **Swift 5**
+**Version:** `2.0.3` · **iOS 15+** · **Swift 5**
 
 ---
 
@@ -10,8 +10,10 @@ iOS SDK for **deferred deep linking** — attributes a SmartLink web click to th
 
 | Feature | Description |
 |---------|-------------|
-| Deferred match | `POST /api/v1/sdk/app/match` with native signals + `/fp-probe` fingerprint |
+| Deferred match | `POST /api/v1/sdk/app/match` with native signals + WebView fingerprint |
+| Verify | `POST /api/v1/sdk/verify` — API key + bundle identity on configure |
 | Universal Links | Handles `https://<domain>/…` when the app is installed |
+| Direct link lookup | `GET /api/v1/sdk/link/{slug}` → destination path |
 | Custom URL scheme | Optional `yourapp://…` links |
 | SwiftUI helper | `.handleCliqItDeepLinks { … }` |
 | Smart link builder | Build shareable web / custom-scheme URLs |
@@ -40,12 +42,12 @@ CLIQIT_SDK_SOURCE=1 pod install
 
 Open `YourApp.xcworkspace`, not `.xcodeproj`.
 
-### CocoaPods (git)
+### CocoaPods (git — binary)
 
 ```ruby
 pod 'CliqIt',
     :git => 'https://github.com/mindrootstech/CliqIt.git',
-    :tag => '2.0.2'
+    :tag => '2.0.3'
 ```
 
 ### Swift Package Manager
@@ -65,33 +67,18 @@ pod 'CliqIt',
 
 SDK match calls always go to the API host. The link domain users tap is the one you create/configure in admin — not hardcoded in the SDK.
 
+Only `*.theblockyapp.com` (and exact `theblockyapp.com`) https hosts are accepted for `handle(url:)` unless you pass a custom domain via internal config.
+
 ---
 
 ## App setup
 
 ### 1. Associated Domains
 
-Use the **SmartLink / Universal Link domain shown in your admin panel** (not a fixed MindRoots domain).
-
-In Xcode → Signing & Capabilities → Associated Domains:
+Use the **SmartLink / Universal Link domain shown in your admin panel**.
 
 ```
 applinks:<your-admin-panel-domain>
-```
-
-Example if admin shows `devajaysorg.theblockyapp.com`:
-
-```
-applinks:devajaysorg.theblockyapp.com
-```
-
-Or in entitlements:
-
-```xml
-<key>com.apple.developer.associated-domains</key>
-<array>
-  <string>applinks:YOUR_ADMIN_PANEL_DOMAIN</string>
-</array>
 ```
 
 ### 2. Custom URL scheme (optional)
@@ -100,16 +87,13 @@ Or in entitlements:
 
 ### 3. AASA on the link domain
 
-Your admin / SmartLink host serves AASA at:
-
 `https://<your-admin-panel-domain>/.well-known/apple-app-site-association`
 
-It must include your Apple Team ID + app bundle id. Follow the domain and AASA values from the admin panel.
 ---
 
 ## Quick start
 
-Works with **SwiftUI** and **UIKit (Swift)**. Always call `configure(apiKey:)` at launch.
+Register listeners **before** `configure` where possible — deferred match can finish very fast.
 
 ### SwiftUI
 
@@ -120,25 +104,41 @@ import SwiftUI
 @main
 struct MyApp: App {
     init() {
-        CliqItSDK.shared.configure(apiKey: "pk_live_…")
-        // Match API always hits https://api.theblockyapp.com (built into SDK)
-
-        CliqItSDK.shared.onDeferredMatch { outcome in
+        // onVerify — after configure: API key + bundleId identity check
+        CliqItSDK.shared.onVerify { outcome in
             switch outcome {
-            case .matched(let info):
-                // Navigate using info.destinationPath / info.slug
-                break
-            case .notMatched, .failed:
-                break
+            case .passed(let r): print("verify ok", r.appName ?? "")
+            case .mismatched(let r): print("verify mismatch", r.mismatchMessage)
+            case .error(let e): print("verify error", e)
             }
         }
+
+        // onDeepLink — direct opens + deferred match (same fields)
+        CliqItSDK.shared.onDeepLink { payload in
+            print(payload.status, payload.path, payload.isDeferred)
+            if payload.shouldNavigate {
+                // navigate to payload.path
+            }
+        }
+
+        // onDirectLinkLookup — direct slug → destination API (when handle(url:) has a slug)
+        CliqItSDK.shared.onDirectLinkLookup { result in
+            switch result {
+            case .success(let details):
+                print(details[.resolvedPath] ?? "")
+            case .failure(let error):
+                print(error)
+            }
+        }
+
+        // configure — starts verify + deferred match
+        CliqItSDK.shared.configure(apiKey: "pk_live_…")
     }
 
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .handleCliqItDeepLinks { payload in
-                    // Universal Link / custom scheme
                     print(payload.path, payload.isDeferred)
                 }
         }
@@ -152,44 +152,27 @@ struct MyApp: App {
 import UIKit
 import CliqIt
 
-// AppDelegate
 func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
 ) -> Bool {
-    CliqItSDK.shared.configure(apiKey: "pk_live_…")
-
     CliqItSDK.shared.onDeepLink { payload in
-        // Navigate (deferred or direct)
-        print(payload.path, payload.isDeferred)
+        print(payload.status, payload.path, payload.isDeferred)
     }
-
-    CliqItSDK.shared.onDeferredMatch { outcome in
-        switch outcome {
-        case .matched(let info):
-            print(info.destinationPath ?? "")
-        case .notMatched, .failed:
-            break
-        }
-    }
+    CliqItSDK.shared.configure(apiKey: "pk_live_…")
     return true
 }
 
-// SceneDelegate
 func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
     CliqItSceneSupport.handle(connectionOptions: connectionOptions)
 }
-
 func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
     _ = CliqItSceneSupport.handle(userActivity: userActivity)
 }
-
 func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
     CliqItSceneSupport.handle(urlContexts: URLContexts)
 }
 ```
-
-### UIKit — manual handlers
 
 ```swift
 _ = CliqItSDK.shared.handle(url: url)
@@ -198,20 +181,82 @@ _ = CliqItSDK.shared.handle(userActivity: userActivity)
 
 ---
 
+## When each callback runs
+
+| API | When it runs |
+|-----|----------------|
+| `configure(apiKey:)` | Call once at launch. Starts **verify** + **deferred match**. |
+| `onVerify` | After configure — identity check (`bundleId` vs admin). |
+| `onDeepLink` | **One callback** for direct opens **and** deferred outcomes (same `CliqItPayload` fields). |
+| `onDirectLinkLookup` | Direct open with a slug — after `GET /api/v1/sdk/link/{slug}`. |
+| `handle(url:)` | Pass Universal Links / custom schemes into the SDK (Scene / `openURL`). |
+| `onDeferredMatch` | **Deprecated** — use `onDeepLink` (`status` / `isDeferred`). |
+
+---
+
+## Callback results (what you get)
+
+### `onDeepLink` → `CliqItPayload` (direct + deferred)
+
+| Property | Type | Notes |
+|----------|------|--------|
+| `url` | `URL` | Original or synthetic URL |
+| `path` | `String` | In-app path to open (empty when nothing to navigate) |
+| `pathComponents` | `[String]` | Path segments |
+| `queryParameters` | `[String: String]` | Query map |
+| `source` | `CliqItSource` | `.universalLink` / `.customScheme` / `.deferred` / `.unknown` |
+| `isDeferred` | `Bool` | `true` for deferred match outcomes |
+| `status` | `CliqItLinkStatus` | `opened` \| `matched` \| `notMatched` \| `failed` \| `alreadyReported` |
+| `matched` | `Bool?` | Deferred only; `nil` for direct `opened` |
+| `destinationPath` | `String?` | Server destination when known |
+| `slug` / `tier` / `confidence` / `score` | optional | Deferred attribution fields |
+| `errorMessage` | `String?` | When `status == .failed` |
+| `shouldNavigate` | `Bool` | `path` non-empty and status is `opened` or `matched` |
+| `receivedAt` | `Date` | Receive time |
+
+Navigate when `payload.shouldNavigate` (or check `status` + `path`).
+
+### `onVerify` → `CliqItVerifyOutcome`
+
+| Case | Notes |
+|------|--------|
+| `.passed(CliqItVerifyResult)` | `ok: true` |
+| `.mismatched(CliqItVerifyResult)` | Wrong key / bundle — see `checks` / `mismatchMessage` |
+| `.error(…)` | Network / decode |
+
+`CliqItVerifyResult`: `ok`, `appId`, `appName`, `checks` (`bundleId` → `{ actual, expected, match }`).
+
+### `onDirectLinkLookup` → `Result<CliqItLinkDetails, …>`
+
+Use `CliqItLinkField` keys, e.g. `details[.resolvedPath]` (`iosDestination ?? destination`).
+
+| Field (`CliqItLinkField`) | Notes |
+|---------------------------|--------|
+| `.resolvedPath` | Navigation path for iOS |
+| `.destination` / `.iosDestination` / `.androidDestination` | Raw destinations |
+| `.slug` | Link slug |
+| `.ogTitle` / `.ogDescription` / `.ogImage` / `.ogUrl` | Open Graph |
+| `.webFallback` | Web fallback |
+| `.showInterstitial` / `.isDeepLink` | Flags |
+| `.appleTeamId` / `.iosBundleId` / `.androidPackageName` | App identity metadata |
+
+---
+
 ## Lifecycle
+
 ```
 App launch
-    └─ configure(…)
-         └─ first launch only → POST /api/v1/sdk/app/match
-              ├─ matched + destinationPath → onDeepLink(isDeferred: true)
-              └─ no match → organic launch
+    └─ configure(apiKey:)
+         ├─ POST /api/v1/sdk/verify     → onVerify
+         └─ POST /api/v1/sdk/app/match  → onDeepLink(status: matched|notMatched|failed)
 
-Universal Link / custom scheme open
-    └─ handle(url:) / .handleCliqItDeepLinks
-         └─ onDeepLink(payload)
+Universal Link / custom scheme
+    └─ handle(url:)
+         ├─ GET /api/v1/sdk/link/{slug} → onDirectLinkLookup (if slug)
+         └─ onDeepLink(status: opened)
 ```
 
-Deferred match runs **once per install** (guarded by `UserDefaults`).
+Deferred match is persisted only after a **real match** (`matched == true`).
 
 ---
 
@@ -219,12 +264,10 @@ Deferred match runs **once per install** (guarded by `UserDefaults`).
 
 ### Request
 
-`POST {serverURL}/api/v1/sdk/app/match`
+`POST {serverURL}/api/v1/sdk/app/match`  
+Header: `x-api-key`
 
-Auth header: `x-api-key: {apiKey}`
-
-Body includes native signals (`osVersionMajor`, `deviceName`, `locale`, `timezone`, `screenBucket`, …) and optional `/fp-probe` fields (`canvasHash`, `gpuRenderer`, `audioFingerprint`, …). If a Universal Link carried `?session=` / `clickSessionId`, that UUID is sent as `clickSessionId`.
-`deviceName` is the hardware model id (e.g. `iPhone15,2`).
+Body includes `platform`, `bundleId`, device signals, and WebView fingerprint fields (`canvasHash`, `webglHash`, `gpuRenderer`, `audioFingerprint`, `clockSkewMs`, …).
 
 ### Response
 
@@ -241,40 +284,9 @@ Body includes native signals (`osVersionMajor`, `deviceName`, `locale`, `timezon
 
 | `tier` | Meaning |
 |--------|---------|
-| `deterministic_session` | Session id from Universal Link |
+| `deterministic_session` | Session id from link |
 | `probabilistic` | Fingerprint match |
-| `button` / `manual` | Ambiguous / no match (`matched: false`) |
-
-### Inspect from the app
-
-```swift
-CliqItSDK.shared.onDeferredMatchDebug { result in
-    switch result {
-    case .success(let match):
-        print(match.matched, match.tier ?? "-", match.destinationPath ?? "-")
-    case .failure(let error):
-        print(error.localizedDescription)
-    }
-}
-
-// Manual re-run (e.g. debug UI)
-CliqItSDK.shared.runDeferredMatchDebug(clickSessionId: "optional-uuid")
-```
-
----
-
-## Payload
-
-```swift
-public struct CliqItPayload {
-    public let url: URL
-    public let path: String
-    public let pathComponents: [String]
-    public let queryParameters: [String: String]
-    public let source: CliqItSource   // .universalLink | .customScheme | .deferred
-    public let isDeferred: Bool
-}
-```
+| `button` / `manual` | Ambiguous / no match |
 
 ---
 
@@ -286,11 +298,7 @@ let config = CliqItSmartLinkConfiguration(
     customURLScheme: "mrtdeeplink",
     iOSAppStoreURL: URL(string: "https://apps.apple.com/app/id…")!
 )
-
-// https://theblockyapp.com/product/42
 CliqItSmartLinkBuilder.makeWebURL(path: "/product/42", configuration: config)
-
-// mrtdeeplink://product/42
 CliqItSmartLinkBuilder.makeAppURL(path: "/product/42", scheme: "mrtdeeplink")
 ```
 
@@ -298,10 +306,10 @@ CliqItSmartLinkBuilder.makeAppURL(path: "/product/42", scheme: "mrtdeeplink")
 
 ## Testing Universal Links
 
-1. Install a build signed with the correct Team ID + bundle id.
-2. Do **not** paste the URL into Safari’s address bar (often stays in Safari).
-3. Open the link from Notes / Messages, or long-press → **Open in …**.
-4. Confirm AASA is reachable and Apple’s CDN has cached it.
+1. Install a build with correct Team ID + bundle id.
+2. Do **not** paste the URL into Safari’s address bar.
+3. Open from Notes / Messages, or long-press → **Open in …**.
+4. Confirm AASA is reachable.
 
 ---
 
@@ -309,5 +317,9 @@ CliqItSmartLinkBuilder.makeAppURL(path: "/product/42", scheme: "mrtdeeplink")
 
 - iOS 15.0+
 - Xcode 15+
-- Associated Domains capability (domain from your admin panel)
-- Valid SDK API key from your SmartLink admin
+- Associated Domains (admin panel domain)
+- Valid SDK API key from SmartLink admin
+
+## React Native
+
+See [react-native-cliqit](https://github.com/mindrootstech/react-native-cliqit) (`v2.0.6+`) for the RN bridge + result tables.

@@ -41,6 +41,7 @@ export function handleUrl(url) {
 }
 
 /**
+ * Direct + deferred (same fields). Check `status` / `isDeferred` / `shouldNavigate`.
  * @param {(payload: object) => void} listener
  * @returns {() => void} unsubscribe
  */
@@ -51,12 +52,16 @@ export function onDeepLink(listener) {
 }
 
 /**
+ * @deprecated Use onDeepLink — filter `isDeferred` / `status`.
  * @param {(result: object) => void} listener
  * @returns {() => void} unsubscribe
  */
 export function onDeferredMatch(listener) {
   if (!emitter) return () => {};
-  const sub = emitter.addListener('CliqItDeferredMatch', listener);
+  const sub = emitter.addListener('CliqItDeepLink', (payload) => {
+    if (!payload?.isDeferred && payload?.status !== 'alreadyReported') return;
+    listener(payload);
+  });
   return () => sub.remove();
 }
 

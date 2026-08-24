@@ -184,7 +184,10 @@ enum CliqItLinkLookupClient {
             pathComponents: pathComponents,
             queryParameters: queryParameters,
             source: source,
-            isDeferred: false
+            isDeferred: false,
+            status: .opened,
+            slug: details[.slug],
+            destinationPath: path
         )
     }
 }

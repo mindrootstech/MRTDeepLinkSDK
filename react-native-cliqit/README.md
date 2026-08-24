@@ -28,12 +28,10 @@ useEffect(() => {
   CliqIt.configure('pk_live_…');
 
   const offDeepLink = CliqIt.onDeepLink((payload) => {
-    console.log('deep link', payload.path, payload.isDeferred);
-  });
-
-  const offMatch = CliqIt.onDeferredMatch((result) => {
-    if (result.status === 'matched') {
-      console.log('deferred', result.destinationPath);
+    // Direct + deferred share the same fields
+    console.log(payload.status, payload.path, payload.isDeferred, payload.slug);
+    if (payload.shouldNavigate) {
+      // navigate to payload.path
     }
   });
 
@@ -46,7 +44,6 @@ useEffect(() => {
 
   return () => {
     offDeepLink();
-    offMatch();
     linkSub.remove();
   };
 }, []);
@@ -54,5 +51,6 @@ useEffect(() => {
 
 ## Notes
 
-- Deferred match returns `destinationPath` / `slug`, not the original short URL.
+- One listener: `onDeepLink` — `status` is `opened` | `matched` | `notMatched` | `failed` | `alreadyReported`.
+- Navigate when `shouldNavigate` (or non-empty `path` + opened/matched).
 - iOS 15+.

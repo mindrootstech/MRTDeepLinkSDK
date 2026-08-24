@@ -238,30 +238,73 @@ enum CliqItDeferredMatchClient {
         return string
     }
 
+    /// Unified deferred payload for `onDeepLink` (matched / notMatched share the same fields).
     static func makeDeferredPayload(
         response: CliqItDeferredMatchResponse,
-        configuration: CliqItConfiguration
-    ) -> CliqItPayload? {
-        guard response.matched, let destinationPath = response.destinationPath, !destinationPath.isEmpty else {
-            return nil
-        }
-
-        let normalizedPath = destinationPath.hasPrefix("/") ? destinationPath : "/\(destinationPath)"
+        configuration: CliqItConfiguration,
+        navigate: Bool
+    ) -> CliqItPayload {
+        let rawPath = response.destinationPath?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let normalizedPath: String = {
+            guard !rawPath.isEmpty else { return "" }
+            return rawPath.hasPrefix("/") ? rawPath : "/\(rawPath)"
+        }()
         let host = configuration.primaryLinkDomain ?? configuration.serverURL.host ?? "localhost"
-        guard let url = URL(string: "https://\(host)\(normalizedPath)") else { return nil }
+        let url = URL(string: "https://\(host)\(normalizedPath.isEmpty ? "/" : normalizedPath)")
+            ?? configuration.serverURL
 
-        let pathComponents = normalizedPath
+        let openPath = (navigate && response.matched && !normalizedPath.isEmpty) ? normalizedPath : ""
+        let pathComponents = openPath
             .split(separator: "/")
             .map(String.init)
             .filter { !$0.isEmpty }
 
         return CliqItPayload(
             url: url,
-            path: normalizedPath,
+            path: openPath,
             pathComponents: pathComponents,
             queryParameters: [:],
             source: .deferred,
-            isDeferred: true
+            isDeferred: true,
+            status: response.matched ? .matched : .notMatched,
+            matched: response.matched,
+            tier: response.tier,
+            confidence: response.confidence,
+            score: response.score,
+            slug: response.slug,
+            destinationPath: normalizedPath.isEmpty ? nil : normalizedPath
+        )
+    }
+
+    static func makeDeferredFailedPayload(
+        error: CliqItDeferredMatchError,
+        configuration: CliqItConfiguration
+    ) -> CliqItPayload {
+        CliqItPayload(
+            url: configuration.serverURL,
+            path: "",
+            pathComponents: [],
+            queryParameters: [:],
+            source: .deferred,
+            isDeferred: true,
+            status: .failed,
+            matched: false,
+            errorMessage: error.localizedDescription
+        )
+    }
+
+    static func makeAlreadyReportedPayload(configuration: CliqItConfiguration?) -> CliqItPayload {
+        let url = configuration?.serverURL ?? URL(string: "https://theblockyapp.com")!
+        return CliqItPayload(
+            url: url,
+            path: "",
+            pathComponents: [],
+            queryParameters: [:],
+            source: .deferred,
+            isDeferred: true,
+            status: .alreadyReported,
+            matched: nil,
+            errorMessage: "Deferred match already ran on this install."
         )
     }
 
@@ -314,10 +357,10 @@ enum CliqItDeferredMatchClient {
     ) async -> RequestBody {
         _ = probeDomain
         let (level, charging) = CliqItInstallDeviceInfo.batteryState()
-        async let connection = CliqItNetworkInfo.connectionType()
-        async let webFingerprint = CliqItWebFingerprintCollector.collect(debugLogging: debugLogging)
-        let connectionType = await connection
-        let web = await webFingerprint
+        // Sequential await — avoid `async let` (Swift 6.x / Xcode 26 can abort with
+        // "freed pointer was not the last allocation" on child-task teardown).
+        let connectionType = await CliqItNetworkInfo.connectionType()
+        let web = await CliqItWebFingerprintCollector.collect(debugLogging: debugLogging)
 
         #if canImport(UIKit)
         let boldText = UIAccessibility.isBoldTextEnabled

@@ -56,7 +56,9 @@ extension Foundation.NSNotification.Name {
   final public func configure(_ configuration: CliqIt.CliqItConfiguration) -> CliqIt.CliqItSDK
   final public func onVerify(_ handler: @escaping CliqIt.CliqItVerifyHandler)
   final public func onDeferredMatchDebug(_ handler: @escaping CliqIt.CliqItDeferredMatchDebugHandler)
+  @available(*, deprecated, message: "Use onDeepLink — unified payload for direct + deferred")
   final public func onDeferredMatch(_ handler: @escaping CliqIt.CliqItDeferredMatchHandler)
+  final public func notifyAlreadyReportedIfNeeded()
   final public func onDeferredMatchDebugRequest(_ handler: @escaping CliqIt.CliqItDeferredMatchDebugRequestHandler)
   final public func runDeferredMatchDebug(clickSessionId: Swift.String? = nil)
   final public func onDeepLink(_ handler: @escaping CliqIt.CliqItHandler)
@@ -97,6 +99,18 @@ public enum CliqItSource : Swift.String, Swift.Sendable {
     get
   }
 }
+public enum CliqItLinkStatus : Swift.String, Swift.Sendable {
+  case opened
+  case matched
+  case notMatched
+  case failed
+  case alreadyReported
+  public init?(rawValue: Swift.String)
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
 public enum CliqItParam : Swift.String, Swift.CaseIterable, Swift.Sendable {
   case session
   case clickSessionId
@@ -119,7 +133,15 @@ public struct CliqItPayload : Swift.Sendable, Swift.Equatable {
   public let source: CliqIt.CliqItSource
   public let isDeferred: Swift.Bool
   public let receivedAt: Foundation.Date
-  public init(url: Foundation.URL, path: Swift.String, pathComponents: [Swift.String], queryParameters: [Swift.String : Swift.String], source: CliqIt.CliqItSource, receivedAt: Foundation.Date = Date(), isDeferred: Swift.Bool = false)
+  public let status: CliqIt.CliqItLinkStatus
+  public let matched: Swift.Bool?
+  public let tier: Swift.String?
+  public let confidence: Swift.String?
+  public let score: Swift.Double?
+  public let slug: Swift.String?
+  public let destinationPath: Swift.String?
+  public let errorMessage: Swift.String?
+  public init(url: Foundation.URL, path: Swift.String, pathComponents: [Swift.String], queryParameters: [Swift.String : Swift.String], source: CliqIt.CliqItSource, receivedAt: Foundation.Date = Date(), isDeferred: Swift.Bool = false, status: CliqIt.CliqItLinkStatus = .opened, matched: Swift.Bool? = nil, tier: Swift.String? = nil, confidence: Swift.String? = nil, score: Swift.Double? = nil, slug: Swift.String? = nil, destinationPath: Swift.String? = nil, errorMessage: Swift.String? = nil)
   public subscript(query key: Swift.String) -> Swift.String? {
     get
   }
@@ -127,6 +149,9 @@ public struct CliqItPayload : Swift.Sendable, Swift.Equatable {
     get
   }
   public var clickSessionId: Swift.String? {
+    get
+  }
+  public var shouldNavigate: Swift.Bool {
     get
   }
   public static func == (a: CliqIt.CliqItPayload, b: CliqIt.CliqItPayload) -> Swift.Bool
@@ -404,6 +429,9 @@ public typealias CliqItVerifyHandler = (CliqIt.CliqItVerifyOutcome) -> Swift.Voi
 extension CliqIt.CliqItSource : Swift.Equatable {}
 extension CliqIt.CliqItSource : Swift.Hashable {}
 extension CliqIt.CliqItSource : Swift.RawRepresentable {}
+extension CliqIt.CliqItLinkStatus : Swift.Equatable {}
+extension CliqIt.CliqItLinkStatus : Swift.Hashable {}
+extension CliqIt.CliqItLinkStatus : Swift.RawRepresentable {}
 extension CliqIt.CliqItParam : Swift.Equatable {}
 extension CliqIt.CliqItParam : Swift.Hashable {}
 extension CliqIt.CliqItParam : Swift.RawRepresentable {}

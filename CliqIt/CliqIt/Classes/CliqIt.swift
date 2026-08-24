@@ -160,8 +160,9 @@ public final class CliqItSDK: @unchecked Sendable {
         }
     }
 
-    /// Typed deferred match callback — switch on `.matched` / `.notMatched` / `.failed` (no print-checking).
-    /// If `configure(apiKey:)` was not called, immediately delivers `.failed(.notConfigured)`.
+    /// - Warning: Deprecated. Use `onDeepLink` — deferred outcomes arrive there with the same fields
+    ///   (`status`, `matched`, `tier`, `score`, `slug`, `destinationPath`, …).
+    @available(*, deprecated, message: "Use onDeepLink — unified payload for direct + deferred")
     public func onDeferredMatch(_ handler: @escaping CliqItDeferredMatchHandler) {
         lock.lock()
         deferredMatchOutcomeHandler = handler
@@ -178,6 +179,15 @@ public final class CliqItSDK: @unchecked Sendable {
         if let response {
             DispatchQueue.main.async { handler(response.outcome) }
         }
+    }
+
+    /// Emits `status: alreadyReported` on `onDeepLink` when match already ran this install.
+    public func notifyAlreadyReportedIfNeeded() {
+        guard hasDeferredMatchBeenReported, !isDeferredMatchInFlight else { return }
+        lock.lock()
+        let config = configuration
+        lock.unlock()
+        deliver(CliqItDeferredMatchClient.makeAlreadyReportedPayload(configuration: config))
     }
 
     public func onDeferredMatchDebugRequest(_ handler: @escaping CliqItDeferredMatchDebugRequestHandler) {
@@ -212,6 +222,8 @@ public final class CliqItSDK: @unchecked Sendable {
         )
     }
 
+    /// Direct opens **and** deferred match outcomes (same `CliqItPayload` fields).
+    /// Check `status` / `isDeferred` / `shouldNavigate`.
     public func onDeepLink(_ handler: @escaping CliqItHandler) {
         if !isConfigured {
             Self.warnNotConfigured(context: "onDeepLink")
@@ -235,7 +247,8 @@ public final class CliqItSDK: @unchecked Sendable {
                 path: url.path.isEmpty ? "/" : url.path,
                 pathComponents: url.path.split(separator: "/").map(String.init).filter { !$0.isEmpty },
                 queryParameters: Self.queryItems(from: url),
-                source: .unknown
+                source: .unknown,
+                status: .opened
             )
             lock.unlock()
             return false
@@ -479,23 +492,26 @@ public final class CliqItSDK: @unchecked Sendable {
                     DispatchQueue.main.async { outcomeHandler(response.outcome) }
                 }
 
-                guard response.matched else { return }
-                guard !UserDefaults.standard.bool(forKey: Self.deferredDeliveredKey) else { return }
-
                 lock.lock()
                 let receivedDirect = receivedDirectDeepLinkThisSession
                 let hasPending = pendingPayload != nil
                 lock.unlock()
-                guard !receivedDirect, !hasPending else { return }
+                let alreadyDelivered = UserDefaults.standard.bool(forKey: Self.deferredDeliveredKey)
+                let navigate = response.matched
+                    && !alreadyDelivered
+                    && !receivedDirect
+                    && !hasPending
 
-                if let payload = CliqItDeferredMatchClient.makeDeferredPayload(
+                let payload = CliqItDeferredMatchClient.makeDeferredPayload(
                     response: response,
-                    configuration: config
-                ) {
+                    configuration: config,
+                    navigate: navigate
+                )
+                if navigate {
                     UserDefaults.standard.set(true, forKey: Self.deferredDeliveredKey)
                     log("Deferred link: \(payload.url.absoluteString)")
-                    deliver(payload)
                 }
+                deliver(payload)
 
             case .failure(let error):
                 let detail = error.localizedDescription ?? "unknown"
@@ -511,6 +527,12 @@ public final class CliqItSDK: @unchecked Sendable {
                 if let outcomeHandler {
                     DispatchQueue.main.async { outcomeHandler(.failed(error)) }
                 }
+                deliver(
+                    CliqItDeferredMatchClient.makeDeferredFailedPayload(
+                        error: error,
+                        configuration: config
+                    )
+                )
             }
         }
     }
@@ -540,6 +562,7 @@ public final class CliqItSDK: @unchecked Sendable {
         print("URL:      \(payload.url.absoluteString)")
         print("Path:     \(payload.path)")
         print("Source:   \(payload.source.rawValue)")
+        print("Status:   \(payload.status.rawValue)")
         print("Deferred: \(payload.isDeferred ? "YES" : "no")")
         print("══════════════════════════════════════")
     }
