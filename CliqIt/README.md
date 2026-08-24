@@ -210,11 +210,13 @@ _ = CliqItSDK.shared.handle(userActivity: userActivity)
 | `matched` | `Bool?` | Deferred only; `nil` for direct `opened` |
 | `destinationPath` | `String?` | Server destination when known |
 | `slug` / `tier` / `confidence` / `score` | optional | Deferred attribution fields |
-| `errorMessage` | `String?` | When `status == .failed` |
+| `errorMessage` | `String?` | When `status == .failed` (RN / Flutter bridge key: `error`) |
 | `shouldNavigate` | `Bool` | `path` non-empty and status is `opened` or `matched` |
 | `receivedAt` | `Date` | Receive time |
 
 Navigate when `payload.shouldNavigate` (or check `status` + `path`).
+
+**React Native / Flutter:** listeners also wrap payloads as `{ result, error }` — top-level `error` is set when `status` is `failed` (or the event is empty).
 
 ### `onVerify` → `CliqItVerifyOutcome`
 
