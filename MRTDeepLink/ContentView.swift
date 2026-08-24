@@ -3,14 +3,6 @@ import CliqIt
 
 struct ContentView: View {
     @EnvironmentObject private var router: AppDeepLinkRouter
-    @State private var clickSessionId = AppConfig.defaultClickSessionId
-    @State private var matchResponse: CliqItDeferredMatchResponse?
-    @State private var matchRequestJSON: String?
-    @State private var matchError: String?
-    @State private var isMatchLoading = false
-    @State private var webFingerprint: CliqItWebFingerprint?
-    @State private var combinedFingerprint: CliqItCombinedFingerprint?
-    @State private var isCollectingFingerprint = false
 
     var body: some View {
         NavigationStack {
@@ -20,8 +12,13 @@ struct ContentView: View {
                         .font(.system(size: 56))
                         .foregroundStyle(.tint)
 
-                    Text("Deferred Deep Link")
+                    Text("onLinkReceived")
                         .font(.title2.bold())
+
+                    Text("Only public callback — verify, slug lookup, and deferred match run in the background.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
 
                     if let payload = router.lastPayload {
                         deepLinkDebugView(payload)
@@ -40,215 +37,19 @@ struct ContentView: View {
                         .padding()
                         .background(Color.red.opacity(0.12))
                         .clipShape(RoundedRectangle(cornerRadius: 12))
+                    } else {
+                        Text("Waiting for onLinkReceived…")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
                     }
-
-                    webFingerprintView
-                    deferredMatchView
 
                     testLinksView
                     configView
                 }
                 .padding()
             }
-            .navigationTitle("Deep Link")
-            .overlay {
-                if isMatchLoading {
-                    ZStack {
-                        Color.black.opacity(0.25)
-                            .ignoresSafeArea()
-                        VStack(spacing: 12) {
-                            ProgressView()
-                                .controlSize(.large)
-                            Text("Matching deferred link…")
-                                .font(.subheadline)
-                                .foregroundStyle(.primary)
-                        }
-                        .padding(24)
-                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
-                    }
-                }
-            }
-            .onAppear {
-                if let cached = CliqItSDK.shared.currentDeferredMatchResponse {
-                    matchResponse = cached
-                    isMatchLoading = false
-                } else if CliqItSDK.shared.hasDeferredMatchBeenReported {
-                    isMatchLoading = false
-                } else {
-                    isMatchLoading = CliqItSDK.shared.isDeferredMatchInFlight
-                }
-                if let json = CliqItSDK.shared.currentMatchDebugRequestJSON {
-                    matchRequestJSON = json
-                }
-                webFingerprint = CliqItSDK.shared.currentWebFingerprint
-                combinedFingerprint = CliqItSDK.shared.combinedFingerprint
-            }
-            .onChange(of: router.lastPayload) { payload in
-                guard let payload else { return }
-                isMatchLoading = false
-                matchRequestJSON = CliqItSDK.shared.currentMatchDebugRequestJSON
-                webFingerprint = CliqItSDK.shared.currentWebFingerprint
-                combinedFingerprint = CliqItSDK.shared.combinedFingerprint
-                if let cached = CliqItSDK.shared.currentDeferredMatchResponse {
-                    matchResponse = cached
-                }
-                if let err = payload.errorMessage {
-                    matchError = err
-                }
-            }
+            .navigationTitle("CliqIt")
         }
-    }
-
-    private var webFingerprintView: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Fingerprint")
-                .font(.headline)
-
-            Text("iOS WebView canvas/WebGL/audio almost always collide across phones. Uniqueness comes from locale, languages, timezone, Dynamic Type, a11y — see Combined digest.")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-
-            Button(isCollectingFingerprint ? "Collecting…" : "Collect fingerprint") {
-                collectFingerprint()
-            }
-            .buttonStyle(.bordered)
-            .disabled(isCollectingFingerprint || isMatchLoading)
-
-            if isCollectingFingerprint {
-                ProgressView("Running canvas / WebGL / audio…")
-                    .font(.caption)
-            }
-
-            if let combined = combinedFingerprint {
-                Text("Combined (native + web)")
-                    .font(.subheadline.bold())
-                debugRow("digest", combined.shortDigest + "…")
-                Text(combined.digest)
-                    .font(.caption2.monospaced())
-                    .textSelection(.enabled)
-                ForEach(
-                    ["deviceName", "locale", "languages", "timezone", "screen", "dynamicTypeSize", "colorScheme"]
-                        .compactMap { key in combined.parts[key].map { (key, $0) } },
-                    id: \.0
-                ) { key, value in
-                    debugRow(key, value)
-                }
-            }
-
-            if let fp = webFingerprint {
-                Text("WebView-only (often same on all iPhones)")
-                    .font(.subheadline.bold())
-                debugRow("canvasHash", fp.canvasHash ?? "—")
-                debugRow("webglHash", fp.webglHash ?? "—")
-                debugRow("webglVendor", fp.webglVendor ?? "—")
-                debugRow("gpuRenderer", fp.gpuRenderer ?? "—")
-                debugRow("audioFingerprint", fp.audioFingerprint ?? "—")
-                debugRow("fontHash", fp.fontHash ?? "—")
-                debugRow("jsTimezone", fp.jsTimezone ?? "—")
-                debugRow("jsLanguages", fp.jsLanguages ?? "—")
-                debugRow("jsScreen", fp.jsScreen ?? "—")
-                debugRow(
-                    "clockSkewMs",
-                    fp.clockSkewMs.map { String(format: "%.2f", $0) } ?? "—"
-                )
-            } else if combinedFingerprint == nil {
-                Text("No probe yet — run match or collect above.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
-        .background(.quaternary.opacity(0.25))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-    }
-
-    private func collectFingerprint() {
-        isCollectingFingerprint = true
-        Task {
-            let combined = await CliqItSDK.shared.collectCombinedFingerprint()
-            await MainActor.run {
-                webFingerprint = CliqItSDK.shared.currentWebFingerprint
-                combinedFingerprint = combined
-                isCollectingFingerprint = false
-            }
-        }
-    }
-
-    private var deferredMatchView: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Deferred Match")
-                .font(.headline)
-
-            Text("POST /api/v1/sdk/app/match")
-                .font(.caption2.monospaced())
-                .foregroundStyle(.secondary)
-
-            TextField("clickSessionId", text: $clickSessionId)
-                .textInputAutocapitalization(.never)
-                .autocorrectionDisabled()
-                .font(.caption.monospaced())
-
-            Button(isMatchLoading ? "Running…" : "Run deferred match") {
-                runMatch()
-            }
-            .buttonStyle(.borderedProminent)
-            .disabled(isMatchLoading)
-
-            if let matchError {
-                Text(matchError)
-                    .font(.caption)
-                    .foregroundStyle(.red)
-                    .textSelection(.enabled)
-            }
-
-            if let matchRequestJSON {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Request body")
-                        .font(.subheadline.bold())
-                    Text(prettyJSONString(matchRequestJSON) ?? matchRequestJSON)
-                        .font(.caption2.monospaced())
-                        .textSelection(.enabled)
-                }
-            }
-
-            if let matchResponse {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Response")
-                        .font(.subheadline.bold())
-                    debugRow("matched", matchResponse.matched ? "true" : "false")
-                    debugRow("tier", matchResponse.tier ?? "—")
-                    debugRow("confidence", matchResponse.confidence ?? "—")
-                    debugRow("score", matchResponse.score.map { String(format: "%.2f", $0) } ?? "—")
-                    debugRow("destinationPath", matchResponse.destinationPath ?? "—")
-                    debugRow("slug", matchResponse.slug ?? "—")
-                }
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
-        .background(.quaternary.opacity(0.25))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-    }
-
-    private func runMatch() {
-        isMatchLoading = true
-        matchError = nil
-        matchRequestJSON = nil
-        let sessionId = clickSessionId.trimmingCharacters(in: .whitespacesAndNewlines)
-        CliqItSDK.shared.runDeferredMatch(
-            clickSessionId: sessionId.isEmpty ? nil : sessionId
-        )
-    }
-
-    private func prettyJSONString(_ raw: String) -> String? {
-        guard let data = raw.data(using: .utf8),
-              let object = try? JSONSerialization.jsonObject(with: data),
-              let pretty = try? JSONSerialization.data(withJSONObject: object, options: [.prettyPrinted, .sortedKeys]),
-              let string = String(data: pretty, encoding: .utf8) else {
-            return nil
-        }
-        return string
     }
 
     private var testLinksView: some View {
@@ -282,14 +83,13 @@ struct ContentView: View {
     private func deepLinkDebugView(_ payload: CliqItPayload) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text(payload.isDeferred ? "Deferred Deep Link" : "Opened from Link")
+                Text(payload.isDeferred ? "Deferred" : "Direct")
                     .font(.headline)
-                Text(payload.isDeferred ? "DEFERRED" : "DIRECT")
+                Text(payload.status.rawValue)
                     .font(.caption2.bold())
                     .padding(.horizontal, 6)
                     .padding(.vertical, 2)
-                    .background(payload.isDeferred ? Color.orange.opacity(0.2) : Color.green.opacity(0.2))
-                    .foregroundStyle(payload.isDeferred ? .orange : .green)
+                    .background(Color.blue.opacity(0.15))
                     .clipShape(Capsule())
             }
 
@@ -297,6 +97,16 @@ struct ContentView: View {
             debugRow("Path", payload.path)
             debugRow("Status", payload.status.rawValue)
             debugRow("Source", payload.source.rawValue)
+            debugRow("Deferred", payload.isDeferred ? "YES" : "no")
+            debugRow("shouldNavigate", payload.shouldNavigate ? "YES" : "no")
+            if let matched = payload.matched {
+                debugRow("matched", matched ? "true" : "false")
+            }
+            if let slug = payload.slug { debugRow("slug", slug) }
+            if let tier = payload.tier { debugRow("tier", tier) }
+            if let score = payload.score {
+                debugRow("score", String(format: "%.2f", score))
+            }
             if let err = payload.errorMessage {
                 debugRow("Error", err)
             }

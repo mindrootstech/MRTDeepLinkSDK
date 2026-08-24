@@ -30,8 +30,6 @@ class CliqItModule: RCTEventEmitter {
     CliqItSDK.shared.onLinkReceived { [weak self] payload in
       self?.emitLinkReceived(payload)
     }
-
-    CliqItSDK.shared.notifyAlreadyReportedIfNeeded()
   }
 
   @objc

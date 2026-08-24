@@ -61,23 +61,6 @@ object CliqItSDK {
     }
   }
 
-  /** Emit alreadyReported via onLinkReceived when match already ran this install. */
-  fun notifyAlreadyReportedIfNeeded() {
-    if (!hasDeferredMatchBeenReported || isDeferredMatchInFlight) return
-    deliver(
-      CliqItPayload(
-        url = CliqItDefaults.SERVER_URL,
-        path = "",
-        pathComponents = emptyList(),
-        query = emptyMap(),
-        source = "deferred",
-        isDeferred = true,
-        status = "alreadyReported",
-        errorMessage = "Deferred match already ran on this install.",
-      ),
-    )
-  }
-
   fun handle(urlString: String): Boolean {
     val uri = Uri.parse(urlString) ?: return false
     return handle(uri)

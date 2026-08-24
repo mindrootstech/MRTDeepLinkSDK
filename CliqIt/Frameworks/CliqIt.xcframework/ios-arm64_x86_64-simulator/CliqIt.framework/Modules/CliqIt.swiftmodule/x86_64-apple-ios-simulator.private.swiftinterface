@@ -18,54 +18,15 @@ extension Foundation.NSNotification.Name {
 }
 @_hasMissingDesignatedInitializers final public class CliqItSDK : @unchecked Swift.Sendable {
   public static let shared: CliqIt.CliqItSDK
-  final public var isConfigured: Swift.Bool {
-    get
-  }
-  final public var currentDeferredMatchResponse: CliqIt.CliqItDeferredMatchResponse? {
-    get
-  }
-  final public var currentDeferredMatchDebugResponse: CliqIt.CliqItDeferredMatchResponse? {
-    get
-  }
-  final public var currentMatchDebugRequestJSON: Swift.String? {
-    get
-  }
-  final public var currentWebFingerprint: CliqIt.CliqItWebFingerprint? {
-    get
-  }
-  final public var combinedFingerprint: CliqIt.CliqItCombinedFingerprint {
-    get
-  }
-  final public func collectWebFingerprint() async -> CliqIt.CliqItWebFingerprint?
-  final public func collectCombinedFingerprint() async -> CliqIt.CliqItCombinedFingerprint
-  final public var currentDirectLinkDetails: CliqIt.CliqItLinkDetails? {
-    get
-  }
-  final public var currentVerifyJSON: Swift.String? {
-    get
-  }
-  final public var currentVerifyOutcome: CliqIt.CliqItVerifyOutcome? {
-    get
-  }
-  final public var isDeferredMatchInFlight: Swift.Bool {
-    get
-  }
-  final public var hasDeferredMatchBeenReported: Swift.Bool {
-    get
-  }
   @discardableResult
   final public func configure(apiKey: Swift.String) -> CliqIt.CliqItSDK
   @discardableResult
   final public func configure(_ configuration: CliqIt.CliqItConfiguration) -> CliqIt.CliqItSDK
-  final public func notifyAlreadyReportedIfNeeded()
-  final public func runDeferredMatch(clickSessionId: Swift.String? = nil)
-  final public func runDeferredMatchDebug(clickSessionId: Swift.String? = nil)
   final public func onLinkReceived(_ handler: @escaping CliqIt.CliqItHandler)
   @discardableResult
   final public func handle(url: Foundation.URL) -> Swift.Bool
   @discardableResult
   final public func handle(userActivity: Foundation.NSUserActivity) -> Swift.Bool
-  final public func consumePendingDeepLink() -> CliqIt.CliqItPayload?
   @objc deinit
 }
 public struct CliqItConfiguration : Swift.Sendable {

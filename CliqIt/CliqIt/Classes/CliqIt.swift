@@ -27,82 +27,16 @@ public final class CliqItSDK: @unchecked Sendable {
 
     private init() {}
 
-    public var isConfigured: Bool {
+    var isConfigured: Bool {
         lock.lock()
         defer { lock.unlock() }
         return configuration != nil
     }
 
-    public var currentDeferredMatchResponse: CliqItDeferredMatchResponse? {
-        lock.lock()
-        defer { lock.unlock() }
-        return lastDeferredMatchResponse
-    }
-
-    /// - Warning: Deprecated name — use `currentDeferredMatchResponse`.
-    public var currentDeferredMatchDebugResponse: CliqItDeferredMatchResponse? {
-        currentDeferredMatchResponse
-    }
-
-    public var currentMatchDebugRequestJSON: String? {
-        lock.lock()
-        defer { lock.unlock() }
-        return lastMatchRequestJSON
-    }
-
-    /// Last WebView probe result (canvas / WebGL / audio / clock skew).
-    /// Note: on iOS these are often identical across devices — use `combinedFingerprint`.
-    public var currentWebFingerprint: CliqItWebFingerprint? {
-        CliqItWebFingerprintCollector.lastResult
-    }
-
-    /// SHA-256 over native locale/a11y/screen + WebView signals. Varies per user settings even when canvas/WebGL collide.
-    public var combinedFingerprint: CliqItCombinedFingerprint {
-        CliqItCombinedFingerprintBuilder.build(web: currentWebFingerprint)
-    }
-
-    /// Runs the hidden WKWebView probe and returns the fingerprint.
-    public func collectWebFingerprint() async -> CliqItWebFingerprint? {
-        lock.lock()
-        let debug = configuration?.debugLogging == true
-        lock.unlock()
-        return await CliqItWebFingerprintCollector.collect(debugLogging: debug)
-    }
-
-    /// WebView probe + combined native/web digest.
-    public func collectCombinedFingerprint() async -> CliqItCombinedFingerprint {
-        _ = await collectWebFingerprint()
-        return combinedFingerprint
-    }
-
-    public var currentDirectLinkDetails: CliqItLinkDetails? {
-        lock.lock()
-        defer { lock.unlock() }
-        return lastDirectLinkDetails
-    }
-
-    public var currentVerifyJSON: String? {
-        lock.lock()
-        defer { lock.unlock() }
-        return lastVerifyJSON
-    }
-
-    public var currentVerifyOutcome: CliqItVerifyOutcome? {
-        lock.lock()
-        defer { lock.unlock() }
-        return lastVerifyOutcome
-    }
-
-    /// True while a deferred match network + fingerprint collect is running.
-    public var isDeferredMatchInFlight: Bool {
+    private var isDeferredMatchInFlight: Bool {
         lock.lock()
         defer { lock.unlock() }
         return deferredMatchInFlight
-    }
-
-    /// True after a **matched** deferred result was persisted for this install (notMatched does not set this).
-    public var hasDeferredMatchBeenReported: Bool {
-        UserDefaults.standard.bool(forKey: Self.deferredMatchReportedKey)
     }
 
     @discardableResult
@@ -146,32 +80,6 @@ public final class CliqItSDK: @unchecked Sendable {
         }
         beginDeferredMatchIfNeeded()
         return self
-    }
-
-    /// Emits `status: alreadyReported` on `onLinkReceived` when match already ran this install.
-    public func notifyAlreadyReportedIfNeeded() {
-        guard hasDeferredMatchBeenReported, !isDeferredMatchInFlight else { return }
-        lock.lock()
-        let config = configuration
-        lock.unlock()
-        deliver(CliqItDeferredMatchClient.makeAlreadyReportedPayload(configuration: config))
-    }
-
-    /// Re-run deferred match without consuming the install “reported” flag (demo / QA).
-    public func runDeferredMatch(clickSessionId: String? = nil) {
-        guard isConfigured else {
-            Self.warnNotConfigured(context: "runDeferredMatch")
-            return
-        }
-        performDeferredMatch(
-            options: CliqItDeferredMatchOptions(clickSessionId: clickSessionId),
-            markReported: false
-        )
-    }
-
-    /// - Warning: Deprecated name — use `runDeferredMatch(clickSessionId:)`.
-    public func runDeferredMatchDebug(clickSessionId: String? = nil) {
-        runDeferredMatch(clickSessionId: clickSessionId)
     }
 
     /// Only public link callback — direct opens, deferred outcomes, and background failures.
@@ -248,14 +156,6 @@ public final class CliqItSDK: @unchecked Sendable {
             return false
         }
         return handle(url: url)
-    }
-
-    public func consumePendingDeepLink() -> CliqItPayload? {
-        lock.lock()
-        defer { lock.unlock() }
-        let payload = pendingPayload
-        pendingPayload = nil
-        return payload
     }
 
     @discardableResult

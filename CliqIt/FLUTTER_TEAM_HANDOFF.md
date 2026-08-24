@@ -1,62 +1,69 @@
-# CliqIt — Flutter / consumer handoff
+# CliqIt — Flutter iOS (source, not XCFramework)
 
-## Public iOS API (only this)
+Do **not** vendor `CliqIt.xcframework`. Copy the Swift **classes** into the plugin and compile them with `CliqitPlugin.swift`. Same public API as native.
+
+## 1. Copy these files
+
+From this zip / repo into the Flutter package:
+
+| Give them | Put in Flutter plugin |
+|-----------|------------------------|
+| `CliqIt/Classes/*.swift` (all files) | `ios/Classes/CliqIt/` |
+| `FlutterPlugin/CliqitPlugin.swift` | `ios/Classes/CliqitPlugin.swift` |
+| `FlutterPlugin/cliqit.dart` | `lib/cliqit.dart` (or merge into existing Dart) |
+
+Do **not** copy `Frameworks/`. Do **not** copy `SwiftUI/` (not needed for Flutter).
+
+`ios/cliqit.podspec` must compile all of them:
+
+```ruby
+s.source_files = 'Classes/**/*.swift'
+s.ios.deployment_target = '15.0'
+s.swift_version = '5.0'
+# no vendored_frameworks
+# no pod 'CliqIt'
+```
+
+Remove any `s.vendored_frameworks = '…CliqIt.xcframework'` and any `s.dependency 'CliqIt'`.
+
+## 2. Plugin API (same as native)
 
 ```swift
-import CliqIt
-
-// 1) Listen once
-CliqItSDK.shared.onLinkReceived { payload in
-  if let err = payload.errorMessage {
-    // status: failed | verifyFailed | lookupFailed
-    print(payload.status, err)
-    return
-  }
-  if payload.shouldNavigate {
-    // open payload.path
-  }
-}
-
-// 2) Configure (starts verify + deferred match in background)
+CliqItSDK.shared.onLinkReceived { payload in … }
 CliqItSDK.shared.configure(apiKey: "pk_live_…")
-
-// 3) Forward URLs (Scene / openURL / continue user activity)
 _ = CliqItSDK.shared.handle(url: url)
-// or CliqItSceneSupport.handle(…)
+CliqItSceneSupport.handle(…)  // UIScene
 ```
 
-SwiftUI:
+Do not call other SDK methods. Verify, slug lookup, deferred match run inside the classes.
 
-```swift
-ContentView()
-  .handleCliqItLinkReceived { payload in /* … */ }
+Navigate only when `payload.shouldNavigate == true` (use `path`, not `url`). Restart after a consumed deferred match is silent.
+
+## 3. Dart
+
+One stream: `cliqit/onLinkReceived`. See `FlutterPlugin/cliqit.dart`.
+
+```dart
+CliqIt.onLinkReceived.listen((payload) {
+  if (payload['shouldNavigate'] == true) {
+    // navigate to payload['path']
+  }
+});
+await CliqIt.configure(apiKey: 'pk_live_…');
 ```
 
-## Background (automatic)
+## Payload
 
-| Work | Success | Failure → `onLinkReceived` |
-|------|---------|----------------------------|
-| `POST /verify` | silent | `status: verifyFailed` + `errorMessage` |
-| `GET /link/{slug}` | `status: opened` (+ path) | `status: lookupFailed` + `errorMessage` |
-| `POST /app/match` | `matched` / `notMatched` | `status: failed` + `errorMessage` |
+`url`, `path`, `pathComponents`, `query`, `source`, `isDeferred`, `status`, `matched`, `tier`, `confidence`, `score`, `slug`, `destinationPath`, `error`, `shouldNavigate`
 
-## `CliqItPayload` fields
+**status:** `opened` | `matched` | `notMatched` | `failed` | `verifyFailed` | `lookupFailed`
 
-`url`, `path`, `pathComponents`, `queryParameters`, `source`, `isDeferred`,  
-`status`, `matched`, `tier`, `confidence`, `score`, `slug`, `destinationPath`,  
-`errorMessage`, `shouldNavigate`, `receivedAt`
+## After copy
 
-**status:** `opened` | `matched` | `notMatched` | `failed` | `verifyFailed` | `lookupFailed` | `alreadyReported`
+```bash
+flutter clean
+cd ios && pod install && cd ..
+flutter run
+```
 
-## Ship to Flutter
-
-1. `CliqIt/Frameworks/CliqIt.xcframework` (binary)
-2. `CliqIt/CliqIt.podspec` (or root `CliqIt.podspec`)
-3. This note
-
-Plugin should expose **one** Dart stream, e.g. `onLinkReceived`, mirroring native.  
-Adopt UIScene: `FlutterSceneLifeCycleDelegate` + `CliqItSceneSupport`.
-
-## Not public anymore
-
-Removed: `onDeepLink`, `onDeferredMatch`, `onVerify`, `onDirectLinkLookup`, `handleCliqItDeepLinks`.
+Old plugin calls `onDeepLink` / `onDeferredMatch` / `onVerify` — those methods do not exist. Use `onLinkReceived` only.

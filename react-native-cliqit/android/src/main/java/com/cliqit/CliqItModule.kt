@@ -54,7 +54,6 @@ class CliqItModule(private val reactContext: ReactApplicationContext) :
     CliqItSDK.init(reactContext)
     bindHandlersIfNeeded()
     CliqItSDK.configure(apiKey)
-    CliqItSDK.notifyAlreadyReportedIfNeeded()
   }
 
   @ReactMethod

@@ -293,21 +293,6 @@ enum CliqItDeferredMatchClient {
         )
     }
 
-    static func makeAlreadyReportedPayload(configuration: CliqItConfiguration?) -> CliqItPayload {
-        let url = configuration?.serverURL ?? URL(string: "https://theblockyapp.com")!
-        return CliqItPayload(
-            url: url,
-            path: "",
-            pathComponents: [],
-            queryParameters: [:],
-            source: .deferred,
-            isDeferred: true,
-            status: .alreadyReported,
-            matched: nil,
-            errorMessage: "Deferred match already ran on this install."
-        )
-    }
-
     static func makeVerifyFailedPayload(
         configuration: CliqItConfiguration?,
         message: String

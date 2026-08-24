@@ -8,8 +8,6 @@ Deferred deep linking — **one listener**: `onLinkReceived`.
 pod 'CliqIt', :git => 'https://github.com/mindrootstech/CliqIt.git', :tag => '2.0.3'
 ```
 
-Or local XCFramework via the podspec in this folder.
-
 ## Usage
 
 ```swift
@@ -17,7 +15,7 @@ import CliqIt
 
 CliqItSDK.shared.onLinkReceived { payload in
     if let err = payload.errorMessage {
-        print(payload.status, err) // verifyFailed / lookupFailed / failed
+        print(payload.status, err)
         return
     }
     if payload.shouldNavigate {
@@ -31,6 +29,6 @@ CliqItSDK.shared.configure(apiKey: "pk_live_…")
 SwiftUI: `.handleCliqItLinkReceived { … }`  
 URLs: `handle(url:)` / `CliqItSceneSupport`.
 
-Verify, slug lookup, and deferred match run in the **background**. Only navigation results and errors are delivered on `onLinkReceived`.
+Do **not** call any other SDK APIs from the app. Verify, slug lookup, and deferred match run inside the SDK.
 
-See `FLUTTER_TEAM_HANDOFF.md` for the full field table.
+See `FLUTTER_TEAM_HANDOFF.md` for the field table.
