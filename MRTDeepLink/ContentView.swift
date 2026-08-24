@@ -69,49 +69,7 @@ struct ContentView: View {
                 }
             }
             .onAppear {
-                CliqItSDK.shared.onDeferredMatchDebugRequest { json in
-                    isMatchLoading = true
-                    matchRequestJSON = json
-                    webFingerprint = CliqItSDK.shared.currentWebFingerprint
-                    combinedFingerprint = CliqItSDK.shared.combinedFingerprint
-                }
-                CliqItSDK.shared.onDirectLinkLookup { result in
-                    switch result {
-                    case .success(let details):
-                        print("Demo link lookup → path=\(details[.resolvedPath] ?? "-") slug=\(details[.slug] ?? "-")")
-                    case .failure(let error):
-                        print("Demo link lookup error: \(error.localizedDescription)")
-                    }
-                }
-                CliqItSDK.shared.onDeferredMatchDebug { result in
-                    isMatchLoading = false
-                    webFingerprint = CliqItSDK.shared.currentWebFingerprint
-                    combinedFingerprint = CliqItSDK.shared.combinedFingerprint
-                    switch result {
-                    case .success(let response):
-                        matchResponse = response
-                        matchError = nil
-                        // Typed access — no string hunting / print-check needed:
-                        // response[.destinationPath], response.outcome, etc.
-                        switch response.outcome {
-                        case .matched(let info):
-                            print("══════════════════════════════════════")
-                            print("📥 DEFERRED MATCHED")
-                            print("path: \(info.destinationPath ?? "-")")
-                            print("slug: \(info[.slug] ?? "-")")
-                            print("tier: \(info[.tier] ?? "-")")
-                            print("══════════════════════════════════════")
-                        case .notMatched(let info):
-                            print("📥 DEFERRED NOT MATCHED score=\(info[.score] ?? "-")")
-                        case .failed(let error):
-                            print("📥 DEFERRED FAILED: \(error.localizedDescription)")
-                        }
-                    case .failure(let error):
-                        matchError = error.localizedDescription
-                        print("📥 DEFERRED API ERROR: \(error.localizedDescription)")
-                    }
-                }
-                if let cached = CliqItSDK.shared.currentDeferredMatchDebugResponse {
+                if let cached = CliqItSDK.shared.currentDeferredMatchResponse {
                     matchResponse = cached
                     isMatchLoading = false
                 } else if CliqItSDK.shared.hasDeferredMatchBeenReported {
@@ -124,6 +82,19 @@ struct ContentView: View {
                 }
                 webFingerprint = CliqItSDK.shared.currentWebFingerprint
                 combinedFingerprint = CliqItSDK.shared.combinedFingerprint
+            }
+            .onChange(of: router.lastPayload) { payload in
+                guard let payload else { return }
+                isMatchLoading = false
+                matchRequestJSON = CliqItSDK.shared.currentMatchDebugRequestJSON
+                webFingerprint = CliqItSDK.shared.currentWebFingerprint
+                combinedFingerprint = CliqItSDK.shared.combinedFingerprint
+                if let cached = CliqItSDK.shared.currentDeferredMatchResponse {
+                    matchResponse = cached
+                }
+                if let err = payload.errorMessage {
+                    matchError = err
+                }
             }
         }
     }
@@ -265,7 +236,7 @@ struct ContentView: View {
         matchError = nil
         matchRequestJSON = nil
         let sessionId = clickSessionId.trimmingCharacters(in: .whitespacesAndNewlines)
-        CliqItSDK.shared.runDeferredMatchDebug(
+        CliqItSDK.shared.runDeferredMatch(
             clickSessionId: sessionId.isEmpty ? nil : sessionId
         )
     }
@@ -324,7 +295,11 @@ struct ContentView: View {
 
             debugRow("URL", payload.url.absoluteString)
             debugRow("Path", payload.path)
+            debugRow("Status", payload.status.rawValue)
             debugRow("Source", payload.source.rawValue)
+            if let err = payload.errorMessage {
+                debugRow("Error", err)
+            }
 
             if !payload.pathComponents.isEmpty {
                 VStack(alignment: .leading, spacing: 4) {

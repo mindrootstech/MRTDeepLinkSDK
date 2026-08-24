@@ -2,8 +2,6 @@ package com.cliqit
 
 import com.cliqit.sdk.CliqItSDK
 import com.cliqit.sdk.LinkField
-import com.cliqit.sdk.LinkLookupResult
-import com.cliqit.sdk.VerifyOutcome
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
@@ -15,9 +13,7 @@ class CliqItModule(private val reactContext: ReactApplicationContext) :
   ReactContextBaseJavaModule(reactContext) {
 
   private var hasListeners = false
-  private var pendingDeepLink: WritableMap? = null
-  private var pendingLinkLookup: WritableMap? = null
-  private var pendingVerify: WritableMap? = null
+  private var pendingLink: WritableMap? = null
   private var handlersBound = false
 
   override fun getName(): String = "CliqItModule"
@@ -93,106 +89,14 @@ class CliqItModule(private val reactContext: ReactApplicationContext) :
         putOpt(this, "error", payload.errorMessage)
         putBoolean("shouldNavigate", payload.shouldNavigate)
       }
-      emitOrBuffer("CliqItLinkReceived", map) { pendingDeepLink = it }
-    }
-
-    CliqItSDK.onDirectLinkLookup { result ->
-      val map = Arguments.createMap()
-      when (result) {
-        is LinkLookupResult.Resolved -> {
-          val d = result.details
-          map.putString("status", "resolved")
-          putOpt(map, LinkField.destination, d.destination)
-          putOpt(map, LinkField.iosDestination, d.iosDestination)
-          putOpt(map, LinkField.androidDestination, d.androidDestination)
-          putOpt(map, LinkField.ogTitle, d.ogTitle)
-          putOpt(map, LinkField.ogDescription, d.ogDescription)
-          putOpt(map, LinkField.ogImage, d.ogImage)
-          putOpt(map, LinkField.ogUrl, d.ogUrl)
-          putOpt(map, LinkField.slug, d.slug)
-          putOpt(map, LinkField.webFallback, d.webFallback)
-          putOpt(map, LinkField.showInterstitial, d.field(LinkField.showInterstitial))
-          putOpt(map, LinkField.isDeepLink, d.field(LinkField.isDeepLink))
-          putOpt(map, LinkField.appleTeamId, d.appleTeamId)
-          putOpt(map, LinkField.iosBundleId, d.iosBundleId)
-          putOpt(map, LinkField.androidPackageName, d.androidPackageName)
-          putOpt(map, LinkField.resolvedPath, d.resolvedPath)
-        }
-        is LinkLookupResult.Failed -> {
-          map.putString("status", "failed")
-          map.putString("error", result.error)
-        }
-      }
-      emitOrBuffer("CliqItLinkLookup", map) { pendingLinkLookup = it }
-    }
-
-    CliqItSDK.onVerify { outcome ->
-      val map = Arguments.createMap()
-      when (outcome) {
-        is VerifyOutcome.Passed -> {
-          map.putString("status", "ok")
-          map.putBoolean("ok", true)
-          putOpt(map, "appId", outcome.result.appId)
-          putOpt(map, "appName", outcome.result.appName)
-          map.putString("message", outcome.result.mismatchMessage)
-          map.putMap("checks", checksMap(outcome.result.checks))
-          map.putString("raw", outcome.result.rawJSON)
-        }
-        is VerifyOutcome.Mismatched -> {
-          map.putString("status", "mismatch")
-          map.putBoolean("ok", false)
-          putOpt(map, "appId", outcome.result.appId)
-          putOpt(map, "appName", outcome.result.appName)
-          map.putString("message", outcome.result.mismatchMessage)
-          map.putMap("checks", checksMap(outcome.result.checks))
-          map.putString("raw", outcome.result.rawJSON)
-        }
-        is VerifyOutcome.Error -> {
-          map.putString("status", "failed")
-          map.putBoolean("ok", false)
-          map.putString("error", outcome.message)
-        }
-      }
-      emitOrBuffer("CliqItVerify", map) { pendingVerify = it }
-    }
-  }
-
-  private fun checksMap(checks: Map<String, com.cliqit.sdk.VerifyCheck>): WritableMap {
-    val out = Arguments.createMap()
-    checks.forEach { (key, check) ->
-      val item = Arguments.createMap()
-      putOpt(item, "actual", check.actual)
-      putOpt(item, "expected", check.expected)
-      item.putBoolean("match", check.match)
-      out.putMap(key, item)
-    }
-    return out
-  }
-
-  private fun emitOrBuffer(
-    event: String,
-    body: WritableMap,
-    buffer: (WritableMap) -> Unit,
-  ) {
-    if (hasListeners) {
-      sendEvent(event, body)
-    } else {
-      buffer(body)
+      if (hasListeners) sendEvent("CliqItLinkReceived", map) else pendingLink = map
     }
   }
 
   private fun flushPending() {
-    pendingDeepLink?.let {
-      pendingDeepLink = null
+    pendingLink?.let {
+      pendingLink = null
       sendEvent("CliqItLinkReceived", it)
-    }
-    pendingLinkLookup?.let {
-      pendingLinkLookup = null
-      sendEvent("CliqItLinkLookup", it)
-    }
-    pendingVerify?.let {
-      pendingVerify = null
-      sendEvent("CliqItVerify", it)
     }
   }
 

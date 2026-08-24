@@ -1,58 +1,62 @@
-# Flutter team — CliqIt handoff
+# CliqIt — Flutter / consumer handoff
 
-## 1) Crash fix (required)
-
-**Symptom:** after `✅ [CliqIt] configured` → `freed pointer was not the last allocation` → abort.
-
-**Cause:** Swift `async let` in deferred match (Xcode 26 / Swift 6.x).
-
-**Action:** Replace the XCFramework / pod binary with the new build from this repo (`CliqIt/Frameworks/CliqIt.xcframework` or the zip you receive).
-
-The UIScene console line is a **warning**, not this crash.
-
-## 2) UIScene plugin migration (required soon)
-
-In `CliqitPlugin`:
-
-1. Adopt `FlutterSceneLifeCycleDelegate`
-2. Call `registrar.addSceneDelegate(instance)` (keep `addApplicationDelegate` if you still support old apps)
-3. Forward scene URL / activity / cold-start to CliqIt:
+## Public iOS API (only this)
 
 ```swift
-public final class CliqitPlugin: NSObject, FlutterPlugin, FlutterSceneLifeCycleDelegate {
-  public static func register(with registrar: FlutterPluginRegistrar) {
-    let instance = CliqitPlugin()
-    // … existing channel setup …
-    registrar.addApplicationDelegate(instance)
-    registrar.addSceneDelegate(instance)
-  }
+import CliqIt
 
-  public func scene(
-    _ scene: UIScene,
-    willConnectTo session: UISceneSession,
-    options connectionOptions: UIScene.ConnectionOptions?
-  ) -> Bool {
-    if let options = connectionOptions {
-      CliqItSceneSupport.handle(connectionOptions: options)
-    }
-    return false
+// 1) Listen once
+CliqItSDK.shared.onLinkReceived { payload in
+  if let err = payload.errorMessage {
+    // status: failed | verifyFailed | lookupFailed
+    print(payload.status, err)
+    return
   }
-
-  public func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) -> Bool {
-    CliqItSceneSupport.handle(urlContexts: URLContexts)
-    return true
-  }
-
-  public func scene(_ scene: UIScene, continue userActivity: NSUserActivity) -> Bool {
-    CliqItSceneSupport.handle(userActivity: userActivity)
+  if payload.shouldNavigate {
+    // open payload.path
   }
 }
+
+// 2) Configure (starts verify + deferred match in background)
+CliqItSDK.shared.configure(apiKey: "pk_live_…")
+
+// 3) Forward URLs (Scene / openURL / continue user activity)
+_ = CliqItSDK.shared.handle(url: url)
+// or CliqItSceneSupport.handle(…)
 ```
 
-Host Flutter app must also complete UIScene migration:  
-https://docs.flutter.dev/release/breaking-changes/uiscenedelegate
+SwiftUI:
 
-## 3) What to ship from native
+```swift
+ContentView()
+  .handleCliqItLinkReceived { payload in /* … */ }
+```
 
-- Updated `CliqIt.xcframework` (crash fix)
-- Optional: this handoff note
+## Background (automatic)
+
+| Work | Success | Failure → `onLinkReceived` |
+|------|---------|----------------------------|
+| `POST /verify` | silent | `status: verifyFailed` + `errorMessage` |
+| `GET /link/{slug}` | `status: opened` (+ path) | `status: lookupFailed` + `errorMessage` |
+| `POST /app/match` | `matched` / `notMatched` | `status: failed` + `errorMessage` |
+
+## `CliqItPayload` fields
+
+`url`, `path`, `pathComponents`, `queryParameters`, `source`, `isDeferred`,  
+`status`, `matched`, `tier`, `confidence`, `score`, `slug`, `destinationPath`,  
+`errorMessage`, `shouldNavigate`, `receivedAt`
+
+**status:** `opened` | `matched` | `notMatched` | `failed` | `verifyFailed` | `lookupFailed` | `alreadyReported`
+
+## Ship to Flutter
+
+1. `CliqIt/Frameworks/CliqIt.xcframework` (binary)
+2. `CliqIt/CliqIt.podspec` (or root `CliqIt.podspec`)
+3. This note
+
+Plugin should expose **one** Dart stream, e.g. `onLinkReceived`, mirroring native.  
+Adopt UIScene: `FlutterSceneLifeCycleDelegate` + `CliqItSceneSupport`.
+
+## Not public anymore
+
+Removed: `onDeepLink`, `onDeferredMatch`, `onVerify`, `onDirectLinkLookup`, `handleCliqItDeepLinks`.

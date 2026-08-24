@@ -113,6 +113,66 @@
           },
           {
             "kind": "Var",
+            "name": "currentDeferredMatchResponse",
+            "printedName": "currentDeferredMatchResponse",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "CliqIt.CliqItDeferredMatchResponse?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "CliqItDeferredMatchResponse",
+                    "printedName": "CliqIt.CliqItDeferredMatchResponse",
+                    "usr": "s:6CliqIt0aB21DeferredMatchResponseV"
+                  }
+                ],
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "s:6CliqIt0aB3SDKC28currentDeferredMatchResponseAA0abefG0VSgvp",
+            "mangledName": "$s6CliqIt0aB3SDKC28currentDeferredMatchResponseAA0abefG0VSgvp",
+            "moduleName": "CliqIt",
+            "declAttributes": [
+              "Final",
+              "AccessControl"
+            ],
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "CliqIt.CliqItDeferredMatchResponse?",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "CliqItDeferredMatchResponse",
+                        "printedName": "CliqIt.CliqItDeferredMatchResponse",
+                        "usr": "s:6CliqIt0aB21DeferredMatchResponseV"
+                      }
+                    ],
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:6CliqIt0aB3SDKC28currentDeferredMatchResponseAA0abefG0VSgvg",
+                "mangledName": "$s6CliqIt0aB3SDKC28currentDeferredMatchResponseAA0abefG0VSgvg",
+                "moduleName": "CliqIt",
+                "declAttributes": [
+                  "Final"
+                ],
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Var",
             "name": "currentDeferredMatchDebugResponse",
             "printedName": "currentDeferredMatchDebugResponse",
             "children": [
@@ -137,7 +197,8 @@
             "moduleName": "CliqIt",
             "declAttributes": [
               "Final",
-              "AccessControl"
+              "AccessControl",
+              "RawDocComment"
             ],
             "accessors": [
               {
@@ -721,143 +782,6 @@
           },
           {
             "kind": "Function",
-            "name": "onVerify",
-            "printedName": "onVerify(_:)",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "Void",
-                "printedName": "()"
-              },
-              {
-                "kind": "TypeFunc",
-                "name": "Function",
-                "printedName": "(CliqIt.CliqItVerifyOutcome) -> ()",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Void",
-                    "printedName": "()"
-                  },
-                  {
-                    "kind": "TypeNominal",
-                    "name": "CliqItVerifyOutcome",
-                    "printedName": "CliqIt.CliqItVerifyOutcome",
-                    "usr": "s:6CliqIt0aB13VerifyOutcomeO"
-                  }
-                ]
-              }
-            ],
-            "declKind": "Func",
-            "usr": "s:6CliqIt0aB3SDKC8onVerifyyyyAA0abE7OutcomeOcF",
-            "mangledName": "$s6CliqIt0aB3SDKC8onVerifyyyyAA0abE7OutcomeOcF",
-            "moduleName": "CliqIt",
-            "deprecated": true,
-            "declAttributes": [
-              "Final",
-              "AccessControl",
-              "Available",
-              "RawDocComment"
-            ],
-            "funcSelfKind": "NonMutating"
-          },
-          {
-            "kind": "Function",
-            "name": "onDeferredMatchDebug",
-            "printedName": "onDeferredMatchDebug(_:)",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "Void",
-                "printedName": "()"
-              },
-              {
-                "kind": "TypeFunc",
-                "name": "Function",
-                "printedName": "(Swift.Result<CliqIt.CliqItDeferredMatchResponse, CliqIt.CliqItDeferredMatchError>) -> ()",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Void",
-                    "printedName": "()"
-                  },
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Result",
-                    "printedName": "Swift.Result<CliqIt.CliqItDeferredMatchResponse, CliqIt.CliqItDeferredMatchError>",
-                    "children": [
-                      {
-                        "kind": "TypeNominal",
-                        "name": "CliqItDeferredMatchResponse",
-                        "printedName": "CliqIt.CliqItDeferredMatchResponse",
-                        "usr": "s:6CliqIt0aB21DeferredMatchResponseV"
-                      },
-                      {
-                        "kind": "TypeNominal",
-                        "name": "CliqItDeferredMatchError",
-                        "printedName": "CliqIt.CliqItDeferredMatchError",
-                        "usr": "s:6CliqIt0aB18DeferredMatchErrorO"
-                      }
-                    ],
-                    "usr": "s:s6ResultO"
-                  }
-                ]
-              }
-            ],
-            "declKind": "Func",
-            "usr": "s:6CliqIt0aB3SDKC20onDeferredMatchDebugyyys6ResultOyAA0abeF8ResponseVAA0abeF5ErrorOGcF",
-            "mangledName": "$s6CliqIt0aB3SDKC20onDeferredMatchDebugyyys6ResultOyAA0abeF8ResponseVAA0abeF5ErrorOGcF",
-            "moduleName": "CliqIt",
-            "declAttributes": [
-              "Final",
-              "AccessControl"
-            ],
-            "funcSelfKind": "NonMutating"
-          },
-          {
-            "kind": "Function",
-            "name": "onDeferredMatch",
-            "printedName": "onDeferredMatch(_:)",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "Void",
-                "printedName": "()"
-              },
-              {
-                "kind": "TypeFunc",
-                "name": "Function",
-                "printedName": "(CliqIt.CliqItDeferredMatchOutcome) -> ()",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Void",
-                    "printedName": "()"
-                  },
-                  {
-                    "kind": "TypeNominal",
-                    "name": "CliqItDeferredMatchOutcome",
-                    "printedName": "CliqIt.CliqItDeferredMatchOutcome",
-                    "usr": "s:6CliqIt0aB20DeferredMatchOutcomeO"
-                  }
-                ]
-              }
-            ],
-            "declKind": "Func",
-            "usr": "s:6CliqIt0aB3SDKC15onDeferredMatchyyyAA0abeF7OutcomeOcF",
-            "mangledName": "$s6CliqIt0aB3SDKC15onDeferredMatchyyyAA0abeF7OutcomeOcF",
-            "moduleName": "CliqIt",
-            "deprecated": true,
-            "declAttributes": [
-              "Final",
-              "AccessControl",
-              "Available",
-              "RawDocComment"
-            ],
-            "funcSelfKind": "NonMutating"
-          },
-          {
-            "kind": "Function",
             "name": "notifyAlreadyReportedIfNeeded",
             "printedName": "notifyAlreadyReportedIfNeeded()",
             "children": [
@@ -880,8 +804,8 @@
           },
           {
             "kind": "Function",
-            "name": "onDeferredMatchDebugRequest",
-            "printedName": "onDeferredMatchDebugRequest(_:)",
+            "name": "runDeferredMatch",
+            "printedName": "runDeferredMatch(clickSessionId:)",
             "children": [
               {
                 "kind": "TypeNominal",
@@ -889,31 +813,29 @@
                 "printedName": "()"
               },
               {
-                "kind": "TypeFunc",
-                "name": "Function",
-                "printedName": "(Swift.String) -> ()",
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Swift.String?",
                 "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Void",
-                    "printedName": "()"
-                  },
                   {
                     "kind": "TypeNominal",
                     "name": "String",
                     "printedName": "Swift.String",
                     "usr": "s:SS"
                   }
-                ]
+                ],
+                "hasDefaultArg": true,
+                "usr": "s:Sq"
               }
             ],
             "declKind": "Func",
-            "usr": "s:6CliqIt0aB3SDKC27onDeferredMatchDebugRequestyyySScF",
-            "mangledName": "$s6CliqIt0aB3SDKC27onDeferredMatchDebugRequestyyySScF",
+            "usr": "s:6CliqIt0aB3SDKC16runDeferredMatch14clickSessionIdySSSg_tF",
+            "mangledName": "$s6CliqIt0aB3SDKC16runDeferredMatch14clickSessionIdySSSg_tF",
             "moduleName": "CliqIt",
             "declAttributes": [
               "Final",
-              "AccessControl"
+              "AccessControl",
+              "RawDocComment"
             ],
             "funcSelfKind": "NonMutating"
           },
@@ -949,7 +871,8 @@
             "moduleName": "CliqIt",
             "declAttributes": [
               "Final",
-              "AccessControl"
+              "AccessControl",
+              "RawDocComment"
             ],
             "funcSelfKind": "NonMutating"
           },
@@ -995,48 +918,6 @@
           },
           {
             "kind": "Function",
-            "name": "onDeepLink",
-            "printedName": "onDeepLink(_:)",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "Void",
-                "printedName": "()"
-              },
-              {
-                "kind": "TypeFunc",
-                "name": "Function",
-                "printedName": "(CliqIt.CliqItPayload) -> ()",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Void",
-                    "printedName": "()"
-                  },
-                  {
-                    "kind": "TypeNominal",
-                    "name": "CliqItPayload",
-                    "printedName": "CliqIt.CliqItPayload",
-                    "usr": "s:6CliqIt0aB7PayloadV"
-                  }
-                ]
-              }
-            ],
-            "declKind": "Func",
-            "usr": "s:6CliqIt0aB3SDKC10onDeepLinkyyyAA0aB7PayloadVcF",
-            "mangledName": "$s6CliqIt0aB3SDKC10onDeepLinkyyyAA0aB7PayloadVcF",
-            "moduleName": "CliqIt",
-            "deprecated": true,
-            "declAttributes": [
-              "Final",
-              "AccessControl",
-              "Available",
-              "RawDocComment"
-            ],
-            "funcSelfKind": "NonMutating"
-          },
-          {
-            "kind": "Function",
             "name": "handle",
             "printedName": "handle(url:)",
             "children": [
@@ -1061,62 +942,6 @@
               "Final",
               "AccessControl",
               "DiscardableResult"
-            ],
-            "funcSelfKind": "NonMutating"
-          },
-          {
-            "kind": "Function",
-            "name": "onDirectLinkLookup",
-            "printedName": "onDirectLinkLookup(_:)",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "Void",
-                "printedName": "()"
-              },
-              {
-                "kind": "TypeFunc",
-                "name": "Function",
-                "printedName": "(Swift.Result<CliqIt.CliqItLinkDetails, CliqIt.CliqItDeferredMatchError>) -> ()",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Void",
-                    "printedName": "()"
-                  },
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Result",
-                    "printedName": "Swift.Result<CliqIt.CliqItLinkDetails, CliqIt.CliqItDeferredMatchError>",
-                    "children": [
-                      {
-                        "kind": "TypeNominal",
-                        "name": "CliqItLinkDetails",
-                        "printedName": "CliqIt.CliqItLinkDetails",
-                        "usr": "s:6CliqIt0aB11LinkDetailsV"
-                      },
-                      {
-                        "kind": "TypeNominal",
-                        "name": "CliqItDeferredMatchError",
-                        "printedName": "CliqIt.CliqItDeferredMatchError",
-                        "usr": "s:6CliqIt0aB18DeferredMatchErrorO"
-                      }
-                    ],
-                    "usr": "s:s6ResultO"
-                  }
-                ]
-              }
-            ],
-            "declKind": "Func",
-            "usr": "s:6CliqIt0aB3SDKC18onDirectLinkLookupyyys6ResultOyAA0abF7DetailsVAA0aB18DeferredMatchErrorOGcF",
-            "mangledName": "$s6CliqIt0aB3SDKC18onDirectLinkLookupyyys6ResultOyAA0abF7DetailsVAA0aB18DeferredMatchErrorOGcF",
-            "moduleName": "CliqIt",
-            "deprecated": true,
-            "declAttributes": [
-              "Final",
-              "AccessControl",
-              "Available",
-              "RawDocComment"
             ],
             "funcSelfKind": "NonMutating"
           },
@@ -13020,59 +12845,8 @@
             "sugared_genericSig": "<Self where Self : SwiftUI.View>",
             "declAttributes": [
               "Preconcurrency",
-              "Custom"
-            ],
-            "isFromExtension": true,
-            "funcSelfKind": "NonMutating"
-          },
-          {
-            "kind": "Function",
-            "name": "handleCliqItDeepLinks",
-            "printedName": "handleCliqItDeepLinks(_:)",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "OpaqueTypeArchetype",
-                "printedName": "some SwiftUI.View",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "View",
-                    "printedName": "SwiftUI.View",
-                    "usr": "s:7SwiftUI4ViewP"
-                  }
-                ]
-              },
-              {
-                "kind": "TypeFunc",
-                "name": "Function",
-                "printedName": "(CliqIt.CliqItPayload) -> ()",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Void",
-                    "printedName": "()"
-                  },
-                  {
-                    "kind": "TypeNominal",
-                    "name": "CliqItPayload",
-                    "printedName": "CliqIt.CliqItPayload",
-                    "usr": "s:6CliqIt0aB7PayloadV"
-                  }
-                ]
-              }
-            ],
-            "declKind": "Func",
-            "usr": "s:7SwiftUI4ViewP6CliqItE06handledE9DeepLinksyQryAD0dE7PayloadVcF",
-            "mangledName": "$s7SwiftUI4ViewP6CliqItE06handledE9DeepLinksyQryAD0dE7PayloadVcF",
-            "moduleName": "CliqIt",
-            "genericSig": "<τ_0_0 where τ_0_0 : SwiftUI.View>",
-            "sugared_genericSig": "<Self where Self : SwiftUI.View>",
-            "deprecated": true,
-            "declAttributes": [
-              "Preconcurrency",
               "Custom",
-              "Available"
+              "RawDocComment"
             ],
             "isFromExtension": true,
             "funcSelfKind": "NonMutating"
@@ -13134,28 +12908,28 @@
     {
       "filePath": "\/Volumes\/ExternalDisk\/MRTDeepLink\/CliqIt\/CliqIt\/Classes\/CliqIt.swift",
       "kind": "BooleanLiteral",
-      "offset": 902,
+      "offset": 482,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Volumes\/ExternalDisk\/MRTDeepLink\/CliqIt\/CliqIt\/Classes\/CliqIt.swift",
       "kind": "BooleanLiteral",
-      "offset": 948,
+      "offset": 528,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Volumes\/ExternalDisk\/MRTDeepLink\/CliqIt\/CliqIt\/Classes\/CliqIt.swift",
       "kind": "StringLiteral",
-      "offset": 1355,
+      "offset": 935,
       "length": 36,
       "value": "\"com.cliqit.deferred.match.reported\""
     },
     {
       "filePath": "\/Volumes\/ExternalDisk\/MRTDeepLink\/CliqIt\/CliqIt\/Classes\/CliqIt.swift",
       "kind": "StringLiteral",
-      "offset": 1438,
+      "offset": 1018,
       "length": 31,
       "value": "\"com.cliqit.deferred.delivered\""
     },

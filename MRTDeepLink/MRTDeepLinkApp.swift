@@ -40,7 +40,11 @@ final class AppDeepLinkRouter: ObservableObject {
         print("Path:     \(payload.path)")
         print("Segments: \(payload.pathComponents.joined(separator: " → "))")
         print("Source:   \(payload.source.rawValue)")
+        print("Status:   \(payload.status.rawValue)")
         print("Deferred: \(payload.isDeferred ? "YES ✅" : "no")")
+        if let err = payload.errorMessage {
+            print("Error:    \(err)")
+        }
         if payload.queryParameters.isEmpty {
             print("Params:   (none)")
         } else {

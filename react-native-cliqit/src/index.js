@@ -16,7 +16,6 @@ const NativeCliqIt = NativeModules.CliqItModule
 
 const emitter = new NativeEventEmitter(NativeCliqIt);
 
-/** Mirrors native `CliqItLinkField` — use `details[LinkField.resolvedPath]`. */
 export const LinkField = NativeCliqIt.LinkField ?? {
   destination: 'destination',
   iosDestination: 'iosDestination',
@@ -35,7 +34,6 @@ export const LinkField = NativeCliqIt.LinkField ?? {
   resolvedPath: 'resolvedPath',
 };
 
-/** @param {{ result?: any, error?: string | null }} payload */
 function invoke(callback, payload) {
   if (typeof callback !== 'function') return;
   callback({
@@ -44,17 +42,6 @@ function invoke(callback, payload) {
   });
 }
 
-function listen(eventName, mapRaw, callback) {
-  if (typeof callback !== 'function') {
-    throw new Error(`CliqIt.${eventName}: pass ({ result, error }) => { ... }`);
-  }
-  const sub = emitter.addListener(eventName, (raw) => {
-    callback(mapRaw(raw));
-  });
-  return () => sub.remove();
-}
-
-/** Unified direct + deferred payload. Failures set `error`. */
 function mapLinkReceived(raw) {
   if (!raw) return { result: null, error: 'Empty link payload' };
   const failStatuses = new Set(['failed', 'verifyFailed', 'lookupFailed']);
@@ -67,29 +54,9 @@ function mapLinkReceived(raw) {
   return { result: raw, error: null };
 }
 
-function mapLinkLookup(raw) {
-  if (!raw) return { result: null, error: 'Empty link lookup payload' };
-  if (raw.status === 'failed') {
-    return { result: null, error: raw.error || 'Link lookup failed' };
-  }
-  return { result: raw, error: null };
-}
-
-function mapVerify(raw) {
-  if (!raw) return { result: null, error: 'Empty verify payload' };
-  if (raw.status === 'failed') {
-    return { result: null, error: raw.error || raw.message || 'Verify failed' };
-  }
-  return { result: raw, error: null };
-}
-
 const CliqIt = {
   LinkField,
 
-  /**
-   * @param {{ apiKey: string }} options
-   * @param {(payload: { result: { ok: true } | null, error: string | null }) => void} [callback]
-   */
   configure(options = {}, callback) {
     const apiKey = options?.apiKey;
     if (!apiKey || typeof apiKey !== 'string') {
@@ -107,10 +74,6 @@ const CliqIt = {
     }
   },
 
-  /**
-   * @param {{ url: string }} options
-   * @param {(payload: { result: { ok: true, url: string } | null, error: string | null }) => void} [callback]
-   */
   handleUrl(options = {}, callback) {
     const url = options?.url;
     if (!url || typeof url !== 'string') {
@@ -129,51 +92,17 @@ const CliqIt = {
   },
 
   /**
-   * Direct opens + deferred match + verify/lookup errors (same fields).
-   * Verify + slug lookup run in the background — only listen here.
-   * @param {(payload: { result: object | null, error: string | null }) => void} callback
+   * Only public listener — direct, deferred, verify/lookup errors.
+   * @returns {() => void} unsubscribe
    */
   onLinkReceived(callback) {
-    return listen('CliqItLinkReceived', mapLinkReceived, callback);
-  },
-
-  /**
-   * @deprecated Use onLinkReceived
-   * @param {(payload: { result: object | null, error: string | null }) => void} callback
-   */
-  onDeepLink(callback) {
-    return CliqIt.onLinkReceived(callback);
-  },
-
-  /**
-   * @deprecated Use onLinkReceived
-   * @param {(payload: { result: object | null, error: string | null }) => void} callback
-   */
-  onDeferredMatch(callback) {
     if (typeof callback !== 'function') {
-      throw new Error('CliqIt.onDeferredMatch: pass ({ result, error }) => { ... }');
+      throw new Error('CliqIt.onLinkReceived: pass ({ result, error }) => { ... }');
     }
     const sub = emitter.addListener('CliqItLinkReceived', (raw) => {
-      if (!raw?.isDeferred && raw?.status !== 'alreadyReported') return;
       callback(mapLinkReceived(raw));
     });
     return () => sub.remove();
-  },
-
-  /**
-   * @deprecated Use onLinkReceived — slug lookup is background; failures arrive as status lookupFailed.
-   * @param {(payload: { result: object | null, error: string | null }) => void} callback
-   */
-  onLinkLookup(callback) {
-    return listen('CliqItLinkLookup', mapLinkLookup, callback);
-  },
-
-  /**
-   * @deprecated Use onLinkReceived — verify is background; failures arrive as status verifyFailed.
-   * @param {(payload: { result: object | null, error: string | null }) => void} callback
-   */
-  onVerify(callback) {
-    return listen('CliqItVerify', mapVerify, callback);
   },
 };
 

@@ -25,12 +25,8 @@ public struct CliqItHandlerModifier: ViewModifier {
 }
 
 public extension View {
+    /// Registers `onLinkReceived` and forwards Universal Links / custom schemes into the SDK.
     func handleCliqItLinkReceived(_ handler: @escaping CliqItHandler) -> some View {
         modifier(CliqItHandlerModifier(handler: handler))
-    }
-
-    @available(*, deprecated, renamed: "handleCliqItLinkReceived")
-    func handleCliqItDeepLinks(_ handler: @escaping CliqItHandler) -> some View {
-        handleCliqItLinkReceived(handler)
     }
 }

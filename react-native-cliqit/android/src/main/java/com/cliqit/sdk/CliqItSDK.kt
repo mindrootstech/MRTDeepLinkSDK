@@ -19,9 +19,6 @@ object CliqItSDK {
   @Volatile private var apiKey: String? = null
 
   private var deepLinkHandler: ((CliqItPayload) -> Unit)? = null
-  private var deferredHandler: ((DeferredMatchOutcome) -> Unit)? = null
-  private var linkLookupHandler: ((LinkLookupResult) -> Unit)? = null
-  private var verifyHandler: ((VerifyOutcome) -> Unit)? = null
 
   private var pendingPayload: CliqItPayload? = null
   private var lastLinkDetails: LinkDetails? = null
@@ -64,17 +61,6 @@ object CliqItSDK {
     }
   }
 
-  @Deprecated("Use onLinkReceived", ReplaceWith("onLinkReceived(handler)"))
-  fun onDeepLink(handler: (CliqItPayload) -> Unit) = onLinkReceived(handler)
-
-  @Deprecated("Use onLinkReceived — unified payload for direct + deferred")
-  fun onDeferredMatch(handler: (DeferredMatchOutcome) -> Unit) {
-    deferredHandler = handler
-    lastDeferredOutcome?.let { outcome ->
-      mainHandler.post { handler(outcome) }
-    }
-  }
-
   /** Emit alreadyReported via onLinkReceived when match already ran this install. */
   fun notifyAlreadyReportedIfNeeded() {
     if (!hasDeferredMatchBeenReported || isDeferredMatchInFlight) return
@@ -90,22 +76,6 @@ object CliqItSDK {
         errorMessage = "Deferred match already ran on this install.",
       ),
     )
-  }
-
-  @Deprecated("Use onLinkReceived — lookup results/errors are delivered there")
-  fun onDirectLinkLookup(handler: (LinkLookupResult) -> Unit) {
-    linkLookupHandler = handler
-    lastLinkDetails?.let { details ->
-      mainHandler.post { handler(LinkLookupResult.Resolved(details)) }
-    }
-  }
-
-  @Deprecated("Use onLinkReceived — verify failures are delivered there")
-  fun onVerify(handler: (VerifyOutcome) -> Unit) {
-    verifyHandler = handler
-    lastVerifyOutcome?.let { outcome ->
-      mainHandler.post { handler(outcome) }
-    }
   }
 
   fun handle(urlString: String): Boolean {
@@ -210,7 +180,6 @@ object CliqItSDK {
             is VerifyOutcome.Error ->
               Log.e(TAG, "❌ verify error: ${outcome.message}")
           }
-          mainHandler.post { verifyHandler?.invoke(outcome) }
           // User-facing: only surface verify problems on onLinkReceived.
           when (outcome) {
             is VerifyOutcome.Passed -> Unit
@@ -247,7 +216,6 @@ object CliqItSDK {
           Log.e(TAG, "❌ verify error: $message")
           val outcome = VerifyOutcome.Error(message)
           lastVerifyOutcome = outcome
-          mainHandler.post { verifyHandler?.invoke(outcome) }
           deliver(
             CliqItPayload(
               url = CliqItDefaults.SERVER_URL,
@@ -292,7 +260,6 @@ object CliqItSDK {
               is DeferredMatchOutcome.Failed ->
                 Log.e(TAG, "❌ deferred match error: ${outcome.error}")
             }
-            mainHandler.post { deferredHandler?.invoke(outcome) }
             when (outcome) {
               is DeferredMatchOutcome.Matched -> {
                 deliverDeferredOutcome(outcome.info, matched = true)
@@ -322,7 +289,6 @@ object CliqItSDK {
             Log.e(TAG, "❌ deferred match error: $message")
             val outcome = DeferredMatchOutcome.Failed(message)
             lastDeferredOutcome = outcome
-            mainHandler.post { deferredHandler?.invoke(outcome) }
             deliver(
               CliqItPayload(
                 url = CliqItDefaults.SERVER_URL,
@@ -343,7 +309,6 @@ object CliqItSDK {
         Log.e(TAG, "❌ deferred match error: $message", e)
         val outcome = DeferredMatchOutcome.Failed(message)
         lastDeferredOutcome = outcome
-        mainHandler.post { deferredHandler?.invoke(outcome) }
         deliver(
           CliqItPayload(
             url = CliqItDefaults.SERVER_URL,
@@ -482,14 +447,12 @@ object CliqItSDK {
               Log.i(TAG, "✅ link lookup OK — path=${parsed.details.resolvedPath ?: "-"} slug=${parsed.details.slug ?: slug}")
               val resolved = resolvedPayload(parsed.details, uri, fallback)
               mainHandler.post {
-                linkLookupHandler?.invoke(parsed)
                 deliver(resolved ?: fallback)
               }
             }
             is LinkLookupResult.Failed -> {
               Log.e(TAG, "❌ link lookup error: ${parsed.error}")
               mainHandler.post {
-                linkLookupHandler?.invoke(parsed)
                 deliver(lookupFailedPayload(fallback, parsed.error))
               }
             }
@@ -499,7 +462,6 @@ object CliqItSDK {
           val message = err.message ?: "lookup failed"
           Log.e(TAG, "❌ link lookup error: $message")
           mainHandler.post {
-            linkLookupHandler?.invoke(LinkLookupResult.Failed(message))
             deliver(lookupFailedPayload(fallback, message))
           }
         },
