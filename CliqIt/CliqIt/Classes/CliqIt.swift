@@ -11,12 +11,6 @@ public final class CliqItSDK: @unchecked Sendable {
 
     private var configuration: CliqItConfiguration?
     private var handler: CliqItHandler?
-    private var deferredMatchHandler: CliqItDeferredMatchDebugHandler?
-    private var deferredMatchOutcomeHandler: CliqItDeferredMatchHandler?
-    private var deferredMatchRequestHandler: CliqItDeferredMatchDebugRequestHandler?
-    /// Fires after GET `/api/v1/sdk/link/{slug}` on direct opens.
-    private var directLinkLookupHandler: CliqItDirectLinkLookupHandler?
-    private var verifyHandler: CliqItVerifyHandler?
     private var pendingPayload: CliqItPayload?
     private var receivedDirectDeepLinkThisSession = false
     private var deferredMatchInFlight = false
@@ -33,77 +27,16 @@ public final class CliqItSDK: @unchecked Sendable {
 
     private init() {}
 
-    public var isConfigured: Bool {
+    var isConfigured: Bool {
         lock.lock()
         defer { lock.unlock() }
         return configuration != nil
     }
 
-    public var currentDeferredMatchDebugResponse: CliqItDeferredMatchResponse? {
-        lock.lock()
-        defer { lock.unlock() }
-        return lastDeferredMatchResponse
-    }
-
-    public var currentMatchDebugRequestJSON: String? {
-        lock.lock()
-        defer { lock.unlock() }
-        return lastMatchRequestJSON
-    }
-
-    /// Last WebView probe result (canvas / WebGL / audio / clock skew).
-    /// Note: on iOS these are often identical across devices — use `combinedFingerprint`.
-    public var currentWebFingerprint: CliqItWebFingerprint? {
-        CliqItWebFingerprintCollector.lastResult
-    }
-
-    /// SHA-256 over native locale/a11y/screen + WebView signals. Varies per user settings even when canvas/WebGL collide.
-    public var combinedFingerprint: CliqItCombinedFingerprint {
-        CliqItCombinedFingerprintBuilder.build(web: currentWebFingerprint)
-    }
-
-    /// Runs the hidden WKWebView probe and returns the fingerprint.
-    public func collectWebFingerprint() async -> CliqItWebFingerprint? {
-        lock.lock()
-        let debug = configuration?.debugLogging == true
-        lock.unlock()
-        return await CliqItWebFingerprintCollector.collect(debugLogging: debug)
-    }
-
-    /// WebView probe + combined native/web digest.
-    public func collectCombinedFingerprint() async -> CliqItCombinedFingerprint {
-        _ = await collectWebFingerprint()
-        return combinedFingerprint
-    }
-
-    public var currentDirectLinkDetails: CliqItLinkDetails? {
-        lock.lock()
-        defer { lock.unlock() }
-        return lastDirectLinkDetails
-    }
-
-    public var currentVerifyJSON: String? {
-        lock.lock()
-        defer { lock.unlock() }
-        return lastVerifyJSON
-    }
-
-    public var currentVerifyOutcome: CliqItVerifyOutcome? {
-        lock.lock()
-        defer { lock.unlock() }
-        return lastVerifyOutcome
-    }
-
-    /// True while a deferred match network + fingerprint collect is running.
-    public var isDeferredMatchInFlight: Bool {
+    private var isDeferredMatchInFlight: Bool {
         lock.lock()
         defer { lock.unlock() }
         return deferredMatchInFlight
-    }
-
-    /// True after a **matched** deferred result was persisted for this install (notMatched does not set this).
-    public var hasDeferredMatchBeenReported: Bool {
-        UserDefaults.standard.bool(forKey: Self.deferredMatchReportedKey)
     }
 
     @discardableResult
@@ -123,98 +56,36 @@ public final class CliqItSDK: @unchecked Sendable {
             self.lock.lock()
             self.lastVerifyOutcome = outcome
             if let raw { self.lastVerifyJSON = raw }
-            let handler = self.verifyHandler
+            let config = self.configuration
             self.lock.unlock()
-            handler?(outcome)
+            // Success is silent; failures go to onLinkReceived.
+            switch outcome {
+            case .passed:
+                break
+            case .mismatched(let result):
+                self.deliver(
+                    CliqItDeferredMatchClient.makeVerifyFailedPayload(
+                        configuration: config,
+                        message: result.mismatchMessage
+                    )
+                )
+            case .error(let error):
+                self.deliver(
+                    CliqItDeferredMatchClient.makeVerifyFailedPayload(
+                        configuration: config,
+                        message: error.localizedDescription
+                    )
+                )
+            }
         }
         beginDeferredMatchIfNeeded()
         return self
     }
 
-    /// Typed verify result — `.mismatched` when server returns `ok: false`.
-    public func onVerify(_ handler: @escaping CliqItVerifyHandler) {
-        lock.lock()
-        verifyHandler = handler
-        let cached = lastVerifyOutcome
-        lock.unlock()
-        if let cached {
-            DispatchQueue.main.async { handler(cached) }
-        }
-    }
-
-    public func onDeferredMatchDebug(_ handler: @escaping CliqItDeferredMatchDebugHandler) {
-        lock.lock()
-        deferredMatchHandler = handler
-        let configured = configuration != nil
-        let response = lastDeferredMatchResponse
-        lock.unlock()
-
-        guard configured else {
-            Self.warnNotConfigured(context: "onDeferredMatchDebug")
-            DispatchQueue.main.async { handler(.failure(.notConfigured)) }
-            return
-        }
-
-        if let response {
-            DispatchQueue.main.async { handler(.success(response)) }
-        }
-    }
-
-    /// Typed deferred match callback — switch on `.matched` / `.notMatched` / `.failed` (no print-checking).
-    /// If `configure(apiKey:)` was not called, immediately delivers `.failed(.notConfigured)`.
-    public func onDeferredMatch(_ handler: @escaping CliqItDeferredMatchHandler) {
-        lock.lock()
-        deferredMatchOutcomeHandler = handler
-        let configured = configuration != nil
-        let response = lastDeferredMatchResponse
-        lock.unlock()
-
-        guard configured else {
-            Self.warnNotConfigured(context: "onDeferredMatch")
-            DispatchQueue.main.async { handler(.failed(.notConfigured)) }
-            return
-        }
-
-        if let response {
-            DispatchQueue.main.async { handler(response.outcome) }
-        }
-    }
-
-    public func onDeferredMatchDebugRequest(_ handler: @escaping CliqItDeferredMatchDebugRequestHandler) {
-        lock.lock()
-        deferredMatchRequestHandler = handler
-        let json = lastMatchRequestJSON
-        lock.unlock()
-
-        if let json {
-            DispatchQueue.main.async { handler(json) }
-        }
-    }
-
-    public func runDeferredMatchDebug(clickSessionId: String? = nil) {
-        guard isConfigured else {
-            Self.warnNotConfigured(context: "runDeferredMatchDebug")
-            lock.lock()
-            let outcomeHandler = deferredMatchOutcomeHandler
-            let matchHandler = deferredMatchHandler
-            lock.unlock()
-            if let outcomeHandler {
-                DispatchQueue.main.async { outcomeHandler(.failed(.notConfigured)) }
-            }
-            if let matchHandler {
-                DispatchQueue.main.async { matchHandler(.failure(.notConfigured)) }
-            }
-            return
-        }
-        performDeferredMatch(
-            options: CliqItDeferredMatchOptions(clickSessionId: clickSessionId),
-            markReported: false
-        )
-    }
-
-    public func onDeepLink(_ handler: @escaping CliqItHandler) {
+    /// Only public link callback — direct opens, deferred outcomes, and background failures.
+    public func onLinkReceived(_ handler: @escaping CliqItHandler) {
         if !isConfigured {
-            Self.warnNotConfigured(context: "onDeepLink")
+            Self.warnNotConfigured(context: "onLinkReceived")
         }
         lock.lock()
         self.handler = handler
@@ -228,14 +99,15 @@ public final class CliqItSDK: @unchecked Sendable {
 
         guard let configuration else {
             log("Received URL before configure(): \(url.absoluteString)")
-            // Buffer so onDeepLink can retry after configure if needed.
+            // Buffer so onLinkReceived can retry after configure if needed.
             lock.lock()
             pendingPayload = CliqItPayload(
                 url: url,
                 path: url.path.isEmpty ? "/" : url.path,
                 pathComponents: url.path.split(separator: "/").map(String.init).filter { !$0.isEmpty },
                 queryParameters: Self.queryItems(from: url),
-                source: .unknown
+                source: .unknown,
+                status: .opened
             )
             lock.unlock()
             return false
@@ -266,17 +138,6 @@ public final class CliqItSDK: @unchecked Sendable {
         return deliver(payload)
     }
 
-    /// Fires after each direct-link GET `/api/v1/sdk/link/{slug}`.
-    public func onDirectLinkLookup(_ handler: @escaping CliqItDirectLinkLookupHandler) {
-        lock.lock()
-        directLinkLookupHandler = handler
-        let cached = lastDirectLinkDetails
-        lock.unlock()
-        if let cached {
-            DispatchQueue.main.async { handler(.success(cached)) }
-        }
-    }
-
     private static func queryItems(from url: URL) -> [String: String] {
         guard let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems else {
             return [:]
@@ -295,14 +156,6 @@ public final class CliqItSDK: @unchecked Sendable {
             return false
         }
         return handle(url: url)
-    }
-
-    public func consumePendingDeepLink() -> CliqItPayload? {
-        lock.lock()
-        defer { lock.unlock() }
-        let payload = pendingPayload
-        pendingPayload = nil
-        return payload
     }
 
     @discardableResult
@@ -380,11 +233,7 @@ public final class CliqItSDK: @unchecked Sendable {
                 print("✅ [CliqIt] link lookup OK — path=\(details.resolvedPath ?? "-") slug=\(details.slug ?? slug)")
                 lock.lock()
                 lastDirectLinkDetails = details
-                let handler = directLinkLookupHandler
                 lock.unlock()
-                if let handler {
-                    DispatchQueue.main.async { handler(.success(details)) }
-                }
 
                 if let resolved = CliqItLinkLookupClient.makeResolvedPayload(
                     details: details,
@@ -399,13 +248,12 @@ public final class CliqItSDK: @unchecked Sendable {
 
             case .failure(let error):
                 print("❌ [CliqIt] link lookup error: \(error.localizedDescription)")
-                lock.lock()
-                let handler = directLinkLookupHandler
-                lock.unlock()
-                if let handler {
-                    DispatchQueue.main.async { handler(.failure(error)) }
-                }
-                _ = deliver(fallbackPayload)
+                _ = deliver(
+                    CliqItDeferredMatchClient.makeLookupFailedPayload(
+                        fallback: fallbackPayload,
+                        message: error.localizedDescription
+                    )
+                )
             }
         }
     }
@@ -445,11 +293,7 @@ public final class CliqItSDK: @unchecked Sendable {
             if let requestJSON = output.requestJSON {
                 lock.lock()
                 lastMatchRequestJSON = requestJSON
-                let requestHandler = deferredMatchRequestHandler
                 lock.unlock()
-                if let requestHandler {
-                    DispatchQueue.main.async { requestHandler(requestJSON) }
-                }
             }
 
             switch output.result {
@@ -461,8 +305,6 @@ public final class CliqItSDK: @unchecked Sendable {
 
                 lock.lock()
                 lastDeferredMatchResponse = response
-                let matchHandler = deferredMatchHandler
-                let outcomeHandler = deferredMatchOutcomeHandler
                 lock.unlock()
 
                 log("Deferred match matched=\(response.matched) tier=\(response.tier ?? "-") confidence=\(response.confidence ?? "-")")
@@ -472,45 +314,37 @@ public final class CliqItSDK: @unchecked Sendable {
                     print("✅ [CliqIt] deferred match finished — notMatched score=\(response.score.map { String(format: "%.2f", $0) } ?? "-")")
                 }
 
-                if let matchHandler {
-                    DispatchQueue.main.async { matchHandler(.success(response)) }
-                }
-                if let outcomeHandler {
-                    DispatchQueue.main.async { outcomeHandler(response.outcome) }
-                }
-
-                guard response.matched else { return }
-                guard !UserDefaults.standard.bool(forKey: Self.deferredDeliveredKey) else { return }
-
                 lock.lock()
                 let receivedDirect = receivedDirectDeepLinkThisSession
                 let hasPending = pendingPayload != nil
                 lock.unlock()
-                guard !receivedDirect, !hasPending else { return }
+                let alreadyDelivered = UserDefaults.standard.bool(forKey: Self.deferredDeliveredKey)
+                let navigate = response.matched
+                    && !alreadyDelivered
+                    && !receivedDirect
+                    && !hasPending
 
-                if let payload = CliqItDeferredMatchClient.makeDeferredPayload(
+                let payload = CliqItDeferredMatchClient.makeDeferredPayload(
                     response: response,
-                    configuration: config
-                ) {
+                    configuration: config,
+                    navigate: navigate
+                )
+                if navigate {
                     UserDefaults.standard.set(true, forKey: Self.deferredDeliveredKey)
                     log("Deferred link: \(payload.url.absoluteString)")
-                    deliver(payload)
                 }
+                deliver(payload)
 
             case .failure(let error):
                 let detail = error.localizedDescription ?? "unknown"
                 print("❌ [CliqIt] deferred match error: \(detail)")
                 log("Deferred match failed: \(detail)")
-                lock.lock()
-                let matchHandler = deferredMatchHandler
-                let outcomeHandler = deferredMatchOutcomeHandler
-                lock.unlock()
-                if let matchHandler {
-                    DispatchQueue.main.async { matchHandler(.failure(error)) }
-                }
-                if let outcomeHandler {
-                    DispatchQueue.main.async { outcomeHandler(.failed(error)) }
-                }
+                deliver(
+                    CliqItDeferredMatchClient.makeDeferredFailedPayload(
+                        error: error,
+                        configuration: config
+                    )
+                )
             }
         }
     }
@@ -540,6 +374,7 @@ public final class CliqItSDK: @unchecked Sendable {
         print("URL:      \(payload.url.absoluteString)")
         print("Path:     \(payload.path)")
         print("Source:   \(payload.source.rawValue)")
+        print("Status:   \(payload.status.rawValue)")
         print("Deferred: \(payload.isDeferred ? "YES" : "no")")
         print("══════════════════════════════════════")
     }

@@ -17,7 +17,9 @@ enum CliqItParser {
             path: path,
             pathComponents: pathComponents,
             queryParameters: queryParameters(from: url),
-            source: source
+            source: source,
+            status: .opened,
+            destinationPath: path
         )
     }
 

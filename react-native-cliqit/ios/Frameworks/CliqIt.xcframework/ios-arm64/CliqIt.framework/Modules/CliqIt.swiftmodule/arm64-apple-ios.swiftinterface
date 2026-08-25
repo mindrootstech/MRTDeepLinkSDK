@@ -18,43 +18,15 @@ extension Foundation.NSNotification.Name {
 }
 @_hasMissingDesignatedInitializers final public class CliqItSDK : @unchecked Swift.Sendable {
   public static let shared: CliqIt.CliqItSDK
-  final public var isConfigured: Swift.Bool {
-    get
-  }
-  final public var currentDeferredMatchDebugResponse: CliqIt.CliqItDeferredMatchResponse? {
-    get
-  }
-  final public var currentMatchDebugRequestJSON: Swift.String? {
-    get
-  }
-  final public var currentWebFingerprint: CliqIt.CliqItWebFingerprint? {
-    get
-  }
-  final public var combinedFingerprint: CliqIt.CliqItCombinedFingerprint {
-    get
-  }
-  final public func collectWebFingerprint() async -> CliqIt.CliqItWebFingerprint?
-  final public func collectCombinedFingerprint() async -> CliqIt.CliqItCombinedFingerprint
-  final public var isDeferredMatchInFlight: Swift.Bool {
-    get
-  }
-  final public var hasDeferredMatchBeenReported: Swift.Bool {
-    get
-  }
   @discardableResult
   final public func configure(apiKey: Swift.String) -> CliqIt.CliqItSDK
   @discardableResult
   final public func configure(_ configuration: CliqIt.CliqItConfiguration) -> CliqIt.CliqItSDK
-  final public func onDeferredMatchDebug(_ handler: @escaping CliqIt.CliqItDeferredMatchDebugHandler)
-  final public func onDeferredMatch(_ handler: @escaping CliqIt.CliqItDeferredMatchHandler)
-  final public func onDeferredMatchDebugRequest(_ handler: @escaping CliqIt.CliqItDeferredMatchDebugRequestHandler)
-  final public func runDeferredMatchDebug(clickSessionId: Swift.String? = nil)
-  final public func onDeepLink(_ handler: @escaping CliqIt.CliqItHandler)
+  final public func onLinkReceived(_ handler: @escaping CliqIt.CliqItHandler)
   @discardableResult
   final public func handle(url: Foundation.URL) -> Swift.Bool
   @discardableResult
   final public func handle(userActivity: Foundation.NSUserActivity) -> Swift.Bool
-  final public func consumePendingDeepLink() -> CliqIt.CliqItPayload?
   @objc deinit
 }
 public struct CliqItConfiguration : Swift.Sendable {
@@ -68,15 +40,32 @@ public struct CliqItConfiguration : Swift.Sendable {
 public enum CliqItDefaults {
   public static let licenseServerURL: Foundation.URL
   public static let deferredMatchPath: Swift.String
+  public static let linkLookupPath: Swift.String
+  public static let verifyPath: Swift.String
   public static let apiKeyHeader: Swift.String
   public static let apiMaxRetryAttempts: Swift.Int
   public static let apiRetryInitialDelay: Swift.Double
+  public static let allowedLinkDomain: Swift.String
 }
 public enum CliqItSource : Swift.String, Swift.Sendable {
   case universalLink
   case customScheme
   case deferred
   case unknown
+  public init?(rawValue: Swift.String)
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+public enum CliqItLinkStatus : Swift.String, Swift.Sendable {
+  case opened
+  case matched
+  case notMatched
+  case failed
+  case verifyFailed
+  case lookupFailed
+  case alreadyReported
   public init?(rawValue: Swift.String)
   public typealias RawValue = Swift.String
   public var rawValue: Swift.String {
@@ -105,7 +94,15 @@ public struct CliqItPayload : Swift.Sendable, Swift.Equatable {
   public let source: CliqIt.CliqItSource
   public let isDeferred: Swift.Bool
   public let receivedAt: Foundation.Date
-  public init(url: Foundation.URL, path: Swift.String, pathComponents: [Swift.String], queryParameters: [Swift.String : Swift.String], source: CliqIt.CliqItSource, receivedAt: Foundation.Date = Date(), isDeferred: Swift.Bool = false)
+  public let status: CliqIt.CliqItLinkStatus
+  public let matched: Swift.Bool?
+  public let tier: Swift.String?
+  public let confidence: Swift.String?
+  public let score: Swift.Double?
+  public let slug: Swift.String?
+  public let destinationPath: Swift.String?
+  public let errorMessage: Swift.String?
+  public init(url: Foundation.URL, path: Swift.String, pathComponents: [Swift.String], queryParameters: [Swift.String : Swift.String], source: CliqIt.CliqItSource, receivedAt: Foundation.Date = Date(), isDeferred: Swift.Bool = false, status: CliqIt.CliqItLinkStatus = .opened, matched: Swift.Bool? = nil, tier: Swift.String? = nil, confidence: Swift.String? = nil, score: Swift.Double? = nil, slug: Swift.String? = nil, destinationPath: Swift.String? = nil, errorMessage: Swift.String? = nil)
   public subscript(query key: Swift.String) -> Swift.String? {
     get
   }
@@ -113,6 +110,9 @@ public struct CliqItPayload : Swift.Sendable, Swift.Equatable {
     get
   }
   public var clickSessionId: Swift.String? {
+    get
+  }
+  public var shouldNavigate: Swift.Bool {
     get
   }
   public static func == (a: CliqIt.CliqItPayload, b: CliqIt.CliqItPayload) -> Swift.Bool
@@ -247,7 +247,7 @@ public struct CliqItWebFingerprint : Swift.Sendable, Swift.Equatable {
   public typealias Body = @_opaqueReturnTypeOf("$s6CliqIt0aB15HandlerModifierV4body7contentQr7SwiftUI05_ViewD8_ContentVyACG_tF", 0) __
 }
 extension SwiftUICore.View {
-  @_Concurrency.MainActor @preconcurrency public func handleCliqItDeepLinks(_ handler: @escaping CliqIt.CliqItHandler) -> some SwiftUICore.View
+  @_Concurrency.MainActor @preconcurrency public func handleCliqItLinkReceived(_ handler: @escaping CliqIt.CliqItHandler) -> some SwiftUICore.View
   
 }
 public struct CliqItCombinedFingerprint : Swift.Sendable, Swift.Equatable {
@@ -258,9 +258,141 @@ public struct CliqItCombinedFingerprint : Swift.Sendable, Swift.Equatable {
   }
   public static func == (a: CliqIt.CliqItCombinedFingerprint, b: CliqIt.CliqItCombinedFingerprint) -> Swift.Bool
 }
+public enum CliqItLinkField : Swift.String, Swift.CaseIterable, Swift.Sendable {
+  case destination
+  case iosDestination
+  case androidDestination
+  case ogTitle
+  case ogDescription
+  case ogImage
+  case ogUrl
+  case slug
+  case webFallback
+  case showInterstitial
+  case isDeepLink
+  case appleTeamId
+  case iosBundleId
+  case androidPackageName
+  case resolvedPath
+  public init?(rawValue: Swift.String)
+  public typealias AllCases = [CliqIt.CliqItLinkField]
+  public typealias RawValue = Swift.String
+  nonisolated public static var allCases: [CliqIt.CliqItLinkField] {
+    get
+  }
+  public var rawValue: Swift.String {
+    get
+  }
+}
+public enum CliqItLinkLookupOutcome : Swift.Sendable, Swift.Equatable {
+  case resolved(CliqIt.CliqItLinkDetails)
+  case failed(CliqIt.CliqItDeferredMatchError)
+  public var details: CliqIt.CliqItLinkDetails? {
+    get
+  }
+  public var resolvedPath: Swift.String? {
+    get
+  }
+  public static func == (a: CliqIt.CliqItLinkLookupOutcome, b: CliqIt.CliqItLinkLookupOutcome) -> Swift.Bool
+}
+public struct CliqItLinkDetails : Swift.Decodable, Swift.Sendable, Swift.Equatable {
+  public let destination: Swift.String?
+  public let iosDestination: Swift.String?
+  public let androidDestination: Swift.String?
+  public let ogTitle: Swift.String?
+  public let ogDescription: Swift.String?
+  public let ogImage: Swift.String?
+  public let ogUrl: Swift.String?
+  public let slug: Swift.String?
+  public let webFallback: Swift.String?
+  public let showInterstitial: Swift.Bool?
+  public let isDeepLink: Swift.Bool?
+  public let appleTeamId: Swift.String?
+  public let iosBundleId: Swift.String?
+  public let androidPackageName: Swift.String?
+  public var resolvedPath: Swift.String? {
+    get
+  }
+  public subscript(field: CliqIt.CliqItLinkField) -> Swift.String? {
+    get
+  }
+  public static func == (a: CliqIt.CliqItLinkDetails, b: CliqIt.CliqItLinkDetails) -> Swift.Bool
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct CliqItLinkLookupResponse : Swift.Decodable, Swift.Sendable, Swift.Equatable {
+  public let status: Swift.Bool
+  public let message: Swift.String?
+  public let data: CliqIt.CliqItLinkDetails?
+  public var outcome: CliqIt.CliqItLinkLookupOutcome {
+    get
+  }
+  public subscript(field: CliqIt.CliqItLinkField) -> Swift.String? {
+    get
+  }
+  public static func == (a: CliqIt.CliqItLinkLookupResponse, b: CliqIt.CliqItLinkLookupResponse) -> Swift.Bool
+  public init(from decoder: any Swift.Decoder) throws
+}
+public typealias CliqItDirectLinkLookupHandler = (Swift.Result<CliqIt.CliqItLinkDetails, CliqIt.CliqItDeferredMatchError>) -> Swift.Void
+public struct CliqItVerifyCheck : Swift.Decodable, Swift.Sendable, Swift.Equatable {
+  public let actual: Swift.String?
+  public let expected: Swift.String?
+  public let match: Swift.Bool
+  public var summary: Swift.String {
+    get
+  }
+  public static func == (a: CliqIt.CliqItVerifyCheck, b: CliqIt.CliqItVerifyCheck) -> Swift.Bool
+  public init(from decoder: any Swift.Decoder) throws
+}
+public enum CliqItVerifyCheckField : Swift.String, Swift.CaseIterable, Swift.Sendable {
+  case bundleId
+  case packageName
+  case androidSha256
+  public init?(rawValue: Swift.String)
+  public typealias AllCases = [CliqIt.CliqItVerifyCheckField]
+  public typealias RawValue = Swift.String
+  nonisolated public static var allCases: [CliqIt.CliqItVerifyCheckField] {
+    get
+  }
+  public var rawValue: Swift.String {
+    get
+  }
+}
+public struct CliqItVerifyResult : Swift.Decodable, Swift.Sendable, Swift.Equatable {
+  public let ok: Swift.Bool
+  public let appId: Swift.String?
+  public let appName: Swift.String?
+  public let checks: [Swift.String : CliqIt.CliqItVerifyCheck]
+  public var failedChecks: [(field: Swift.String, check: CliqIt.CliqItVerifyCheck)] {
+    get
+  }
+  public var mismatchMessage: Swift.String {
+    get
+  }
+  public subscript(field: CliqIt.CliqItVerifyCheckField) -> CliqIt.CliqItVerifyCheck? {
+    get
+  }
+  public static func == (a: CliqIt.CliqItVerifyResult, b: CliqIt.CliqItVerifyResult) -> Swift.Bool
+  public init(from decoder: any Swift.Decoder) throws
+}
+public enum CliqItVerifyOutcome : Swift.Sendable, Swift.Equatable {
+  case passed(CliqIt.CliqItVerifyResult)
+  case mismatched(CliqIt.CliqItVerifyResult)
+  case error(CliqIt.CliqItDeferredMatchError)
+  public var isOk: Swift.Bool {
+    get
+  }
+  public var result: CliqIt.CliqItVerifyResult? {
+    get
+  }
+  public static func == (a: CliqIt.CliqItVerifyOutcome, b: CliqIt.CliqItVerifyOutcome) -> Swift.Bool
+}
+public typealias CliqItVerifyHandler = (CliqIt.CliqItVerifyOutcome) -> Swift.Void
 extension CliqIt.CliqItSource : Swift.Equatable {}
 extension CliqIt.CliqItSource : Swift.Hashable {}
 extension CliqIt.CliqItSource : Swift.RawRepresentable {}
+extension CliqIt.CliqItLinkStatus : Swift.Equatable {}
+extension CliqIt.CliqItLinkStatus : Swift.Hashable {}
+extension CliqIt.CliqItLinkStatus : Swift.RawRepresentable {}
 extension CliqIt.CliqItParam : Swift.Equatable {}
 extension CliqIt.CliqItParam : Swift.Hashable {}
 extension CliqIt.CliqItParam : Swift.RawRepresentable {}
@@ -268,3 +400,9 @@ extension CliqIt.CliqItDeferredMatchField : Swift.Equatable {}
 extension CliqIt.CliqItDeferredMatchField : Swift.Hashable {}
 extension CliqIt.CliqItDeferredMatchField : Swift.RawRepresentable {}
 extension CliqIt.CliqItHandlerModifier : Swift.Sendable {}
+extension CliqIt.CliqItLinkField : Swift.Equatable {}
+extension CliqIt.CliqItLinkField : Swift.Hashable {}
+extension CliqIt.CliqItLinkField : Swift.RawRepresentable {}
+extension CliqIt.CliqItVerifyCheckField : Swift.Equatable {}
+extension CliqIt.CliqItVerifyCheckField : Swift.Hashable {}
+extension CliqIt.CliqItVerifyCheckField : Swift.RawRepresentable {}
