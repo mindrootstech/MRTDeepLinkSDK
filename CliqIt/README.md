@@ -2,10 +2,12 @@
 
 Deferred deep linking — **one listener**: `onLinkReceived`.
 
+Public consumer docs: [mindrootstech/CliqIt](https://github.com/mindrootstech/CliqIt) · tag **`2.0.4`**
+
 ## Install
 
 ```ruby
-pod 'CliqIt', :git => 'https://github.com/mindrootstech/CliqIt.git', :tag => '2.0.3'
+pod 'CliqIt', :git => 'https://github.com/mindrootstech/CliqIt.git', :tag => '2.0.4'
 ```
 
 ## Usage
@@ -27,8 +29,8 @@ CliqItSDK.shared.configure(apiKey: "pk_live_…")
 ```
 
 SwiftUI: `.handleCliqItLinkReceived { … }`  
-URLs: `handle(url:)` / `CliqItSceneSupport`.
+UIKit: `CliqItSceneSupport.handle(…)` + `handle(url:)`
 
-Do **not** call any other SDK APIs from the app. Verify, slug lookup, and deferred match run inside the SDK.
+Verify, slug lookup, and deferred match are internal — do not call other SDK APIs from the app.
 
-See `FLUTTER_TEAM_HANDOFF.md` for the field table.
+See the [public README](https://github.com/mindrootstech/CliqIt/blob/main/README.md) for the full payload table and UIScene setup.
